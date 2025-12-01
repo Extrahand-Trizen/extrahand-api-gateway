@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -71,7 +71,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Health check
-app.get('/api/v1/health', (req: Request, res: Response) => {
+app.get('/api/v1/health', (_req: Request, res: Response) => {
   res.setHeader('X-Gateway', 'extrahand-api-gateway');
   res.setHeader('X-Gateway-Version', '1.0.0');
   res.json({

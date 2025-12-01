@@ -4,7 +4,7 @@ import { handleServiceError } from '../utils/errorHandler.js';
 import { Profile } from '../types/api.js';
 
 export class ProfileController {
-  async getProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const userId = req.params.userId || req.user?.uid;
       if (!userId) {
@@ -35,7 +35,7 @@ export class ProfileController {
     }
   }
 
-  async getCurrentProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getCurrentProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -76,7 +76,7 @@ export class ProfileController {
     }
   }
 
-  async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const userId = req.params.userId || req.user?.uid;
       if (!userId) {
@@ -108,7 +108,7 @@ export class ProfileController {
     }
   }
 
-  async upsertProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async upsertProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -131,7 +131,7 @@ export class ProfileController {
     }
   }
 
-  async searchProfiles(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async searchProfiles(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { q, limit = '10' } = req.query;
 

@@ -3,7 +3,7 @@ import { verificationService } from '../services/verificationService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 
 export class VerificationController {
-  async initiateAadhaarVerification(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async initiateAadhaarVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -37,7 +37,7 @@ export class VerificationController {
     }
   }
 
-  async verifyAadhaarOTP(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async verifyAadhaarOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -68,7 +68,7 @@ export class VerificationController {
     }
   }
 
-  async verifyPAN(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async verifyPAN(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -99,7 +99,7 @@ export class VerificationController {
     }
   }
 
-  async verifyBankAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async verifyBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -135,7 +135,7 @@ export class VerificationController {
     }
   }
 
-  async getVerificationStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getVerificationStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({

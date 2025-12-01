@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import logger from '../config/logger.js';
-import { ServiceConfig, ServiceRequestConfig, ServiceResponse, UserToken } from '../types/service.js';
+import { ServiceConfig, ServiceRequestConfig, UserToken } from '../types/service.js';
 
 export abstract class BaseService {
   protected client: AxiosInstance;
@@ -22,8 +22,9 @@ export abstract class BaseService {
   private setupInterceptors(): void {
     // Request interceptor
     this.client.interceptors.request.use(
-      (config: ServiceRequestConfig) => {
-        config.metadata = { startTime: Date.now() };
+      (config) => {
+        const serviceConfig = config as ServiceRequestConfig;
+        serviceConfig.metadata = { startTime: Date.now() };
         
         // ✅ Clear banner showing microservice call
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -51,9 +52,10 @@ export abstract class BaseService {
 
     // Response interceptor
     this.client.interceptors.response.use(
-      (response: ServiceResponse) => {
-        const duration = response.config.metadata
-          ? Date.now() - response.config.metadata.startTime
+      (response) => {
+        const serviceConfig = response.config as ServiceRequestConfig;
+        const duration = serviceConfig.metadata
+          ? Date.now() - serviceConfig.metadata.startTime
           : 0;
         
         // ✅ Clear banner showing microservice response
@@ -75,8 +77,9 @@ export abstract class BaseService {
         return response;
       },
       (error: AxiosError) => {
-        const duration = error.config?.metadata 
-          ? Date.now() - (error.config.metadata.startTime || 0)
+        const serviceConfig = error.config as ServiceRequestConfig | undefined;
+        const duration = serviceConfig?.metadata 
+          ? Date.now() - (serviceConfig.metadata.startTime || 0)
           : 0;
 
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

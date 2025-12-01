@@ -4,7 +4,7 @@ import { handleServiceError } from '../utils/errorHandler.js';
 import { Task } from '../types/api.js';
 
 export class TaskController {
-  async getTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getTasks(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -36,7 +36,7 @@ export class TaskController {
     }
   }
 
-  async getTaskById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getTaskById(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params;
       if (!taskId) {
@@ -67,7 +67,7 @@ export class TaskController {
     }
   }
 
-  async createTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createTask(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -90,7 +90,7 @@ export class TaskController {
     }
   }
 
-  async updateTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateTask(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params;
       if (!taskId) {
@@ -122,7 +122,7 @@ export class TaskController {
     }
   }
 
-  async deleteTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteTask(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params;
       if (!taskId) {
@@ -153,7 +153,7 @@ export class TaskController {
     }
   }
 
-  async getTaskApplications(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getTaskApplications(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params;
       if (!taskId) {
