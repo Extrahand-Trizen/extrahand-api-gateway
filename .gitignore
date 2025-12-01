@@ -1,0 +1,14 @@
+node_modules/
+dist/
+logs/
+*.log
+.env
+.env.local
+.DS_Store
+*.tsbuildinfo
+.vscode/
+.idea/
+*.md 
+test-services.js
+test-gateway-flow.js
+package-lock.json
