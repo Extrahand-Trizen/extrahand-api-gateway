@@ -41,18 +41,26 @@ export class VerificationService extends BaseService {
 
   async initiateAadhaarVerification(
     aadhaarNumber: string,
+    consent: any, // Consent from frontend
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<AadhaarVerificationResponse>>> {
-    const consent = {
+    // Use consent from frontend if provided, otherwise create default
+    const consentData = consent || {
       given: true,
       givenAt: new Date().toISOString(),
       consentVersion: 'v1.0',
       consentText: 'I consent to verify my Aadhaar for identity verification on ExtraHand platform.',
     };
 
-    const requestData: AadhaarVerificationRequest = {
+    // Verification service expects both consentGiven (boolean) and consent (object)
+    const requestData: any = {
       aadhaarNumber,
-      consent,
+      consentGiven: consentData.given || true, // Required top-level boolean field
+      consent: {
+        given: consentData.given || true,
+        text: consentData.consentText || consentData.text || 'I consent to verify my Aadhaar for identity verification on ExtraHand platform.',
+        version: consentData.consentVersion || consentData.version || 'v1.0'
+      },
     };
 
     const config = this.addServiceAuth(

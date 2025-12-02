@@ -14,11 +14,12 @@ export class VerificationController {
       }
 
       // Log request body for debugging
-      console.log('📥 [VerificationController] Request body:', JSON.stringify(req.body, null, 2));
-      console.log('📥 [VerificationController] Request body type:', typeof req.body);
-      console.log('📥 [VerificationController] Request body keys:', Object.keys(req.body || {}));
+      console.log('🔍 [API Gateway] Received initiateAadhaarVerification request');
+      console.log('🔍 [API Gateway] Request Body:', req.body);
+      const { aadhaarNumber, consent } = req.body;
+      console.log('🔍 [API Gateway] Extracted aadhaarNumber:', aadhaarNumber);
+      console.log('🔍 [API Gateway] Extracted consent:', consent);
 
-      const { aadhaarNumber } = req.body;
       if (!aadhaarNumber) {
         console.error('❌ [VerificationController] Missing aadhaarNumber in request body');
         console.error('❌ [VerificationController] Full body:', req.body);
@@ -40,6 +41,7 @@ export class VerificationController {
 
       const response = await verificationService.initiateAadhaarVerification(
         aadhaarNumber,
+        consent, // Pass consent to service
         req.user
       );
       res.status(response.status).json(response.data);
