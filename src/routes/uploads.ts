@@ -31,7 +31,7 @@ router.post('/profile-picture', upload.single('image'), uploadController.uploadP
 // DELETE /api/v1/uploads/profile-picture - Routes to User Service
 router.delete('/profile-picture', uploadController.deleteProfilePicture.bind(uploadController));
 
-// POST /api/v1/uploads/task-image - Routes to Old Backend (Task Service doesn't have this yet)
+// POST /api/v1/uploads/task-image - Routes to Task Service
 router.post('/task-image', upload.single('image'), uploadController.uploadTaskImage.bind(uploadController));
 
 // Health check

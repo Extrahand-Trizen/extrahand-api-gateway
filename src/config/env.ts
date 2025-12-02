@@ -9,6 +9,7 @@ const envSchema = z.object({
   USER_SERVICE_URL: z.string().url(),
   TASK_SERVICE_URL: z.string().url(),
   VERIFICATION_SERVICE_URL: z.string().url(),
+  OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
   SERVICE_AUTH_TOKEN: z.string().min(1),
   FIREBASE_PROJECT_ID: z.string(),
   FIREBASE_PRIVATE_KEY: z.string(),

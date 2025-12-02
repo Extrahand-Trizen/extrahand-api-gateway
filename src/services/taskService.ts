@@ -2,6 +2,7 @@ import { BaseService } from './baseService.js';
 import { AxiosResponse } from 'axios';
 import { UserToken } from '../types/service.js';
 import { Task, ApiResponse } from '../types/api.js';
+import FormData from 'form-data';
 
 export interface TaskFilters {
   category?: string;
@@ -170,6 +171,29 @@ export class TaskService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.delete<ApiResponse<void>>(`/api/v1/applications/${applicationId}`, config)
+    );
+  }
+
+  async uploadTaskImage(
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ url: string; key: string }>>(
+        '/api/v1/uploads/task-image',
+        formData,
+        config
+      )
     );
   }
 }

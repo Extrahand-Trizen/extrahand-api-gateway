@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { userService } from '../services/userService.js';
+import { taskService } from '../services/taskService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 import FormData from 'form-data';
-import axios from 'axios';
 
 export class UploadController {
   async uploadProfilePicture(req: Request, res: Response, _next: NextFunction): Promise<void> {
@@ -84,40 +84,27 @@ export class UploadController {
         return;
       }
 
-      const { taskId } = req.body;
-
       res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'old-backend');
+      res.setHeader('X-Target-Service', 'task-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      // Forward to Old Backend (Task Service doesn't have task-image endpoint yet)
-      const oldBackendUrl = process.env.OLD_BACKEND_URL || 'http://localhost:4000';
+      // Create FormData to forward to Task Service
       const formData = new FormData();
       formData.append('image', file.buffer, {
         filename: file.originalname || 'task.jpg',
         contentType: file.mimetype,
       });
+      
+      // Add taskId if provided
+      const { taskId } = req.body;
       if (taskId) {
         formData.append('taskId', taskId);
       }
 
-      const config = {
-        headers: {
-          ...formData.getHeaders(),
-          'Authorization': `Bearer ${req.user.token}`,
-          'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN || '',
-          'X-User-Id': req.user.uid,
-        },
-      };
-
-      const response = await axios.post(
-        `${oldBackendUrl}/api/v1/uploads/task-image`,
-        formData,
-        config
-      );
-
+      // Forward to Task Service
+      const response = await taskService.uploadTaskImage(formData, req.user);
       res.status(response.status).json(response.data);
-    } catch (error: any) {
+    } catch (error) {
       handleServiceError(error, res, 'UploadController.uploadTaskImage');
     }
   }
