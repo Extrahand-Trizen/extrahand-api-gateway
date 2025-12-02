@@ -1,19 +1,19 @@
 import { Router } from 'express';
-import { authController } from '../controllers/AuthController.js';
+import { AuthController } from '../controllers/AuthController.js';
 
 const router = Router();
 
 // POST /api/v1/auth/check-phone (PUBLIC - no auth required)
-router.post('/check-phone', authController.checkPhone.bind(authController));
+router.post('/check-phone', AuthController.checkPhone.bind(AuthController));
 
 // POST /api/v1/auth/signup (PUBLIC - no auth required)
-router.post('/signup', authController.signup.bind(authController));
+router.post('/signup', AuthController.signup.bind(AuthController));
 
 // POST /api/v1/auth/login (PUBLIC - no auth required)
-router.post('/login', authController.login.bind(authController));
+router.post('/login', AuthController.login.bind(AuthController));
 
 // POST /api/v1/auth/password/reset (PUBLIC - no auth required)
-router.post('/password/reset', authController.passwordReset.bind(authController));
+router.post('/password/reset', AuthController.passwordReset.bind(AuthController));
 
 export default router;
 

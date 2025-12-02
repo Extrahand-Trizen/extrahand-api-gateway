@@ -22,9 +22,9 @@ export class AuthController {
       logger.info('Checking phone existence', { phone });
       
       // Forward to User Service
-      const result = await userService.checkPhone(phone);
+      const response = await userService.checkPhone(phone);
       
-      res.json(result);
+      res.status(response.status).json(response.data);
     } catch (error: any) {
       logger.error('Error checking phone', { error: error.message, stack: error.stack });
       res.status(500).json({
@@ -46,9 +46,9 @@ export class AuthController {
       logger.info('Processing signup request');
       
       // Forward to User Service
-      const result = await userService.signup(signupData);
+      const response = await userService.signup(signupData);
       
-      res.json(result);
+      res.status(response.status).json(response.data);
     } catch (error: any) {
       logger.error('Error during signup', { error: error.message, stack: error.stack });
       res.status(500).json({
@@ -70,9 +70,9 @@ export class AuthController {
       logger.info('Processing login request');
       
       // Forward to User Service
-      const result = await userService.login(loginData);
+      const response = await userService.login(loginData);
       
-      res.json(result);
+      res.status(response.status).json(response.data);
     } catch (error: any) {
       logger.error('Error during login', { error: error.message, stack: error.stack });
       res.status(500).json({
@@ -102,9 +102,9 @@ export class AuthController {
       logger.info('Processing password reset request', { email });
       
       // Forward to User Service
-      const result = await userService.passwordReset(email, continueUrl);
+      const response = await userService.passwordReset(email, continueUrl);
       
-      res.json(result);
+      res.status(response.status).json(response.data);
     } catch (error: any) {
       logger.error('Error during password reset', { error: error.message, stack: error.stack });
       res.status(500).json({
@@ -115,6 +115,4 @@ export class AuthController {
     }
   }
 }
-
-export const authController = new AuthController();
 
