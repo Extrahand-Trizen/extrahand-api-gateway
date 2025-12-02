@@ -103,6 +103,74 @@ export class TaskService extends BaseService {
       this.client.get<ApiResponse<any[]>>(`/api/v1/tasks/${taskId}/applications`, config)
     );
   }
+
+  async getApplications(
+    queryParams: Record<string, any>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: queryParams,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/applications', config)
+    );
+  }
+
+  async submitApplication(
+    applicationData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/applications', applicationData, config)
+    );
+  }
+
+  async getApplication(
+    applicationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/applications/${applicationId}`, config)
+    );
+  }
+
+  async updateApplication(
+    applicationId: string,
+    updateData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<any>>(`/api/v1/applications/${applicationId}`, updateData, config)
+    );
+  }
+
+  async withdrawApplication(
+    applicationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<void>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<void>>(`/api/v1/applications/${applicationId}`, config)
+    );
+  }
 }
 
 export const taskService = new TaskService();
