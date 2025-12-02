@@ -93,7 +93,10 @@ export class UserService extends BaseService {
       this.forwardUserAuth(userToken, {
         headers: {
           ...formData.getHeaders(),
+          // Remove Content-Type to let axios set it with boundary
         },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
       })
     );
 

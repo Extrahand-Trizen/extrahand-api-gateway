@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import multer from 'multer';
 import { uploadController } from '../controllers/UploadController.js';
 import { authMiddleware } from '../middleware/auth.js';
@@ -12,9 +12,9 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit (gateway can handle larger than individual services)
   },
-  fileFilter: (_req, file, cb) => {
+  fileFilter: (_req: Request, file: any, cb: multer.FileFilterCallback) => {
     // Accept only images
-    if (file.mimetype.startsWith('image/')) {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
       cb(new Error('Only image files are allowed'));

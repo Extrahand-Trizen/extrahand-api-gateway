@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { userService } from '../services/userService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
-import { AuthenticatedRequest } from '../types/express.js';
 import FormData from 'form-data';
 import axios from 'axios';
 
 export class UploadController {
-  async uploadProfilePicture(req: AuthenticatedRequest, res: Response, _next: NextFunction): Promise<void> {
+  async uploadProfilePicture(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -45,7 +44,7 @@ export class UploadController {
     }
   }
 
-  async deleteProfilePicture(req: AuthenticatedRequest, res: Response, _next: NextFunction): Promise<void> {
+  async deleteProfilePicture(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -66,7 +65,7 @@ export class UploadController {
     }
   }
 
-  async uploadTaskImage(req: AuthenticatedRequest, res: Response, _next: NextFunction): Promise<void> {
+  async uploadTaskImage(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
