@@ -21,3 +21,4 @@ router.delete('/:id', authMiddleware, applicationController.withdrawApplication.
 
 export default router;
 
+
