@@ -120,6 +120,37 @@ export class UserService extends BaseService {
       this.client.delete<ApiResponse<void>>('/api/v1/uploads/profile-picture', config)
     );
   }
+
+  // Auth endpoints (public - no auth required)
+  async checkPhone(phone: string): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
+        '/api/v1/auth/check-phone',
+        { phone }
+      )
+    );
+  }
+
+  async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/auth/signup', signupData)
+    );
+  }
+
+  async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/auth/login', loginData)
+    );
+  }
+
+  async passwordReset(email: string, continueUrl?: string): Promise<AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
+        '/api/v1/auth/password/reset',
+        { email, continueUrl }
+      )
+    );
+  }
 }
 
 export const userService = new UserService();

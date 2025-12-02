@@ -13,6 +13,7 @@ import tasksRouter from './routes/tasks.js';
 import verificationRouter from './routes/verification.js';
 import applicationsRouter from './routes/applications.js';
 import uploadsRouter from './routes/uploads.js';
+import authRouter from './routes/auth.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -93,6 +94,9 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
 });
 
 // API routes
+// Auth routes (public - no auth middleware)
+app.use('/api/v1/auth', authRouter);
+// Protected routes
 app.use('/api/v1/profiles', authMiddleware, profilesRouter);
 app.use('/api/v1/tasks', authMiddleware, tasksRouter);
 app.use('/api/v1/verification', authMiddleware, verificationRouter);
