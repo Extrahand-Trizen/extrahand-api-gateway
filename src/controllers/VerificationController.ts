@@ -13,11 +13,22 @@ export class VerificationController {
         return;
       }
 
+      // Log request body for debugging
+      console.log('📥 [VerificationController] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('📥 [VerificationController] Request body type:', typeof req.body);
+      console.log('📥 [VerificationController] Request body keys:', Object.keys(req.body || {}));
+
       const { aadhaarNumber } = req.body;
       if (!aadhaarNumber) {
+        console.error('❌ [VerificationController] Missing aadhaarNumber in request body');
+        console.error('❌ [VerificationController] Full body:', req.body);
         res.status(400).json({
           success: false,
           error: 'Aadhaar number is required',
+          details: {
+            receivedBody: req.body,
+            bodyKeys: Object.keys(req.body || {}),
+          },
         });
         return;
       }
