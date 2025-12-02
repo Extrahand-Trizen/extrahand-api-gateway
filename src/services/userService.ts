@@ -2,6 +2,7 @@ import { BaseService } from './baseService.js';
 import { AxiosResponse } from 'axios';
 import { UserToken } from '../types/service.js';
 import { Profile, ApiResponse } from '../types/api.js';
+import FormData from 'form-data';
 
 export class UserService extends BaseService {
   constructor() {
@@ -81,6 +82,39 @@ export class UserService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Profile[]>>('/api/v1/profiles/search', config)
+    );
+  }
+
+  async uploadProfilePicture(
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ url: string; key: string }>>(
+        '/api/v1/uploads/profile-picture',
+        formData,
+        config
+      )
+    );
+  }
+
+  async deleteProfilePicture(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<void>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<void>>('/api/v1/uploads/profile-picture', config)
     );
   }
 }

@@ -12,6 +12,7 @@ import profilesRouter from './routes/profiles.js';
 import tasksRouter from './routes/tasks.js';
 import verificationRouter from './routes/verification.js';
 import applicationsRouter from './routes/applications.js';
+import uploadsRouter from './routes/uploads.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -96,6 +97,7 @@ app.use('/api/v1/profiles', authMiddleware, profilesRouter);
 app.use('/api/v1/tasks', authMiddleware, tasksRouter);
 app.use('/api/v1/verification', authMiddleware, verificationRouter);
 app.use('/api/v1/applications', authMiddleware, applicationsRouter);
+app.use('/api/v1/uploads', uploadsRouter);
 
 // 404 handler for API routes
 app.use('/api', (req: Request, res: Response) => {
