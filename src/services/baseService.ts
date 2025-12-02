@@ -86,8 +86,16 @@ export abstract class BaseService {
         console.log(`❌ [MICROSERVICE ERROR] ${this.serviceName}`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log(`📍 Service: ${this.serviceName}`);
+        console.log(`📍 Base URL: ${error.config?.baseURL || 'N/A'}`);
+        console.log(`📍 Full URL: ${error.config?.baseURL}${error.config?.url || ''}`);
         console.log(`📍 Status: ${error.response?.status || 'N/A'}`);
         console.log(`📍 Error: ${error.message}`);
+        console.log(`📍 Error Code: ${error.code || 'N/A'}`);
+        if (error.code === 'ENOTFOUND') {
+          console.log(`⚠️ DNS Resolution Failed - Service hostname not found`);
+          console.log(`💡 Check if ${this.serviceName} is running in CapRover`);
+          console.log(`💡 Verify service name matches: ${error.config?.baseURL}`);
+        }
         console.log(`📍 Duration: ${duration}ms`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
@@ -168,6 +176,22 @@ export abstract class BaseService {
         console.error(`❌ [${this.serviceName}] Detailed Error:`, JSON.stringify(errorDetails, null, 2));
         
         // Check for specific error types
+        if (axiosError.code === 'ENOTFOUND' || axiosError.message.includes('ENOTFOUND')) {
+          const hostname = axiosError.config?.baseURL?.replace(/^https?:\/\//, '').split(':')[0];
+          throw {
+            status: 503,
+            message: `Cannot resolve hostname for ${this.serviceName}: ${hostname}. Service may not be running or service name is incorrect.`,
+            data: { 
+              code: 'ENOTFOUND', 
+              service: this.serviceName, 
+              url: axiosError.config?.baseURL,
+              hostname: hostname,
+              troubleshooting: 'Check if the service is running in CapRover and verify the service name matches exactly'
+            },
+            service: this.serviceName,
+          };
+        }
+        
         if (axiosError.code === 'ECONNREFUSED') {
           throw {
             status: 503,

@@ -16,6 +16,7 @@ export interface TaskFilters {
 export class TaskService extends BaseService {
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || 'http://localhost:4002';
+    console.log(`🔧 [TaskService] Initializing with URL: ${serviceURL}`);
     super({
       serviceName: 'TaskService',
       baseURL: serviceURL,
