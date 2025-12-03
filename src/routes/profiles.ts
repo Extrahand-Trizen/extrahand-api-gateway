@@ -19,5 +19,8 @@ router.post('/', authMiddleware, profileController.upsertProfile.bind(profileCon
 // Search profiles
 router.get('/search', authMiddleware, profileController.searchProfiles.bind(profileController));
 
+// Delete profile
+router.delete('/me', authMiddleware, profileController.deleteProfile.bind(profileController));
+
 export default router;
 

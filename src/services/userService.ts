@@ -85,6 +85,18 @@ export class UserService extends BaseService {
     );
   }
 
+  async deleteProfile(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ deletedCount: number }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ deletedCount: number }>>('/api/v1/profiles/me', config)
+    );
+  }
+
   async uploadProfilePicture(
     formData: FormData,
     userToken: UserToken

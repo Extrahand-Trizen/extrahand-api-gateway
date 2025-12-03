@@ -166,6 +166,28 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.searchProfiles');
     }
   }
+
+  async deleteProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      // ✅ Add headers to show it's from gateway
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.deleteProfile(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.deleteProfile');
+    }
+  }
 }
 
 export const profileController = new ProfileController();
