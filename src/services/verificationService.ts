@@ -127,16 +127,23 @@ export class VerificationService extends BaseService {
     accountNumber: string,
     ifsc: string,
     accountHolderName: string,
-    userToken: UserToken
+    userToken: UserToken,
+    consent?: any // ✨ Forward consent from frontend
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
+    // ✨ Include consent in request body if provided
+    const requestBody: any = { accountNumber, ifsc, accountHolderName };
+    if (consent) {
+      requestBody.consent = consent;
+    }
+
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
         '/api/v1/verification/bank/verify',
-        { accountNumber, ifsc, accountHolderName },
+        requestBody,
         config
       )
     );

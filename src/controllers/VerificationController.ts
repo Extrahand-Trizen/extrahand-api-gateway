@@ -122,7 +122,7 @@ export class VerificationController {
         return;
       }
 
-      const { accountNumber, ifsc, accountHolderName } = req.body;
+      const { accountNumber, ifsc, accountHolderName, consent } = req.body;
       if (!accountNumber || !ifsc || !accountHolderName) {
         res.status(400).json({
           success: false,
@@ -140,7 +140,8 @@ export class VerificationController {
         accountNumber,
         ifsc,
         accountHolderName,
-        req.user
+        req.user,
+        consent // ✨ Forward consent to verification service
       );
       res.status(response.status).json(response.data);
     } catch (error) {
