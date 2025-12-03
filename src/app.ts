@@ -14,6 +14,7 @@ import verificationRouter from './routes/verification.js';
 import applicationsRouter from './routes/applications.js';
 import uploadsRouter from './routes/uploads.js';
 import authRouter from './routes/auth.js';
+import chatsRouter from './routes/chats.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -102,6 +103,7 @@ app.use('/api/v1/tasks', authMiddleware, tasksRouter);
 app.use('/api/v1/verification', authMiddleware, verificationRouter);
 app.use('/api/v1/applications', authMiddleware, applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
+app.use('/api/v1/chats', chatsRouter);
 
 // 404 handler for API routes
 app.use('/api', (req: Request, res: Response) => {

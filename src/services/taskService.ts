@@ -196,6 +196,69 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  async getTaskQuestions(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any[]>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any[]>>(`/api/v1/tasks/${taskId}/questions`, config)
+    );
+  }
+
+  async askQuestion(
+    taskId: string,
+    questionData: { question: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/questions`, questionData, config)
+    );
+  }
+
+  async answerQuestion(
+    taskId: string,
+    questionId: string,
+    answerData: { answer: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/questions/${questionId}/answer`,
+        answerData,
+        config
+      )
+    );
+  }
+
+  async deleteQuestion(
+    taskId: string,
+    questionId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<void>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<void>>(
+        `/api/v1/tasks/${taskId}/questions/${questionId}`,
+        config
+      )
+    );
+  }
 }
 
 export const taskService = new TaskService();

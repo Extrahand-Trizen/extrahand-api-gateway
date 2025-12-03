@@ -22,5 +22,11 @@ router.delete('/:taskId', authMiddleware, taskController.deleteTask.bind(taskCon
 // Get task applications
 router.get('/:taskId/applications', authMiddleware, taskController.getTaskApplications.bind(taskController));
 
+// Task questions routes - forward to Task Service
+router.get('/:taskId/questions', authMiddleware, taskController.getTaskQuestions.bind(taskController));
+router.post('/:taskId/questions', authMiddleware, taskController.askQuestion.bind(taskController));
+router.post('/:taskId/questions/:questionId/answer', authMiddleware, taskController.answerQuestion.bind(taskController));
+router.delete('/:taskId/questions/:questionId', authMiddleware, taskController.deleteQuestion.bind(taskController));
+
 export default router;
 

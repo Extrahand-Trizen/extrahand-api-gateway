@@ -183,6 +183,126 @@ export class TaskController {
       handleServiceError(error, res, 'TaskController.getTaskApplications');
     }
   }
+
+  async getTaskQuestions(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.getTaskQuestions(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.getTaskQuestions');
+    }
+  }
+
+  async askQuestion(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.askQuestion(taskId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.askQuestion');
+    }
+  }
+
+  async answerQuestion(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId, questionId } = req.params;
+      if (!taskId || !questionId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID and Question ID are required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.answerQuestion(taskId, questionId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.answerQuestion');
+    }
+  }
+
+  async deleteQuestion(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId, questionId } = req.params;
+      if (!taskId || !questionId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID and Question ID are required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.deleteQuestion(taskId, questionId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.deleteQuestion');
+    }
+  }
 }
 
 export const taskController = new TaskController();
