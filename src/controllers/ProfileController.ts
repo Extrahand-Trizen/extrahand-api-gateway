@@ -37,7 +37,16 @@ export class ProfileController {
 
   async getCurrentProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
+      console.log('🔍 [ProfileController.getCurrentProfile] Route matched - GET /api/v1/profiles/me', {
+        method: req.method,
+        path: req.path,
+        originalUrl: req.originalUrl,
+        hasUser: !!req.user,
+        uid: req.user?.uid
+      });
+
       if (!req.user) {
+        console.error('❌ [ProfileController.getCurrentProfile] No user in request');
         res.status(401).json({
           success: false,
           error: 'Authentication required',

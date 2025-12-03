@@ -303,6 +303,141 @@ export class TaskController {
       handleServiceError(error, res, 'TaskController.deleteQuestion');
     }
   }
+
+  async updateTaskStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { status } = req.body;
+      
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!status) {
+        res.status(400).json({
+          success: false,
+          error: 'Status is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.updateTaskStatus(taskId, status, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.updateTaskStatus');
+    }
+  }
+
+  async submitCompletionProof(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { proofUrls, notes } = req.body;
+      
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.submitCompletionProof(taskId, { proofUrls, notes }, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.submitCompletionProof');
+    }
+  }
+
+  async approveCompletion(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.approveCompletion(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.approveCompletion');
+    }
+  }
+
+  async rejectCompletion(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { reason } = req.body;
+      
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await taskService.rejectCompletion(taskId, { reason }, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.rejectCompletion');
+    }
+  }
 }
 
 export const taskController = new TaskController();

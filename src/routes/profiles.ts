@@ -1,8 +1,21 @@
 import { Router } from 'express';
 import { profileController } from '../controllers/ProfileController.js';
 import { authMiddleware } from '../middleware/auth.js';
+import logger from '../config/logger.js';
+// Note: authMiddleware is applied both at app level AND on individual routes for extra security
 
 const router = Router();
+
+// ✨ Log route registration for debugging
+logger.info('📋 [Profiles Router] Registering routes:', {
+  'GET /me': 'getCurrentProfile',
+  'GET /search': 'searchProfiles',
+  'GET /:userId': 'getProfile',
+  'PUT /me': 'updateProfile (current user)',
+  'PUT /:userId': 'updateProfile (by ID)',
+  'POST /': 'upsertProfile',
+  'DELETE /me': 'deleteProfile'
+});
 
 // ✨ CRITICAL: Specific routes MUST come before parameterized routes
 // Order matters in Express - routes are matched in the order they are defined

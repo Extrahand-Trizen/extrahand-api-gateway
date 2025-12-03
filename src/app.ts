@@ -105,13 +105,34 @@ app.use('/api/v1/applications', authMiddleware, applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 
+// ✨ Log registered routes for debugging
+logger.info('✅ [API Gateway] Routes registered:', {
+  profiles: '/api/v1/profiles (with auth)',
+  tasks: '/api/v1/tasks (with auth)',
+  verification: '/api/v1/verification (with auth)',
+  applications: '/api/v1/applications (with auth)',
+  uploads: '/api/v1/uploads',
+  chats: '/api/v1/chats',
+  auth: '/api/v1/auth (public)'
+});
+
 // 404 handler for API routes
 app.use('/api', (req: Request, res: Response) => {
+  // ✨ Enhanced logging for 404s
+  logger.warn('⚠️ [API Gateway] 404 - Route not found', {
+    method: req.method,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    query: req.query,
+    body: req.body ? 'present' : 'absent'
+  });
+  
   res.status(404).json({
     success: false,
     error: 'API endpoint not found',
     path: req.path,
     method: req.method,
+    message: `No route found for ${req.method} ${req.path}`
   });
 });
 

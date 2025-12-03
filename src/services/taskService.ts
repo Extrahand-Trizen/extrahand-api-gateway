@@ -259,6 +259,61 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  async updateTaskStatus(
+    taskId: string,
+    status: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/status`, { status }, config)
+    );
+  }
+
+  async submitCompletionProof(
+    taskId: string,
+    data: { proofUrls: string[]; notes?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/complete`, data, config)
+    );
+  }
+
+  async approveCompletion(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/approve-completion`, {}, config)
+    );
+  }
+
+  async rejectCompletion(
+    taskId: string,
+    data: { reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/reject-completion`, data, config)
+    );
+  }
 }
 
 export const taskService = new TaskService();

@@ -7,6 +7,12 @@ const router = Router();
 // Get all tasks (with filters)
 router.get('/', authMiddleware, taskController.getTasks.bind(taskController));
 
+// Task status and completion routes (must come before /:taskId route)
+router.patch('/:taskId/status', authMiddleware, taskController.updateTaskStatus.bind(taskController));
+router.post('/:taskId/complete', authMiddleware, taskController.submitCompletionProof.bind(taskController));
+router.post('/:taskId/approve-completion', authMiddleware, taskController.approveCompletion.bind(taskController));
+router.post('/:taskId/reject-completion', authMiddleware, taskController.rejectCompletion.bind(taskController));
+
 // Get task by ID
 router.get('/:taskId', authMiddleware, taskController.getTaskById.bind(taskController));
 
