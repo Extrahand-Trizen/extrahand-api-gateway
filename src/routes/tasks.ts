@@ -13,6 +13,18 @@ router.post('/:taskId/complete', authMiddleware, taskController.submitCompletion
 router.post('/:taskId/approve-completion', authMiddleware, taskController.approveCompletion.bind(taskController));
 router.post('/:taskId/reject-completion', authMiddleware, taskController.rejectCompletion.bind(taskController));
 
+// Follow routes (must come before /:taskId route)
+router.post('/:taskId/follow', authMiddleware, taskController.followTask.bind(taskController));
+router.delete('/:taskId/follow', authMiddleware, taskController.unfollowTask.bind(taskController));
+router.get('/:taskId/follow', authMiddleware, taskController.checkFollowStatus.bind(taskController));
+
+// Report routes (must come before /:taskId route)
+router.post('/:taskId/report', authMiddleware, taskController.reportTask.bind(taskController));
+router.get('/:taskId/reports', authMiddleware, taskController.getTaskReports.bind(taskController));
+
+// Get followed tasks (must come before /:taskId route)
+router.get('/followed', authMiddleware, taskController.getFollowedTasks.bind(taskController));
+
 // Get task by ID
 router.get('/:taskId', authMiddleware, taskController.getTaskById.bind(taskController));
 

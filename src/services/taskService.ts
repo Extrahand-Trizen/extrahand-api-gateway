@@ -320,6 +320,94 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/reject-completion`, data, config)
     );
   }
+
+  async followTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, {}, config)
+    );
+  }
+
+  async unfollowTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, config)
+    );
+  }
+
+  async checkFollowStatus(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, config)
+    );
+  }
+
+  async getFollowedTasks(
+    page: number,
+    limit: number,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: { page, limit },
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/tasks/followed', config)
+    );
+  }
+
+  async reportTask(
+    taskId: string,
+    reason: string,
+    description: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    const body: any = { reason };
+    if (description) {
+      body.description = description;
+    }
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/report`, body, config)
+    );
+  }
+
+  async getTaskReports(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/tasks/${taskId}/reports`, config)
+    );
+  }
 }
 
 export const taskService = new TaskService();
