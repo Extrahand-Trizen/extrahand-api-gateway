@@ -56,6 +56,19 @@ export class UserService extends BaseService {
     );
   }
 
+  async updateCurrentProfile(
+    profileData: Partial<Profile>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<Profile>>('/api/v1/profiles/me', profileData, config)
+    );
+  }
+
   async upsertProfile(
     profileData: Partial<Profile>,
     userToken: UserToken

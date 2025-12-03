@@ -78,15 +78,8 @@ export class ProfileController {
 
   async updateProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const userId = req.params.userId || req.user?.uid;
-      if (!userId) {
-        res.status(400).json({
-          success: false,
-          error: 'User ID is required',
-        });
-        return;
-      }
-
+      const userId = req.params.userId;
+      
       if (!req.user) {
         res.status(401).json({
           success: false,
@@ -101,7 +94,16 @@ export class ProfileController {
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const profileData: Partial<Profile> = req.body;
-      const response = await userService.updateProfile(userId, profileData, req.user);
+      
+      // If userId is provided, update that user's profile
+      // Otherwise, update current user's profile
+      let response;
+      if (userId) {
+        response = await userService.updateProfile(userId, profileData, req.user);
+      } else {
+        response = await userService.updateCurrentProfile(profileData, req.user);
+      }
+      
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'ProfileController.updateProfile');
