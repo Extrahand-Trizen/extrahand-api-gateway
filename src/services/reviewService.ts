@@ -7,6 +7,7 @@ export class ReviewService extends BaseService {
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || 'http://localhost:4002';
     super({
+      serviceName: 'task-service',
       baseURL: serviceURL,
       timeout: 15000,
     });
