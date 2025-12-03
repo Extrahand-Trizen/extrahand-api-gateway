@@ -263,14 +263,20 @@ export class TaskService extends BaseService {
   async updateTaskStatus(
     taskId: string,
     status: string,
-    userToken: UserToken
+    userToken: UserToken,
+    cancellationReason?: string
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
+    const body: any = { status };
+    if (cancellationReason) {
+      body.cancellationReason = cancellationReason;
+    }
+
     return this.handleRequest(() =>
-      this.client.patch<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/status`, { status }, config)
+      this.client.patch<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/status`, body, config)
     );
   }
 

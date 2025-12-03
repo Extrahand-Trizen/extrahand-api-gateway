@@ -307,7 +307,7 @@ export class TaskController {
   async updateTaskStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params;
-      const { status } = req.body;
+      const { status, cancellationReason } = req.body;
       
       if (!taskId) {
         res.status(400).json({
@@ -337,7 +337,7 @@ export class TaskController {
       res.setHeader('X-Target-Service', 'task-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      const response = await taskService.updateTaskStatus(taskId, status, req.user);
+      const response = await taskService.updateTaskStatus(taskId, status, req.user, cancellationReason);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'TaskController.updateTaskStatus');
