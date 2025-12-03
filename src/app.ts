@@ -15,6 +15,7 @@ import applicationsRouter from './routes/applications.js';
 import uploadsRouter from './routes/uploads.js';
 import authRouter from './routes/auth.js';
 import chatsRouter from './routes/chats.js';
+import reviewsRouter from './routes/reviews.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -104,6 +105,7 @@ app.use('/api/v1/verification', authMiddleware, verificationRouter);
 app.use('/api/v1/applications', authMiddleware, applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
+app.use('/api/v1/reviews', reviewsRouter);
 
 // ✨ Log registered routes for debugging
 logger.info('✅ [API Gateway] Routes registered:', {
@@ -113,6 +115,7 @@ logger.info('✅ [API Gateway] Routes registered:', {
   applications: '/api/v1/applications (with auth)',
   uploads: '/api/v1/uploads',
   chats: '/api/v1/chats',
+  reviews: '/api/v1/reviews',
   auth: '/api/v1/auth (public)'
 });
 
