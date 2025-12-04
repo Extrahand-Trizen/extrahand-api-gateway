@@ -21,3 +21,4 @@ router.get('/', chatController.getUserChats.bind(chatController));
 
 export default router;
 
+
