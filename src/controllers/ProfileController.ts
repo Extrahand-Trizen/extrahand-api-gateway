@@ -104,6 +104,24 @@ export class ProfileController {
 
       const profileData: Partial<Profile> = req.body;
       
+      // Log the request data for debugging
+      console.log('🔍 [ProfileController.updateProfile] Request data:', {
+        userId: userId || 'current user',
+        uid: req.user.uid,
+        hasSavedAddresses: !!profileData.savedAddresses,
+        savedAddressesCount: Array.isArray(profileData.savedAddresses) ? profileData.savedAddresses.length : 0,
+        savedAddressesPreview: Array.isArray(profileData.savedAddresses) && profileData.savedAddresses.length > 0
+          ? {
+              firstAddress: {
+                label: profileData.savedAddresses[0].label,
+                addressLength: profileData.savedAddresses[0].address?.length || 0,
+                hasCoordinates: Array.isArray(profileData.savedAddresses[0].coordinates),
+                coordinates: profileData.savedAddresses[0].coordinates
+              }
+            }
+          : null
+      });
+      
       // If userId is provided, update that user's profile
       // Otherwise, update current user's profile
       let response;
@@ -114,7 +132,14 @@ export class ProfileController {
       }
       
       res.status(response.status).json(response.data);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ [ProfileController.updateProfile] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        stack: error.stack?.substring(0, 500)
+      });
       handleServiceError(error, res, 'ProfileController.updateProfile');
     }
   }

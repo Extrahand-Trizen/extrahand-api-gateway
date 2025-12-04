@@ -64,6 +64,22 @@ export class UserService extends BaseService {
       this.forwardUserAuth(userToken)
     );
 
+    // Log request data for debugging
+    console.log('🔍 [UserService.updateCurrentProfile] Sending request:', {
+      hasSavedAddresses: !!profileData.savedAddresses,
+      savedAddressesCount: Array.isArray(profileData.savedAddresses) ? profileData.savedAddresses.length : 0,
+      savedAddressesPreview: Array.isArray(profileData.savedAddresses) && profileData.savedAddresses.length > 0
+        ? {
+            firstAddress: {
+              label: profileData.savedAddresses[0].label,
+              addressLength: profileData.savedAddresses[0].address?.length || 0,
+              hasCoordinates: Array.isArray(profileData.savedAddresses[0].coordinates),
+              coordinates: profileData.savedAddresses[0].coordinates
+            }
+          }
+        : null
+    });
+
     return this.handleRequest(() =>
       this.client.put<ApiResponse<Profile>>('/api/v1/profiles/me', profileData, config)
     );
