@@ -1,3 +1,23 @@
+export interface SavedAddress {
+  _id?: string;
+  label: 'Home' | 'Work' | 'Other';
+  address: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  city?: string;
+  state?: string;
+  country?: string;
+  addressDetails?: {
+    doorNo?: string;
+    landmark?: string;
+    area?: string;
+    pinCode?: string;
+  };
+  name?: string;
+  phone?: string;
+  isDefault?: boolean;
+  createdAt?: Date | string;
+}
+
 export interface Profile {
   uid: string;
   name: string;
@@ -17,6 +37,7 @@ export interface Profile {
     city: string;
     state: string;
   };
+  savedAddresses?: SavedAddress[];
 }
 
 export interface Task {
