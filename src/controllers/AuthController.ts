@@ -133,7 +133,7 @@ export class AuthController {
     */
    static async completeOTP(req: Request, res: Response): Promise<void> {
       try {
-         const { idToken, mode, phone, name } = req.body;
+         const { idToken, mode, phone, name, clientType, deviceId } = req.body;
 
          if (!idToken || !mode || !phone) {
             res.status(400).json({
@@ -142,6 +142,9 @@ export class AuthController {
             });
             return;
          }
+
+         const normalizedClientType: "web" | "mobile" =
+            clientType === "mobile" ? "mobile" : "web";
 
          logger.info("Processing OTP completion request", {
             mode,
@@ -153,8 +156,17 @@ export class AuthController {
             idToken,
             mode,
             phone,
-            name
+            name,
+            {
+               clientType: normalizedClientType,
+               deviceId,
+            }
          );
+
+         const upstreamCookies = response.headers["set-cookie"];
+         if (upstreamCookies) {
+            res.setHeader("set-cookie", upstreamCookies);
+         }
 
          res.status(response.status).json(response.data);
       } catch (error: any) {

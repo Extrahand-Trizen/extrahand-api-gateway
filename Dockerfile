@@ -75,9 +75,9 @@ ENV RATE_LIMIT_MAX_REQUESTS=100
 # - VERIFICATION_SERVICE_URL
 # - OLD_BACKEND_URL
 # - SERVICE_AUTH_TOKEN
-# - FIREBASE_PROJECT_ID
-# - FIREBASE_PRIVATE_KEY
-# - FIREBASE_CLIENT_EMAIL
+# - ACCESS_TOKEN_SECRET
+# - TOKEN_ISSUER
+# - TOKEN_AUDIENCE
 
 # Copy production dependencies from dependencies stage
 COPY --from=dependencies --chown=nodeuser:nodejs /app/node_modules ./node_modules

@@ -1,146 +1,151 @@
-import express, { Express, Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
-import compression from 'compression';
-import morgan from 'morgan';
-import { loggingMiddleware } from './middleware/logging.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { authMiddleware } from './middleware/auth.js';
-import profilesRouter from './routes/profiles.js';
-import tasksRouter from './routes/tasks.js';
-import verificationRouter from './routes/verification.js';
-import applicationsRouter from './routes/applications.js';
-import uploadsRouter from './routes/uploads.js';
-import authRouter from './routes/auth.js';
-import chatsRouter from './routes/chats.js';
-import reviewsRouter from './routes/reviews.js';
-import logger from './config/logger.js';
-import { validateEnv, getCorsConfig } from './config/env.js';
+import express, { Express, Request, Response } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
+import compression from "compression";
+import morgan from "morgan";
+import { loggingMiddleware } from "./middleware/logging.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { authMiddleware } from "./middleware/auth.js";
+import profilesRouter from "./routes/profiles.js";
+import tasksRouter from "./routes/tasks.js";
+import verificationRouter from "./routes/verification.js";
+import applicationsRouter from "./routes/applications.js";
+import uploadsRouter from "./routes/uploads.js";
+import authRouter from "./routes/auth.js";
+import chatsRouter from "./routes/chats.js";
+import reviewsRouter from "./routes/reviews.js";
+import sessionsRouter from "./routes/sessions.js";
+import logger from "./config/logger.js";
+import { validateEnv, getCorsConfig } from "./config/env.js";
 
 const env = validateEnv();
 const app: Express = express();
 
 // Trust proxy
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-}));
+app.use(
+   helmet({
+      contentSecurityPolicy: {
+         directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+         },
+      },
+   })
+);
 
 // CORS
 const corsOptions = getCorsConfig(env);
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Body parsing
 app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
 
 // Logging
 app.use(loggingMiddleware);
-if (env.NODE_ENV === 'production') {
-  app.use(morgan('combined', {
-    stream: { write: (message: string) => logger.info(message.trim()) }
-  }));
+if (env.NODE_ENV === "production") {
+   app.use(
+      morgan("combined", {
+         stream: { write: (message: string) => logger.info(message.trim()) },
+      })
+   );
 } else {
-  app.use(morgan('dev'));
+   app.use(morgan("dev"));
 }
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
-  max: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10) * 10, // Higher limit for mobile apps
-  message: {
-    success: false,
-    error: 'Too many requests from this IP, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req: Request) => {
-    return req.path === '/api/v1/health' || req.path === '/health';
-  },
+   windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
+   max: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10) * 10, // Higher limit for mobile apps
+   message: {
+      success: false,
+      error: "Too many requests from this IP, please try again later.",
+   },
+   standardHeaders: true,
+   legacyHeaders: false,
+   skip: (req: Request) => {
+      return req.path === "/api/v1/health" || req.path === "/health";
+   },
 });
 
-app.use('/api/', limiter);
+app.use("/api/", limiter);
 
 // Health check
-app.get('/api/v1/health', (_req: Request, res: Response) => {
-  res.setHeader('X-Gateway', 'extrahand-api-gateway');
-  res.setHeader('X-Gateway-Version', '1.0.0');
-  res.json({
-    status: 'ok',
-    service: 'api-gateway', // ✅ Clear indicator
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: env.NODE_ENV,
-    version: '1.0.0',
-    services: {
-      userService: env.USER_SERVICE_URL,
-      taskService: env.TASK_SERVICE_URL,
-      verificationService: env.VERIFICATION_SERVICE_URL,
-    },
-    message: 'This is the API Gateway - requests are routed to microservices',
-  });
+app.get("/api/v1/health", (_req: Request, res: Response) => {
+   res.setHeader("X-Gateway", "extrahand-api-gateway");
+   res.setHeader("X-Gateway-Version", "1.0.0");
+   res.json({
+      status: "ok",
+      service: "api-gateway", // ✅ Clear indicator
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: env.NODE_ENV,
+      version: "1.0.0",
+      services: {
+         userService: env.USER_SERVICE_URL,
+         taskService: env.TASK_SERVICE_URL,
+         verificationService: env.VERIFICATION_SERVICE_URL,
+      },
+      message: "This is the API Gateway - requests are routed to microservices",
+   });
 });
 
 // API routes
 // Auth routes (public - no auth middleware)
-app.use('/api/v1/auth', authRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/sessions", sessionsRouter);
 // Protected routes
-app.use('/api/v1/profiles', authMiddleware, profilesRouter);
-app.use('/api/v1/tasks', authMiddleware, tasksRouter);
-app.use('/api/v1/verification', authMiddleware, verificationRouter);
-app.use('/api/v1/applications', authMiddleware, applicationsRouter);
-app.use('/api/v1/uploads', uploadsRouter);
-app.use('/api/v1/chats', chatsRouter);
-app.use('/api/v1/reviews', reviewsRouter);
+app.use("/api/v1/profiles", authMiddleware, profilesRouter);
+app.use("/api/v1/tasks", authMiddleware, tasksRouter);
+app.use("/api/v1/verification", authMiddleware, verificationRouter);
+app.use("/api/v1/applications", authMiddleware, applicationsRouter);
+app.use("/api/v1/uploads", uploadsRouter);
+app.use("/api/v1/chats", chatsRouter);
+app.use("/api/v1/reviews", reviewsRouter);
 
 // ✨ Log registered routes for debugging
-logger.info('✅ [API Gateway] Routes registered:', {
-  profiles: '/api/v1/profiles (with auth)',
-  tasks: '/api/v1/tasks (with auth)',
-  verification: '/api/v1/verification (with auth)',
-  applications: '/api/v1/applications (with auth)',
-  uploads: '/api/v1/uploads',
-  chats: '/api/v1/chats',
-  reviews: '/api/v1/reviews',
-  auth: '/api/v1/auth (public)'
+logger.info("✅ [API Gateway] Routes registered:", {
+   profiles: "/api/v1/profiles (with auth)",
+   tasks: "/api/v1/tasks (with auth)",
+   verification: "/api/v1/verification (with auth)",
+   applications: "/api/v1/applications (with auth)",
+   uploads: "/api/v1/uploads",
+   chats: "/api/v1/chats",
+   reviews: "/api/v1/reviews",
+   auth: "/api/v1/auth (public)",
 });
 
 // 404 handler for API routes
-app.use('/api', (req: Request, res: Response) => {
-  // ✨ Enhanced logging for 404s
-  logger.warn('⚠️ [API Gateway] 404 - Route not found', {
-    method: req.method,
-    path: req.path,
-    originalUrl: req.originalUrl,
-    query: req.query,
-    body: req.body ? 'present' : 'absent'
-  });
-  
-  res.status(404).json({
-    success: false,
-    error: 'API endpoint not found',
-    path: req.path,
-    method: req.method,
-    message: `No route found for ${req.method} ${req.path}`
-  });
+app.use("/api", (req: Request, res: Response) => {
+   // ✨ Enhanced logging for 404s
+   logger.warn("⚠️ [API Gateway] 404 - Route not found", {
+      method: req.method,
+      path: req.path,
+      originalUrl: req.originalUrl,
+      query: req.query,
+      body: req.body ? "present" : "absent",
+   });
+
+   res.status(404).json({
+      success: false,
+      error: "API endpoint not found",
+      path: req.path,
+      method: req.method,
+      message: `No route found for ${req.method} ${req.path}`,
+   });
 });
 
 // Error handler
 app.use(errorHandler);
 
 export default app;
-
