@@ -192,6 +192,20 @@ export class UserService extends BaseService {
       )
     );
   }
+
+  async completeOTP(
+    idToken: string,
+    mode: 'login' | 'signup',
+    phone: string,
+    name?: string
+  ): Promise<AxiosResponse<ApiResponse<{ success: boolean; profile?: any; user?: any; error?: string }>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ success: boolean; profile?: any; user?: any; error?: string }>>(
+        '/api/v1/auth/otp/complete',
+        { idToken, mode, phone, name }
+      )
+    );
+  }
 }
 
 export const userService = new UserService();

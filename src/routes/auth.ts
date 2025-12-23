@@ -15,5 +15,8 @@ router.post('/login', AuthController.login.bind(AuthController));
 // POST /api/v1/auth/password/reset (PUBLIC - no auth required)
 router.post('/password/reset', AuthController.passwordReset.bind(AuthController));
 
+// POST /api/v1/auth/otp/complete (PUBLIC - no auth required, but requires valid ID token in body)
+router.post('/otp/complete', AuthController.completeOTP.bind(AuthController));
+
 export default router;
 
