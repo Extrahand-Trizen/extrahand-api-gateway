@@ -17,7 +17,8 @@ export class SessionController {
             return;
          }
 
-         const clientType = req.body?.clientType === "mobile" ? "mobile" : "web";
+         const clientType =
+            req.body?.clientType === "mobile" ? "mobile" : "web";
 
          const response = await userService.refreshSession({
             cookies,
