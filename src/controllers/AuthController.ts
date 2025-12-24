@@ -42,99 +42,114 @@ export class AuthController {
       }
    }
 
+   // =========================================================================
+   // REDUNDANT METHODS - Commented out as app uses OTP-based auth flow
+   // These methods are never called since their routes are disabled
+   // =========================================================================
+
    /**
     * POST /api/v1/auth/signup
     * Public endpoint - creates new user account
+    * REDUNDANT: OTP flow handles signup via /otp/complete
     */
-   static async signup(req: Request, res: Response): Promise<void> {
-      try {
-         const signupData = req.body;
+   // static async signup(req: Request, res: Response): Promise<void> {
+   //    try {
+   //       const signupData = req.body;
 
-         logger.info("Processing signup request");
+   //       logger.info("Processing signup request");
 
-         // Forward to User Service
-         const response = await userService.signup(signupData);
+   //       // Forward to User Service
+   //       const response = await userService.signup(signupData);
 
-         res.status(response.status).json(response.data);
-      } catch (error: any) {
-         logger.error("Error during signup", {
-            error: error.message,
-            stack: error.stack,
-         });
-         res.status(500).json({
-            success: false,
-            error: "Signup failed",
-            message: error.message,
-         });
-      }
-   }
+   //       res.status(response.status).json(response.data);
+   //    } catch (error: any) {
+   //       logger.error("Error during signup", {
+   //          error: error.message,
+   //          stack: error.stack,
+   //       });
+   //       res.status(500).json({
+   //          success: false,
+   //          error: "Signup failed",
+   //          message: error.message,
+   //       });
+   //    }
+   // }
 
    /**
     * POST /api/v1/auth/login
     * Public endpoint - authenticates user
+    * REDUNDANT: OTP flow handles login via /otp/complete
     */
-   static async login(req: Request, res: Response): Promise<void> {
-      try {
-         const loginData = req.body;
+   // static async login(req: Request, res: Response): Promise<void> {
+   //    try {
+   //       const loginData = req.body;
 
-         logger.info("Processing login request");
+   //       logger.info("Processing login request");
 
-         // Forward to User Service
-         const response = await userService.login(loginData);
+   //       // Forward to User Service
+   //       const response = await userService.login(loginData);
 
-         const upstreamCookies = response.headers["set-cookie"];
-         forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
+   //       const upstreamCookies = response.headers["set-cookie"];
+   //       forwardOrSetAuthCookies(
+   //          res,
+   //          upstreamCookies,
+   //          (response.data as any)?.tokens
+   //       );
 
-         res.status(response.status).json(
-            sanitizeSessionPayload(response.data)
-         );
-      } catch (error: any) {
-         logger.error("Error during login", {
-            error: error.message,
-            stack: error.stack,
-         });
-         res.status(500).json({
-            success: false,
-            error: "Login failed",
-            message: error.message,
-         });
-      }
-   }
+   //       res.status(response.status).json(
+   //          sanitizeSessionPayload(response.data)
+   //       );
+   //    } catch (error: any) {
+   //       logger.error("Error during login", {
+   //          error: error.message,
+   //          stack: error.stack,
+   //       });
+   //       res.status(500).json({
+   //          success: false,
+   //          error: "Login failed",
+   //          message: error.message,
+   //       });
+   //    }
+   // }
 
    /**
     * POST /api/v1/auth/password/reset
     * Public endpoint - generates password reset link
+    * REDUNDANT: App uses phone OTP, not password-based auth
     */
-   static async passwordReset(req: Request, res: Response): Promise<void> {
-      try {
-         const { email, continueUrl } = req.body;
+   // static async passwordReset(req: Request, res: Response): Promise<void> {
+   //    try {
+   //       const { email, continueUrl } = req.body;
 
-         if (!email) {
-            res.status(400).json({
-               success: false,
-               error: "Email is required",
-            });
-            return;
-         }
+   //       if (!email) {
+   //          res.status(400).json({
+   //             success: false,
+   //             error: "Email is required",
+   //          });
+   //          return;
+   //       }
 
-         logger.info("Processing password reset request", { email });
+   //       logger.info("Processing password reset request", { email });
 
-         // Forward to User Service
-         const response = await userService.passwordReset(email, continueUrl);
+   //       // Forward to User Service
+   //       const response = await userService.passwordReset(email, continueUrl);
 
-         res.status(response.status).json(response.data);
-      } catch (error: any) {
-         logger.error("Error during password reset", {
-            error: error.message,
-            stack: error.stack,
-         });
-         res.status(500).json({
-            success: false,
-            error: "Password reset failed",
-            message: error.message,
-         });
-      }
-   }
+   //       res.status(response.status).json(response.data);
+   //    } catch (error: any) {
+   //       logger.error("Error during password reset", {
+   //          error: error.message,
+   //          stack: error.stack,
+   //       });
+   //       res.status(500).json({
+   //          success: false,
+   //          error: "Password reset failed",
+   //          message: error.message,
+   //       });
+   //    }
+   // }
+
+   // =========================================================================
+
 
    /**
     * POST /api/v1/auth/otp/complete
@@ -173,7 +188,11 @@ export class AuthController {
          );
 
          const upstreamCookies = response.headers["set-cookie"];
-         forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
+         forwardOrSetAuthCookies(
+            res,
+            upstreamCookies,
+            (response.data as any)?.tokens
+         );
 
          res.status(response.status).json(
             sanitizeSessionPayload(response.data)
@@ -186,6 +205,39 @@ export class AuthController {
          res.status(500).json({
             success: false,
             error: "OTP completion failed",
+            message: error.message,
+         });
+      }
+   }
+
+   /**
+    * POST /api/v1/auth/sync
+    * Authenticated endpoint to ensure Mongo profile is bound to the session user
+    */
+   static async sync(req: Request, res: Response): Promise<void> {
+      try {
+         const user = req.user;
+         if (!user?.token) {
+            res.status(401).json({ success: false, error: "Unauthorized" });
+            return;
+         }
+
+         const { name, phone } = req.body || {};
+
+         const response = await userService.syncProfile(
+            { name, phone },
+            { uid: user.uid, token: user.token }
+         );
+
+         res.status(response.status).json(response.data);
+      } catch (error: any) {
+         logger.error("Error during auth sync", {
+            error: error.message,
+            stack: error.stack,
+         });
+         res.status(500).json({
+            success: false,
+            error: "Failed to sync profile",
             message: error.message,
          });
       }

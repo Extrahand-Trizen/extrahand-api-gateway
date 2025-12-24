@@ -76,8 +76,8 @@ export async function authMiddleware(
          method: req.method,
          errorMessage: error.message,
          errorStack: error.stack,
-         hasToken: !!match?.[1],
-         tokenLength: match?.[1]?.length || 0,
+         hasToken: !!token,
+         tokenLength: token?.length || 0,
       });
 
       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");

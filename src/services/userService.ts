@@ -210,31 +210,39 @@ export class UserService extends BaseService {
       );
    }
 
-   async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<any>>("/api/v1/auth/signup", signupData)
-      );
-   }
+   // =========================================================================
+   // REDUNDANT METHODS - Commented out as app uses OTP-based auth flow
+   // These methods are never called since their controller methods are disabled
+   // =========================================================================
 
-   async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<any>>("/api/v1/auth/login", loginData)
-      );
-   }
+   // async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+   //    return this.handleRequest(() =>
+   //       this.client.post<ApiResponse<any>>("/api/v1/auth/signup", signupData)
+   //    );
+   // }
 
-   async passwordReset(
-      email: string,
-      continueUrl?: string
-   ): Promise<
-      AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>
-   > {
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
-            "/api/v1/auth/password/reset",
-            { email, continueUrl }
-         )
-      );
-   }
+   // async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+   //    return this.handleRequest(() =>
+   //       this.client.post<ApiResponse<any>>("/api/v1/auth/login", loginData)
+   //    );
+   // }
+
+   // async passwordReset(
+   //    email: string,
+   //    continueUrl?: string
+   // ): Promise<
+   //    AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>
+   // > {
+   //    return this.handleRequest(() =>
+   //       this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
+   //          "/api/v1/auth/password/reset",
+   //          { email, continueUrl }
+   //       )
+   //    );
+   // }
+
+   // =========================================================================
+
 
    async completeOTP(
       idToken: string,
@@ -270,6 +278,21 @@ export class UserService extends BaseService {
                error?: string;
             }>
          >("/api/v1/auth/otp/complete", payload)
+      );
+   }
+
+   async syncProfile(
+      profileData: { name?: string; phone?: string },
+      userToken: UserToken
+   ): Promise<AxiosResponse<ApiResponse<any>>> {
+      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+      return this.handleRequest(() =>
+         this.client.post<ApiResponse<any>>(
+            "/api/v1/auth/sync",
+            profileData,
+            config
+         )
       );
    }
 

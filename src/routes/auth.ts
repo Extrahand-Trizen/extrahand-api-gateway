@@ -1,22 +1,38 @@
-import { Router } from 'express';
-import { AuthController } from '../controllers/AuthController.js';
+import { Router } from "express";
+import { AuthController } from "../controllers/AuthController.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
 // POST /api/v1/auth/check-phone (PUBLIC - no auth required)
-router.post('/check-phone', AuthController.checkPhone.bind(AuthController));
+router.post("/check-phone", AuthController.checkPhone.bind(AuthController));
+
+// ============================================================================
+// REDUNDANT ROUTES - Commented out as app uses OTP-based auth flow
+// These endpoints exist but are never called by the web/mobile app
+// ============================================================================
 
 // POST /api/v1/auth/signup (PUBLIC - no auth required)
-router.post('/signup', AuthController.signup.bind(AuthController));
+// REDUNDANT: OTP flow handles signup via /otp/complete
+// router.post("/signup", AuthController.signup.bind(AuthController));
 
 // POST /api/v1/auth/login (PUBLIC - no auth required)
-router.post('/login', AuthController.login.bind(AuthController));
+// REDUNDANT: OTP flow handles login via /otp/complete
+// router.post("/login", AuthController.login.bind(AuthController));
 
 // POST /api/v1/auth/password/reset (PUBLIC - no auth required)
-router.post('/password/reset', AuthController.passwordReset.bind(AuthController));
+// REDUNDANT: App uses phone OTP, not password-based auth
+// router.post(
+//    "/password/reset",
+//    AuthController.passwordReset.bind(AuthController)
+// );
+
+// ============================================================================
 
 // POST /api/v1/auth/otp/complete (PUBLIC - no auth required, but requires valid ID token in body)
-router.post('/otp/complete', AuthController.completeOTP.bind(AuthController));
+router.post("/otp/complete", AuthController.completeOTP.bind(AuthController));
+
+// POST /api/v1/auth/sync (AUTHENTICATED)
+router.post("/sync", authMiddleware, AuthController.sync.bind(AuthController));
 
 export default router;
-
