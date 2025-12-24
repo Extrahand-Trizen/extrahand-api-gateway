@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
 import { userService } from "../services/userService.js";
+import {
+   forwardOrSetAuthCookies,
+   clearAuthCookies,
+   sanitizeSessionPayload,
+} from "../utils/cookies.js";
 import logger from "../config/logger.js";
 
 export class SessionController {
@@ -30,11 +35,11 @@ export class SessionController {
          });
 
          const upstreamCookies = response.headers["set-cookie"];
-         if (upstreamCookies) {
-            res.setHeader("set-cookie", upstreamCookies);
-         }
+         forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
 
-         res.status(response.status).json(response.data);
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data)
+         );
       } catch (error: any) {
          const status = error?.status || error?.response?.status || 500;
          logger.error("Session refresh failed", {
@@ -65,13 +70,12 @@ export class SessionController {
          if (upstreamCookies) {
             res.setHeader("set-cookie", upstreamCookies);
          } else {
-            res.setHeader(
-               "set-cookie",
-               "refreshToken=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax"
-            );
+            res.setHeader("set-cookie", clearAuthCookies());
          }
 
-         res.status(response.status).json(response.data);
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data)
+         );
       } catch (error: any) {
          const status = error?.status || error?.response?.status || 500;
          logger.error("Session logout failed", {

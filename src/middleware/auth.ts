@@ -1,53 +1,66 @@
 import { Request, Response, NextFunction } from "express";
 import logger from "../config/logger.js";
 import { verifyAccessToken } from "../lib/tokenVerifier.js";
+import { ACCESS_COOKIE_NAME } from "../utils/cookies.js";
+
+function getAccessToken(req: Request): string | undefined {
+   const header = req.headers.authorization || "";
+   const match = /^Bearer (.+)$/.exec(header);
+   if (match?.[1]) return match[1];
+
+   const headerToken = req.headers["x-access-token"] as string | undefined;
+   if (headerToken) return headerToken;
+
+   const cookieHeader = req.headers.cookie;
+   if (cookieHeader) {
+      const token = cookieHeader
+         .split(";")
+         .map((p) => p.trim())
+         .find((p) => p.startsWith(`${ACCESS_COOKIE_NAME}=`));
+      if (token) {
+         const [, value] = token.split("=");
+         return decodeURIComponent(value || "");
+      }
+   }
+
+   const parsedCookies = (req as any).cookies as
+      | Record<string, string>
+      | undefined;
+   if (parsedCookies && parsedCookies[ACCESS_COOKIE_NAME]) {
+      return parsedCookies[ACCESS_COOKIE_NAME];
+   }
+
+   return undefined;
+}
 
 export async function authMiddleware(
    req: Request,
    res: Response,
    next: NextFunction
 ): Promise<void> {
-   const header = req.headers.authorization || "";
-   const match = /^Bearer (.+)$/.exec(header);
+   const token = getAccessToken(req);
 
-   if (!match) {
-      logger.warn("Authentication: Missing Authorization header", {
+   if (!token) {
+      logger.warn("Authentication: Missing access token", {
          path: req.path,
          method: req.method,
          headers: Object.keys(req.headers),
-         authorizationHeader: req.headers.authorization
-            ? "present but invalid format"
-            : "missing",
+         hasCookies: Boolean(req.headers.cookie),
       });
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log(
-         "🚨 [API GATEWAY] Authentication Failed: Missing Authorization Header"
-      );
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log("📍 Path:", req.path);
-      console.log("📍 Method:", req.method);
-      console.log("📍 Headers present:", Object.keys(req.headers));
-      console.log(
-         "📍 Authorization header:",
-         req.headers.authorization ? "present but invalid" : "missing"
-      );
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       res.status(401).json({
          success: false,
-         error: "Missing Authorization header",
+         error: "Missing access token",
          details:
-            "Please ensure you are logged in and the Authorization header is included in the request",
+            "Please ensure you are logged in and your cookies or Authorization header are sent with the request",
       });
       return;
    }
 
    try {
-      const idToken = match[1];
-
-      const claims = verifyAccessToken(idToken);
+      const claims = verifyAccessToken(token);
       req.user = {
          uid: claims.uid,
-         token: idToken,
+         token,
          sessionId: claims.sessionId,
       };
 
@@ -75,8 +88,8 @@ export async function authMiddleware(
       console.log("📍 Path:", req.path);
       console.log("📍 Method:", req.method);
       console.log("📍 Error Message:", error.message);
-      console.log("📍 Has Token:", !!match?.[1]);
-      console.log("📍 Token Length:", match?.[1]?.length || 0);
+      console.log("📍 Has Token:", !!token);
+      console.log("📍 Token Length:", token?.length || 0);
       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
       // More detailed error response in development
@@ -102,16 +115,14 @@ export async function optionalAuthMiddleware(
    _res: Response,
    next: NextFunction
 ): Promise<void> {
-   const header = req.headers.authorization || "";
-   const match = /^Bearer (.+)$/.exec(header);
+   const token = getAccessToken(req);
 
-   if (match) {
+   if (token) {
       try {
-         const idToken = match[1];
-         const claims = verifyAccessToken(idToken);
+         const claims = verifyAccessToken(token);
          req.user = {
             uid: claims.uid,
-            token: idToken,
+            token,
             sessionId: claims.sessionId,
          };
       } catch (error) {

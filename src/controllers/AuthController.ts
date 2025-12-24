@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { userService } from "../services/userService.js";
+import {
+   forwardOrSetAuthCookies,
+   sanitizeSessionPayload,
+} from "../utils/cookies.js";
 import logger from "../config/logger.js";
 
 export class AuthController {
@@ -78,7 +82,12 @@ export class AuthController {
          // Forward to User Service
          const response = await userService.login(loginData);
 
-         res.status(response.status).json(response.data);
+         const upstreamCookies = response.headers["set-cookie"];
+         forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
+
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data)
+         );
       } catch (error: any) {
          logger.error("Error during login", {
             error: error.message,
@@ -164,11 +173,11 @@ export class AuthController {
          );
 
          const upstreamCookies = response.headers["set-cookie"];
-         if (upstreamCookies) {
-            res.setHeader("set-cookie", upstreamCookies);
-         }
+         forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
 
-         res.status(response.status).json(response.data);
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data)
+         );
       } catch (error: any) {
          logger.error("Error during OTP completion", {
             error: error.message,
