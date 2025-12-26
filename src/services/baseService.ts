@@ -143,6 +143,7 @@ export abstract class BaseService {
         ...config.headers,
         'Authorization': `Bearer ${tokenString}`,
         'X-User-Id': userToken.uid,
+        ...(userToken.sessionId && { 'X-Session-Id': userToken.sessionId }),
       };
     }
     return config;

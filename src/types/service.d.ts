@@ -19,6 +19,7 @@ export interface ServiceResponse<T = any> extends AxiosResponse<T> {
 export interface UserToken {
   uid: string;
   token: any;
+  sessionId?: string;
 }
 
 export interface ServiceError {

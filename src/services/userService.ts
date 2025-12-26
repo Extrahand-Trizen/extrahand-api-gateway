@@ -198,14 +198,18 @@ export class UserService extends BaseService {
       );
    }
 
-   // Auth endpoints (public - no auth required)
+   // Auth endpoints (public - no user auth required, but service auth is needed)
    async checkPhone(
       phone: string
    ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
+      // Service auth is required by User Service's gatewayAuthMiddleware
+      const config = this.addServiceAuth({});
+      
       return this.handleRequest(() =>
          this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
             "/api/v1/auth/check-phone",
-            { phone }
+            { phone },
+            config
          )
       );
    }
@@ -269,6 +273,9 @@ export class UserService extends BaseService {
          deviceId: options?.deviceId,
       };
 
+      // Service auth is required by User Service's gatewayAuthMiddleware
+      const config = this.addServiceAuth({});
+
       return this.handleRequest(() =>
          this.client.post<
             ApiResponse<{
@@ -277,7 +284,7 @@ export class UserService extends BaseService {
                user?: any;
                error?: string;
             }>
-         >("/api/v1/auth/otp/complete", payload)
+         >("/api/v1/auth/otp/complete", payload, config)
       );
    }
 
