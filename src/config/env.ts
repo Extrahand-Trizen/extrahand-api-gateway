@@ -10,6 +10,7 @@ const envSchema = z.object({
    PORT: z.string().default("4000"),
    USER_SERVICE_URL: z.string().url(),
    TASK_SERVICE_URL: z.string().url(),
+   CHAT_SERVICE_URL: z.string().url(),
    VERIFICATION_SERVICE_URL: z.string().url(),
    OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
    SERVICE_AUTH_TOKEN: z.string().min(1),

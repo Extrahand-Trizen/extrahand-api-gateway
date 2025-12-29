@@ -27,6 +27,7 @@ async function start(): Promise<void> {
       logger.info('Services configured:');
       logger.info(`  - User Service: ${env.USER_SERVICE_URL}`);
       logger.info(`  - Task Service: ${env.TASK_SERVICE_URL}`);
+      logger.info(`  - Chat Service: ${env.CHAT_SERVICE_URL}`);
       logger.info(`  - Verification Service: ${env.VERIFICATION_SERVICE_URL}`);
     });
 

@@ -14,7 +14,7 @@ export class ChatController {
       }
 
       res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'old-backend');
+      res.setHeader('X-Target-Service', 'chat-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await chatService.startChat(req.body, req.user);
@@ -44,7 +44,7 @@ export class ChatController {
       }
 
       res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'old-backend');
+      res.setHeader('X-Target-Service', 'chat-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await chatService.getMessages(chatId, req.user);
@@ -74,7 +74,7 @@ export class ChatController {
       }
 
       res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'old-backend');
+      res.setHeader('X-Target-Service', 'chat-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await chatService.sendMessage(chatId, req.body, req.user);
@@ -95,7 +95,7 @@ export class ChatController {
       }
 
       res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'old-backend');
+      res.setHeader('X-Target-Service', 'chat-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await chatService.getUserChats(req.query, req.user);

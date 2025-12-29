@@ -5,7 +5,7 @@ import { ApiResponse } from '../types/api.js';
 
 export class ChatService extends BaseService {
   constructor() {
-    const serviceURL = process.env.OLD_BACKEND_URL || 'http://localhost:4000';
+    const serviceURL = process.env.CHAT_SERVICE_URL || 'http://localhost:4003';
     console.log(`🔧 [ChatService] Initializing with URL: ${serviceURL}`);
     super({
       serviceName: 'ChatService',
@@ -18,11 +18,12 @@ export class ChatService extends BaseService {
     chatData: any,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    // For old backend, we forward the user token directly
+    // Use service-to-service authentication
     const config = {
       headers: {
-        Authorization: `Bearer ${userToken.token}`,
-        'X-User-Id': userToken.uid,
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
       },
     };
 
@@ -37,8 +38,9 @@ export class ChatService extends BaseService {
   ): Promise<AxiosResponse<ApiResponse<any[]>>> {
     const config = {
       headers: {
-        Authorization: `Bearer ${userToken.token}`,
-        'X-User-Id': userToken.uid,
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
       },
     };
 
@@ -54,8 +56,9 @@ export class ChatService extends BaseService {
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = {
       headers: {
-        Authorization: `Bearer ${userToken.token}`,
-        'X-User-Id': userToken.uid,
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
       },
     };
 
@@ -70,8 +73,9 @@ export class ChatService extends BaseService {
   ): Promise<AxiosResponse<ApiResponse<any[]>>> {
     const config = {
       headers: {
-        Authorization: `Bearer ${userToken.token}`,
-        'X-User-Id': userToken.uid,
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
       },
       params: queryParams,
     };
