@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from 'mongoose';
 import logger from "../config/logger.js";
 import { verifyAccessToken } from "../lib/tokenVerifier.js";
 import { ACCESS_COOKIE_NAME } from "../utils/cookies.js";
+import { getConnectionStatus } from '../config/database.js';
 
 function getAccessToken(req: Request): string | undefined {
    const header = req.headers.authorization || "";
@@ -32,6 +34,7 @@ function getAccessToken(req: Request): string | undefined {
 
    return undefined;
 }
+// Profile model removed - using direct MongoDB query for profileId lookup
 
 export async function authMiddleware(
    req: Request,
@@ -56,58 +59,110 @@ export async function authMiddleware(
       return;
    }
 
-   try {
-      const claims = verifyAccessToken(token);
-      req.user = {
-         uid: claims.uid,
-         token,
-         sessionId: claims.sessionId,
-      };
-
-      logger.info("Authentication: User authenticated", {
-         uid: claims.uid,
-         path: req.path,
-      });
-      next();
-   } catch (error: any) {
-      // Enhanced error logging
-      logger.error("Authentication: Token verification failed", {
-         path: req.path,
-         method: req.method,
-         errorMessage: error.message,
-         errorStack: error.stack,
-         hasToken: !!token,
-         tokenLength: token?.length || 0,
-      });
-
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log(
-         "🚨 [API GATEWAY] Authentication Failed: Token Verification Error"
-      );
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log("📍 Path:", req.path);
-      console.log("📍 Method:", req.method);
-      console.log("📍 Error Message:", error.message);
-      console.log("📍 Has Token:", !!token);
-      console.log("📍 Token Length:", token?.length || 0);
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-
-      // More detailed error response in development
-      const errorMessage =
-         process.env.NODE_ENV === "development"
-            ? `Invalid token: ${error.message || "Unknown error"}`
-            : "Invalid token";
-
-      res.status(401).json({
-         success: false,
-         error: errorMessage,
-         ...(process.env.NODE_ENV === "development" && {
-            details: {
-               message: error.message,
-            },
-         }),
-      });
-   }
+  try {
+    const idToken = match[1];
+    
+    // Log token info (first 20 chars only for security)
+    logger.debug('Authentication: Verifying token', {
+      path: req.path,
+      method: req.method,
+      tokenPrefix: idToken.substring(0, 20) + '...',
+      tokenLength: idToken.length,
+    });
+    
+    // ✨ CRITICAL: Verify the token first
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    
+    // ✨ Enrich with profileId (ObjectId) for database references
+    let profileId: mongoose.Types.ObjectId | undefined;
+    
+    if (getConnectionStatus()) {
+      try {
+        // Direct MongoDB query (no model needed) - just get _id for profileId
+        const db = mongoose.connection.db;
+        if (db) {
+          const profilesCollection = db.collection('profiles');
+          const profile = await profilesCollection.findOne(
+            { uid },
+            { projection: { _id: 1 } }
+          );
+          
+          if (profile && profile._id) {
+            profileId = profile._id;
+            logger.debug('Authentication: Profile found', {
+              uid,
+              profileId: profileId.toString(),
+            });
+          } else {
+            logger.debug('Authentication: Profile not found (new user?)', { uid });
+          }
+        }
+      } catch (error: any) {
+        logger.warn('Authentication: Failed to lookup Profile', {
+          uid,
+          error: error.message,
+        });
+        // Continue without profileId - service will handle it
+      }
+    } else {
+      logger.debug('Authentication: MongoDB not connected, skipping profileId lookup', { uid });
+    }
+    
+    // ✨ CRITICAL: Store the ORIGINAL JWT string, not the decoded object
+    // The User Service expects the raw JWT string in the Authorization header
+    req.user = { 
+      uid, 
+      token: idToken, // Store the original JWT string, not the decoded object
+      profileId, // ✅ ObjectId reference for database operations
+    };
+    
+    logger.info('Authentication: User authenticated', {
+      uid,
+      profileId: profileId?.toString() || 'not found',
+      path: req.path,
+      tokenStored: 'JWT string (original)',
+    });
+    next();
+  } catch (error: any) {
+    // Enhanced error logging
+    logger.error('Authentication: Token verification failed', {
+      path: req.path,
+      method: req.method,
+      errorCode: error.code,
+      errorMessage: error.message,
+      errorStack: error.stack,
+      hasToken: !!match?.[1],
+      tokenLength: match?.[1]?.length || 0,
+    });
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🚨 [API GATEWAY] Authentication Failed: Token Verification Error');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📍 Path:', req.path);
+    console.log('📍 Method:', req.method);
+    console.log('📍 Error Code:', error.code);
+    console.log('📍 Error Message:', error.message);
+    console.log('📍 Has Token:', !!match?.[1]);
+    console.log('📍 Token Length:', match?.[1]?.length || 0);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    // More detailed error response in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Invalid token: ${error.message || error.code || 'Unknown error'}`
+      : 'Invalid token';
+    
+    res.status(401).json({ 
+      success: false,
+      error: errorMessage,
+      ...(process.env.NODE_ENV === 'development' && {
+        details: {
+          code: error.code,
+          message: error.message,
+        }
+      })
+    });
+  }
 }
 
 export async function optionalAuthMiddleware(
@@ -115,23 +170,50 @@ export async function optionalAuthMiddleware(
    _res: Response,
    next: NextFunction
 ): Promise<void> {
-   const token = getAccessToken(req);
-
-   if (token) {
-      try {
-         const claims = verifyAccessToken(token);
-         req.user = {
-            uid: claims.uid,
-            token,
-            sessionId: claims.sessionId,
-         };
-      } catch (error) {
-         // Invalid token - continue without user
-         req.user = undefined;
+  const header = req.headers.authorization || '';
+  const match = /^Bearer (.+)$/.exec(header);
+  
+  if (match) {
+    try {
+      const idToken = match[1];
+      const decodedToken = await auth.verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+      
+      // ✨ Enrich with profileId if MongoDB is connected
+      let profileId: mongoose.Types.ObjectId | undefined;
+      
+      if (getConnectionStatus()) {
+        try {
+          // Direct MongoDB query (no model needed) - just get _id for profileId
+          const db = mongoose.connection.db;
+          if (db) {
+            const profilesCollection = db.collection('profiles');
+            const profile = await profilesCollection.findOne(
+              { uid },
+              { projection: { _id: 1 } }
+            );
+            
+            if (profile && profile._id) {
+              profileId = profile._id;
+            }
+          }
+        } catch (error) {
+          // Ignore - continue without profileId
+        }
       }
-   } else {
+      
+      req.user = { 
+        uid, 
+        token: idToken,
+        profileId,
+      };
+    } catch (error) {
+      // Invalid token - continue without user
       req.user = undefined;
-   }
-
-   next();
+    }
+  } else {
+    req.user = undefined;
+  }
+  
+  next();
 }

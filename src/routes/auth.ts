@@ -1,24 +1,16 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController.js";
 import { authMiddleware } from "../middleware/auth.js";
-
 const router = Router();
 
 // POST /api/v1/auth/check-phone (PUBLIC - no auth required)
 router.post("/check-phone", AuthController.checkPhone.bind(AuthController));
 
-// ============================================================================
-// REDUNDANT ROUTES - Commented out as app uses OTP-based auth flow
-// These endpoints exist but are never called by the web/mobile app
-// ============================================================================
-
 // POST /api/v1/auth/signup (PUBLIC - no auth required)
-// REDUNDANT: OTP flow handles signup via /otp/complete
-// router.post("/signup", AuthController.signup.bind(AuthController));
+router.post("/signup", AuthController.signup.bind(AuthController));
 
 // POST /api/v1/auth/login (PUBLIC - no auth required)
-// REDUNDANT: OTP flow handles login via /otp/complete
-// router.post("/login", AuthController.login.bind(AuthController));
+router.post("/login", AuthController.login.bind(AuthController));
 
 // POST /api/v1/auth/password/reset (PUBLIC - no auth required)
 // REDUNDANT: App uses phone OTP, not password-based auth

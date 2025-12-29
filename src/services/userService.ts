@@ -14,120 +14,119 @@ interface SessionRequestOptions {
 }
 
 export class UserService extends BaseService {
-   constructor() {
-      const serviceURL =
-         process.env.USER_SERVICE_URL || "http://localhost:4001";
-      super({
-         serviceName: "UserService",
-         baseURL: serviceURL,
-         timeout: 15000,
-      });
-   }
+  constructor() {
+    const serviceURL = process.env.USER_SERVICE_URL || "http://localhost:4001";
+    super({
+      serviceName: "UserService",
+      baseURL: serviceURL,
+      timeout: 15000,
+    });
+  }
 
-   async getProfile(
-      userId: string,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-      const config = this.addServiceAuth(
-         this.forwardUserAuth(userToken, {
-            headers: {
-               "X-User-Id": userId,
-            },
-         })
-      );
+  async getProfile(
+    userId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          "X-User-Id": userId,
+        },
+      })
+    );
 
-      return this.handleRequest(() =>
-         this.client.get<ApiResponse<Profile>>(
-            `/api/v1/profiles/${userId}`,
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<Profile>>(
+        `/api/v1/profiles/${userId}`,
+        config
+      )
+    );
+  }
 
-   async getCurrentProfile(
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+  async getCurrentProfile(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
-      return this.handleRequest(() =>
-         this.client.get<ApiResponse<Profile>>("/api/v1/profiles/me", config)
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<Profile>>("/api/v1/profiles/me", config)
+    );
+  }
 
-   async updateProfile(
-      userId: string,
-      profileData: Partial<Profile>,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-      const config = this.addServiceAuth(
-         this.forwardUserAuth(userToken, {
-            headers: {
-               "X-User-Id": userId,
-            },
-         })
-      );
+  async updateProfile(
+    userId: string,
+    profileData: Partial<Profile>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          "X-User-Id": userId,
+        },
+      })
+    );
 
-      return this.handleRequest(() =>
-         this.client.put<ApiResponse<Profile>>(
-            `/api/v1/profiles/${userId}`,
-            profileData,
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<Profile>>(
+        `/api/v1/profiles/${userId}`,
+        profileData,
+        config
+      )
+    );
+  }
 
-   async updateCurrentProfile(
-      profileData: Partial<Profile>,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+  async updateCurrentProfile(
+    profileData: Partial<Profile>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
-      // Log request data for debugging
-      console.log("🔍 [UserService.updateCurrentProfile] Sending request:", {
-         hasSavedAddresses: !!profileData.savedAddresses,
-         savedAddressesCount: Array.isArray(profileData.savedAddresses)
-            ? profileData.savedAddresses.length
-            : 0,
-         savedAddressesPreview:
-            Array.isArray(profileData.savedAddresses) &&
-            profileData.savedAddresses.length > 0
-               ? {
-                    firstAddress: {
-                       label: profileData.savedAddresses[0].label,
-                       addressLength:
-                          profileData.savedAddresses[0].address?.length || 0,
-                       hasCoordinates: Array.isArray(
-                          profileData.savedAddresses[0].coordinates
-                       ),
-                       coordinates: profileData.savedAddresses[0].coordinates,
-                    },
-                 }
-               : null,
-      });
+    // Log request data for debugging
+    console.log("🔍 [UserService.updateCurrentProfile] Sending request:", {
+      hasSavedAddresses: !!profileData.savedAddresses,
+      savedAddressesCount: Array.isArray(profileData.savedAddresses)
+        ? profileData.savedAddresses.length
+        : 0,
+      savedAddressesPreview:
+        Array.isArray(profileData.savedAddresses) &&
+        profileData.savedAddresses.length > 0
+          ? {
+              firstAddress: {
+                label: profileData.savedAddresses[0].label,
+                addressLength:
+                  profileData.savedAddresses[0].address?.length || 0,
+                hasCoordinates: Array.isArray(
+                  profileData.savedAddresses[0].coordinates
+                ),
+                coordinates: profileData.savedAddresses[0].coordinates,
+              },
+            }
+          : null,
+    });
 
-      return this.handleRequest(() =>
-         this.client.put<ApiResponse<Profile>>(
-            "/api/v1/profiles/me",
-            profileData,
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<Profile>>(
+        "/api/v1/profiles/me",
+        profileData,
+        config
+      )
+    );
+  }
 
-   async upsertProfile(
-      profileData: Partial<Profile>,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+  async upsertProfile(
+    profileData: Partial<Profile>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<Profile>>(
-            "/api/v1/profiles",
-            profileData,
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Profile>>(
+        "/api/v1/profiles",
+        profileData,
+        config
+      )
+    );
+  }
 
    async searchProfiles(
       query: string,
@@ -140,26 +139,23 @@ export class UserService extends BaseService {
          })
       );
 
-      return this.handleRequest(() =>
-         this.client.get<ApiResponse<Profile[]>>(
-            "/api/v1/profiles/search",
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<Profile[]>>("/api/v1/profiles/search", config)
+    );
+  }
 
-   async deleteProfile(
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<{ deletedCount: number }>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+  async deleteProfile(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ deletedCount: number }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
-      return this.handleRequest(() =>
-         this.client.delete<ApiResponse<{ deletedCount: number }>>(
-            "/api/v1/profiles/me",
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ deletedCount: number }>>(
+        "/api/v1/profiles/me",
+        config
+      )
+    );
+  }
 
    async uploadProfilePicture(
       formData: FormData,
@@ -176,43 +172,39 @@ export class UserService extends BaseService {
          })
       );
 
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<{ url: string; key: string }>>(
-            "/api/v1/uploads/profile-picture",
-            formData,
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ url: string; key: string }>>(
+        "/api/v1/uploads/profile-picture",
+        formData,
+        config
+      )
+    );
+  }
 
-   async deleteProfilePicture(
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<void>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+  async deleteProfilePicture(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<void>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
-      return this.handleRequest(() =>
-         this.client.delete<ApiResponse<void>>(
-            "/api/v1/uploads/profile-picture",
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<void>>(
+        "/api/v1/uploads/profile-picture",
+        config
+      )
+    );
+  }
 
-   // Auth endpoints (public - no user auth required, but service auth is needed)
-   async checkPhone(
-      phone: string
-   ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
-      // Service auth is required by User Service's gatewayAuthMiddleware
-      const config = this.addServiceAuth({});
-      
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
-            "/api/v1/auth/check-phone",
-            { phone },
-            config
-         )
-      );
-   }
+  // Auth endpoints (public - no auth required)
+  async checkPhone(
+    phone: string
+  ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
+        "/api/v1/auth/check-phone",
+        { phone }
+      )
+    );
+  }
 
    // =========================================================================
    // REDUNDANT METHODS - Commented out as app uses OTP-based auth flow
@@ -355,6 +347,79 @@ export class UserService extends BaseService {
          )
       );
    }
+
+   async syncProfile(
+    profileData: { name?: string; phone?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/auth/sync",
+        profileData,
+        config
+      )
+    );
+  }
+
+  /**
+   * GET /api/v1/profiles/by-id/:profileId
+   * Get profile by ObjectId (for enrichment - minimal fields)
+   */
+  async getProfileById(
+    profileId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    _id: string;
+    name: string;
+    photoURL?: string | null;
+    rating?: number;
+    totalReviews?: number;
+  }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{
+        _id: string;
+        name: string;
+        photoURL?: string | null;
+        rating?: number;
+        totalReviews?: number;
+      }>>(`/api/v1/profiles/by-id/${profileId}`, config)
+    );
+  }
+
+  /**
+   * POST /api/v1/profiles/batch
+   * Get multiple profiles by ObjectIds (for enrichment - minimal fields)
+   */
+  async getProfilesBatch(
+    profileIds: string[],
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    _id: string;
+    name: string;
+    photoURL?: string | null;
+    rating?: number;
+    totalReviews?: number;
+  }[]>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{
+        _id: string;
+        name: string;
+        photoURL?: string | null;
+        rating?: number;
+        totalReviews?: number;
+      }[]>>(
+        "/api/v1/profiles/batch",
+        { profileIds },
+        config
+      )
+    );
+  }
 }
 
 export const userService = new UserService();

@@ -222,24 +222,50 @@ export class AuthController {
             return;
          }
 
-         const { name, phone } = req.body || {};
+      logger.info('Processing password reset request', { email });
+      
+      // Forward to User Service
+      const response = await userService.passwordReset(email, continueUrl);
+      
+      res.status(response.status).json(response.data);
+    } catch (error: any) {
+      logger.error('Error during password reset', { error: error.message, stack: error.stack });
+      res.status(500).json({
+        success: false,
+        error: 'Password reset failed',
+        message: error.message
+      });
+    }
+  }
 
-         const response = await userService.syncProfile(
-            { name, phone },
-            { uid: user.uid, token: user.token }
-         );
-
-         res.status(response.status).json(response.data);
-      } catch (error: any) {
-         logger.error("Error during auth sync", {
-            error: error.message,
-            stack: error.stack,
-         });
-         res.status(500).json({
-            success: false,
-            error: "Failed to sync profile",
-            message: error.message,
-         });
+  static async sync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
       }
-   }
+
+      logger.info('🔄 [Gateway] Syncing user profile', {
+        uid: user.uid,
+      });
+
+      // 🔥 Forward request to User Service WITH USER TOKEN
+      const response = await userService.syncProfile(req.body, user);
+
+      res.status(response.status).json(response.data);
+    } catch (error: any) {
+      logger.error('❌ [Gateway] Profile sync failed', {
+        error: error.message,
+        service: error.service,
+        data: error.data,
+      });
+
+      res.status(error.status || 500).json({
+        success: false,
+        error: error.message || 'Profile sync failed',
+        data: error.data,
+      });
+    }
+  }
 }
