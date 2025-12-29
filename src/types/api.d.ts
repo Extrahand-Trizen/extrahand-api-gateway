@@ -1,6 +1,6 @@
 export interface SavedAddress {
   _id?: string;
-  label: 'Home' | 'Work' | 'Other';
+  label: "Home" | "Work" | "Other";
   address: string;
   coordinates: [number, number]; // [longitude, latitude]
   city?: string;
@@ -24,14 +24,14 @@ export interface Profile {
   email?: string;
   phone?: string;
   roles: string[];
-  userType: 'individual' | 'business';
+  userType: "individual" | "business";
   skills?: string[];
   rating?: number;
   totalReviews?: number;
   isVerified?: boolean;
   isAadhaarVerified?: boolean;
   location?: {
-    type: 'Point';
+    type: "Point";
     coordinates: [number, number];
     address: string;
     city: string;
@@ -45,14 +45,26 @@ export interface Task {
   title: string;
   description: string;
   category: string;
-  budget: number;
+  subcategory?: string;
+  budget: {
+    amount: number;
+    currency: string;
+    type: "fixed" | "hourly";
+  };
+  isNegotiable: boolean;
   status: string;
   requesterId: string;
   location: {
-    type: 'Point';
+    type: "Point";
     coordinates: [number, number];
     address: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
+  flexibility: "strict" | "flexible" | "anytime";
+  timeFlexibilityValue?: "exact" | "1h" | "3h";
+  scheduledDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,4 +75,3 @@ export interface ApiResponse<T = any> {
   error?: string;
   message?: string;
 }
-

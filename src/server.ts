@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import logger from './config/logger.js';
 import { validateEnv } from './config/env.js';
+import { connectMongo, disconnectMongo } from './config/database.js';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +19,14 @@ async function start(): Promise<void> {
     logger.info('🚀 Starting ExtraHand API Gateway...');
     logger.info(`Environment: ${env.NODE_ENV}`);
     logger.info(`Port: ${PORT}`);
+
+    // Connect to MongoDB for Profile lookups
+    try {
+      await connectMongo(env.MONGODB_URI);
+    } catch (error) {
+      logger.error('❌ Failed to connect to MongoDB. Profile enrichment will not work:', error);
+      // Don't exit - API Gateway can still work, just without profileId enrichment
+    }
 
     // Start HTTP server
     // Bind to 0.0.0.0 to make it accessible from outside the container (Nginx/CapRover)
@@ -61,6 +70,13 @@ async function gracefulShutdown(signal: string): Promise<void> {
     server.close(() => {
       logger.info('✅ HTTP server closed');
     });
+  }
+
+  // Disconnect MongoDB
+  try {
+    await disconnectMongo();
+  } catch (error) {
+    logger.error('Error disconnecting MongoDB:', error);
   }
 
   logger.info('✅ Graceful shutdown completed');

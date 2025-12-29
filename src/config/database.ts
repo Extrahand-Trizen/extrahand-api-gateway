@@ -1,0 +1,86 @@
+import mongoose from 'mongoose';
+import logger from './logger';
+
+let isConnected = false;
+
+export async function connectMongo(uri: string): Promise<typeof mongoose.connection> {
+  if (!uri) {
+    throw new Error('Missing MONGODB_URI');
+  }
+  
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+  
+  mongoose.set('strictQuery', true);
+  
+  // Fix malformed URI if detected
+  let cleanUri = uri;
+  if (uri.includes('appName=Cluster0w=majority')) {
+    cleanUri = uri.replace(/appName=Cluster0w=majority&appName=Cluster0/, 'appName=Cluster0');
+    logger.warn('⚠️  Detected malformed MongoDB URI, auto-fixing...');
+  }
+  
+  try {
+    const connectionOptions = {
+      dbName: process.env.MONGODB_DB || 'extrahand',
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 10,
+      minPoolSize: 2,
+    };
+    
+    logger.info('🔌 [API Gateway] Attempting to connect to MongoDB...');
+    logger.info(`📊 Database: ${connectionOptions.dbName}`);
+    
+    await mongoose.connect(cleanUri, connectionOptions);
+    
+    isConnected = true;
+    logger.info('✅ [API Gateway] MongoDB connected successfully');
+    logger.info(`📊 Connected to database: ${mongoose.connection.db?.databaseName || connectionOptions.dbName}`);
+    
+    // Handle connection events
+    mongoose.connection.on('error', (err) => {
+      logger.error('❌ [API Gateway] MongoDB connection error:', err);
+      isConnected = false;
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      logger.warn('⚠️ [API Gateway] MongoDB disconnected');
+      isConnected = false;
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      logger.info('✅ [API Gateway] MongoDB reconnected');
+      isConnected = true;
+    });
+    
+    return mongoose.connection;
+  } catch (error) {
+    logger.error('❌ [API Gateway] Failed to connect to MongoDB:', error);
+    isConnected = false;
+    throw error;
+  }
+}
+
+export async function disconnectMongo(): Promise<void> {
+  if (isConnected) {
+    await mongoose.disconnect();
+    isConnected = false;
+    logger.info('✅ [API Gateway] MongoDB disconnected');
+  }
+}
+
+export function getConnectionStatus(): boolean {
+  const readyState = mongoose.connection.readyState;
+  const connected = isConnected && readyState === 1;
+  
+  if (!connected && readyState !== 0) {
+    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    logger.warn(`⚠️ [API Gateway] MongoDB connection state: ${states[readyState] || 'unknown'} (${readyState})`);
+  }
+  
+  return connected;
+}
+

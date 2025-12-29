@@ -1,8 +1,8 @@
-import { BaseService } from './baseService.js';
-import { AxiosResponse } from 'axios';
-import { UserToken } from '../types/service.js';
-import { Task, ApiResponse } from '../types/api.js';
-import FormData from 'form-data';
+import { BaseService } from "./baseService.js";
+import { AxiosResponse } from "axios";
+import { UserToken } from "../types/service.js";
+import { Task, ApiResponse } from "../types/api.js";
+import FormData from "form-data";
 
 export interface TaskFilters {
   category?: string;
@@ -16,10 +16,10 @@ export interface TaskFilters {
 
 export class TaskService extends BaseService {
   constructor() {
-    const serviceURL = process.env.TASK_SERVICE_URL || 'http://localhost:4002';
+    const serviceURL = process.env.TASK_SERVICE_URL || "http://localhost:4002";
     console.log(`🔧 [TaskService] Initializing with URL: ${serviceURL}`);
     super({
-      serviceName: 'TaskService',
+      serviceName: "TaskService",
       baseURL: serviceURL,
       timeout: 15000,
     });
@@ -36,7 +36,25 @@ export class TaskService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<Task[]>>('/api/v1/tasks', config)
+      this.client.get<ApiResponse<Task[]>>("/api/v1/tasks", config)
+    );
+  }
+
+  async getMyTasks(
+    filters: { status?: string; limit?: number; page?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ tasks: Task[]; pagination: any }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: filters,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{ tasks: Task[]; pagination: any }>>(
+        "/api/v1/tasks/my-tasks",
+        config
+      )
     );
   }
 
@@ -44,9 +62,7 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Task>>(`/api/v1/tasks/${taskId}`, config)
@@ -57,12 +73,10 @@ export class TaskService extends BaseService {
     taskData: Partial<Task>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>('/api/v1/tasks', taskData, config)
+      this.client.post<ApiResponse<Task>>("/api/v1/tasks", taskData, config)
     );
   }
 
@@ -71,12 +85,14 @@ export class TaskService extends BaseService {
     taskData: Partial<Task>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.put<ApiResponse<Task>>(`/api/v1/tasks/${taskId}`, taskData, config)
+      this.client.put<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}`,
+        taskData,
+        config
+      )
     );
   }
 
@@ -84,9 +100,7 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<void>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
       this.client.delete<ApiResponse<void>>(`/api/v1/tasks/${taskId}`, config)
@@ -97,12 +111,13 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any[]>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any[]>>(`/api/v1/tasks/${taskId}/applications`, config)
+      this.client.get<ApiResponse<any[]>>(
+        `/api/v1/tasks/${taskId}/applications`,
+        config
+      )
     );
   }
 
@@ -117,7 +132,7 @@ export class TaskService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/applications', config)
+      this.client.get<ApiResponse<any>>("/api/v1/applications", config)
     );
   }
 
@@ -125,12 +140,14 @@ export class TaskService extends BaseService {
     applicationData: any,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>('/api/v1/applications', applicationData, config)
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/applications",
+        applicationData,
+        config
+      )
     );
   }
 
@@ -138,12 +155,13 @@ export class TaskService extends BaseService {
     applicationId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>(`/api/v1/applications/${applicationId}`, config)
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}`,
+        config
+      )
     );
   }
 
@@ -152,25 +170,50 @@ export class TaskService extends BaseService {
     updateData: any,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.put<ApiResponse<any>>(`/api/v1/applications/${applicationId}`, updateData, config)
+      this.client.put<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}`,
+        updateData,
+        config
+      )
     );
   }
 
-  async withdrawApplication(
+  async withdrawPendingApplication(
     applicationId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<void>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.delete<ApiResponse<void>>(`/api/v1/applications/${applicationId}`, config)
+      this.client.post<ApiResponse<void>>(
+        `/api/v1/applications/${applicationId}/withdraw-pending`,
+        {},
+        config
+      )
+    );
+  }
+
+  async withdrawAcceptedApplication(
+    applicationId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<void>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    const body: any = {};
+    if (reason) {
+      body.reason = reason;
+    }
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<void>>(
+        `/api/v1/applications/${applicationId}/withdraw-accepted`,
+        body,
+        config
+      )
     );
   }
 
@@ -190,7 +233,7 @@ export class TaskService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ url: string; key: string }>>(
-        '/api/v1/uploads/task-image',
+        "/api/v1/uploads/task-image",
         formData,
         config
       )
@@ -201,12 +244,13 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any[]>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any[]>>(`/api/v1/tasks/${taskId}/questions`, config)
+      this.client.get<ApiResponse<any[]>>(
+        `/api/v1/tasks/${taskId}/questions`,
+        config
+      )
     );
   }
 
@@ -215,12 +259,14 @@ export class TaskService extends BaseService {
     questionData: { question: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/questions`, questionData, config)
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/questions`,
+        questionData,
+        config
+      )
     );
   }
 
@@ -230,9 +276,7 @@ export class TaskService extends BaseService {
     answerData: { answer: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -248,9 +292,7 @@ export class TaskService extends BaseService {
     questionId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<void>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
       this.client.delete<ApiResponse<void>>(
@@ -266,9 +308,7 @@ export class TaskService extends BaseService {
     userToken: UserToken,
     cancellationReason?: string
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     const body: any = { status };
     if (cancellationReason) {
@@ -276,7 +316,11 @@ export class TaskService extends BaseService {
     }
 
     return this.handleRequest(() =>
-      this.client.patch<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/status`, body, config)
+      this.client.patch<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/status`,
+        body,
+        config
+      )
     );
   }
 
@@ -285,12 +329,14 @@ export class TaskService extends BaseService {
     data: { proofUrls: string[]; notes?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/complete`, data, config)
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/complete`,
+        data,
+        config
+      )
     );
   }
 
@@ -298,12 +344,14 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/approve-completion`, {}, config)
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/approve-completion`,
+        {},
+        config
+      )
     );
   }
 
@@ -312,12 +360,14 @@ export class TaskService extends BaseService {
     data: { reason?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/reject-completion`, data, config)
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/reject-completion`,
+        data,
+        config
+      )
     );
   }
 
@@ -325,12 +375,14 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, {}, config)
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/follow`,
+        {},
+        config
+      )
     );
   }
 
@@ -338,12 +390,13 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.delete<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, config)
+      this.client.delete<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/follow`,
+        config
+      )
     );
   }
 
@@ -351,12 +404,13 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>(`/api/v1/tasks/${taskId}/follow`, config)
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/follow`,
+        config
+      )
     );
   }
 
@@ -372,7 +426,7 @@ export class TaskService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/tasks/followed', config)
+      this.client.get<ApiResponse<any>>("/api/v1/tasks/followed", config)
     );
   }
 
@@ -382,9 +436,7 @@ export class TaskService extends BaseService {
     description: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     const body: any = { reason };
     if (description) {
@@ -392,7 +444,11 @@ export class TaskService extends BaseService {
     }
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>(`/api/v1/tasks/${taskId}/report`, body, config)
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/report`,
+        body,
+        config
+      )
     );
   }
 
@@ -400,15 +456,36 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/reports`,
+        config
+      )
+    );
+  }
+
+  async getNearbyTasks(
+    params: {
+      lat: number;
+      lng: number;
+      radiusKm?: number;
+      status?: string;
+      limit?: number;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task[]>>> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
+      this.forwardUserAuth(userToken, {
+        params,
+      })
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>(`/api/v1/tasks/${taskId}/reports`, config)
+      this.client.get<ApiResponse<Task[]>>("/api/v1/tasks/nearby", config)
     );
   }
 }
 
 export const taskService = new TaskService();
-

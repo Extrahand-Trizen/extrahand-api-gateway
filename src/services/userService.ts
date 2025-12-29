@@ -1,40 +1,46 @@
-import { BaseService } from './baseService.js';
-import { AxiosResponse } from 'axios';
-import { UserToken } from '../types/service.js';
-import { Profile, ApiResponse } from '../types/api.js';
-import FormData from 'form-data';
+import { BaseService } from "./baseService.js";
+import { AxiosResponse } from "axios";
+import { UserToken } from "../types/service.js";
+import { Profile, ApiResponse } from "../types/api.js";
+import FormData from "form-data";
 
 export class UserService extends BaseService {
   constructor() {
-    const serviceURL = process.env.USER_SERVICE_URL || 'http://localhost:4001';
+    const serviceURL = process.env.USER_SERVICE_URL || "http://localhost:4001";
     super({
-      serviceName: 'UserService',
+      serviceName: "UserService",
       baseURL: serviceURL,
       timeout: 15000,
     });
   }
 
-  async getProfile(userId: string, userToken: UserToken): Promise<AxiosResponse<ApiResponse<Profile>>> {
+  async getProfile(
+    userId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
         headers: {
-          'X-User-Id': userId,
+          "X-User-Id": userId,
         },
       })
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<Profile>>(`/api/v1/profiles/${userId}`, config)
+      this.client.get<ApiResponse<Profile>>(
+        `/api/v1/profiles/${userId}`,
+        config
+      )
     );
   }
 
-  async getCurrentProfile(userToken: UserToken): Promise<AxiosResponse<ApiResponse<Profile>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+  async getCurrentProfile(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<Profile>>('/api/v1/profiles/me', config)
+      this.client.get<ApiResponse<Profile>>("/api/v1/profiles/me", config)
     );
   }
 
@@ -46,13 +52,17 @@ export class UserService extends BaseService {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
         headers: {
-          'X-User-Id': userId,
+          "X-User-Id": userId,
         },
       })
     );
 
     return this.handleRequest(() =>
-      this.client.put<ApiResponse<Profile>>(`/api/v1/profiles/${userId}`, profileData, config)
+      this.client.put<ApiResponse<Profile>>(
+        `/api/v1/profiles/${userId}`,
+        profileData,
+        config
+      )
     );
   }
 
@@ -60,28 +70,37 @@ export class UserService extends BaseService {
     profileData: Partial<Profile>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     // Log request data for debugging
-    console.log('🔍 [UserService.updateCurrentProfile] Sending request:', {
+    console.log("🔍 [UserService.updateCurrentProfile] Sending request:", {
       hasSavedAddresses: !!profileData.savedAddresses,
-      savedAddressesCount: Array.isArray(profileData.savedAddresses) ? profileData.savedAddresses.length : 0,
-      savedAddressesPreview: Array.isArray(profileData.savedAddresses) && profileData.savedAddresses.length > 0
-        ? {
-            firstAddress: {
-              label: profileData.savedAddresses[0].label,
-              addressLength: profileData.savedAddresses[0].address?.length || 0,
-              hasCoordinates: Array.isArray(profileData.savedAddresses[0].coordinates),
-              coordinates: profileData.savedAddresses[0].coordinates
+      savedAddressesCount: Array.isArray(profileData.savedAddresses)
+        ? profileData.savedAddresses.length
+        : 0,
+      savedAddressesPreview:
+        Array.isArray(profileData.savedAddresses) &&
+        profileData.savedAddresses.length > 0
+          ? {
+              firstAddress: {
+                label: profileData.savedAddresses[0].label,
+                addressLength:
+                  profileData.savedAddresses[0].address?.length || 0,
+                hasCoordinates: Array.isArray(
+                  profileData.savedAddresses[0].coordinates
+                ),
+                coordinates: profileData.savedAddresses[0].coordinates,
+              },
             }
-          }
-        : null
+          : null,
     });
 
     return this.handleRequest(() =>
-      this.client.put<ApiResponse<Profile>>('/api/v1/profiles/me', profileData, config)
+      this.client.put<ApiResponse<Profile>>(
+        "/api/v1/profiles/me",
+        profileData,
+        config
+      )
     );
   }
 
@@ -89,12 +108,14 @@ export class UserService extends BaseService {
     profileData: Partial<Profile>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Profile>>('/api/v1/profiles', profileData, config)
+      this.client.post<ApiResponse<Profile>>(
+        "/api/v1/profiles",
+        profileData,
+        config
+      )
     );
   }
 
@@ -110,19 +131,20 @@ export class UserService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<Profile[]>>('/api/v1/profiles/search', config)
+      this.client.get<ApiResponse<Profile[]>>("/api/v1/profiles/search", config)
     );
   }
 
   async deleteProfile(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ deletedCount: number }>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.delete<ApiResponse<{ deletedCount: number }>>('/api/v1/profiles/me', config)
+      this.client.delete<ApiResponse<{ deletedCount: number }>>(
+        "/api/v1/profiles/me",
+        config
+      )
     );
   }
 
@@ -143,7 +165,7 @@ export class UserService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ url: string; key: string }>>(
-        '/api/v1/uploads/profile-picture',
+        "/api/v1/uploads/profile-picture",
         formData,
         config
       )
@@ -153,20 +175,23 @@ export class UserService extends BaseService {
   async deleteProfilePicture(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<void>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
-    );
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 
     return this.handleRequest(() =>
-      this.client.delete<ApiResponse<void>>('/api/v1/uploads/profile-picture', config)
+      this.client.delete<ApiResponse<void>>(
+        "/api/v1/uploads/profile-picture",
+        config
+      )
     );
   }
 
   // Auth endpoints (public - no auth required)
-  async checkPhone(phone: string): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
+  async checkPhone(
+    phone: string
+  ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
-        '/api/v1/auth/check-phone',
+        "/api/v1/auth/check-phone",
         { phone }
       )
     );
@@ -174,25 +199,100 @@ export class UserService extends BaseService {
 
   async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>('/api/v1/auth/signup', signupData)
+      this.client.post<ApiResponse<any>>("/api/v1/auth/signup", signupData)
     );
   }
 
   async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>('/api/v1/auth/login', loginData)
+      this.client.post<ApiResponse<any>>("/api/v1/auth/login", loginData)
     );
   }
 
-  async passwordReset(email: string, continueUrl?: string): Promise<AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>> {
+  async passwordReset(
+    email: string,
+    continueUrl?: string
+  ): Promise<AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>> {
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
-        '/api/v1/auth/password/reset',
+        "/api/v1/auth/password/reset",
         { email, continueUrl }
+      )
+    );
+  }
+
+  async syncProfile(
+    profileData: { name?: string; phone?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/auth/sync",
+        profileData,
+        config
+      )
+    );
+  }
+
+  /**
+   * GET /api/v1/profiles/by-id/:profileId
+   * Get profile by ObjectId (for enrichment - minimal fields)
+   */
+  async getProfileById(
+    profileId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    _id: string;
+    name: string;
+    photoURL?: string | null;
+    rating?: number;
+    totalReviews?: number;
+  }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{
+        _id: string;
+        name: string;
+        photoURL?: string | null;
+        rating?: number;
+        totalReviews?: number;
+      }>>(`/api/v1/profiles/by-id/${profileId}`, config)
+    );
+  }
+
+  /**
+   * POST /api/v1/profiles/batch
+   * Get multiple profiles by ObjectIds (for enrichment - minimal fields)
+   */
+  async getProfilesBatch(
+    profileIds: string[],
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    _id: string;
+    name: string;
+    photoURL?: string | null;
+    rating?: number;
+    totalReviews?: number;
+  }[]>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{
+        _id: string;
+        name: string;
+        photoURL?: string | null;
+        rating?: number;
+        totalReviews?: number;
+      }[]>>(
+        "/api/v1/profiles/batch",
+        { profileIds },
+        config
       )
     );
   }
 }
 
 export const userService = new UserService();
-

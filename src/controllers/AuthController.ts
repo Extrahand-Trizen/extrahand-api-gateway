@@ -114,5 +114,36 @@ export class AuthController {
       });
     }
   }
+
+  static async sync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
+
+      logger.info('🔄 [Gateway] Syncing user profile', {
+        uid: user.uid,
+      });
+
+      // 🔥 Forward request to User Service WITH USER TOKEN
+      const response = await userService.syncProfile(req.body, user);
+
+      res.status(response.status).json(response.data);
+    } catch (error: any) {
+      logger.error('❌ [Gateway] Profile sync failed', {
+        error: error.message,
+        service: error.service,
+        data: error.data,
+      });
+
+      res.status(error.status || 500).json({
+        success: false,
+        error: error.message || 'Profile sync failed',
+        data: error.data,
+      });
+    }
+  }
 }
 

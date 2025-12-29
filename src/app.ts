@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -16,6 +16,15 @@ import uploadsRouter from './routes/uploads.js';
 import authRouter from './routes/auth.js';
 import chatsRouter from './routes/chats.js';
 import reviewsRouter from './routes/reviews.js';
+import notificationsRouter from './routes/notifications.js';
+import paymentRouter from './routes/payment.js';
+import { paymentController } from './controllers/PaymentController.js';
+import escrowRouter from './routes/escrow.js';
+import refundRouter from './routes/refunds.js';
+import payoutRouter from './routes/payouts.js';
+import earningsRouter from './routes/earnings.js';
+import transactionRouter from './routes/transactions.js';
+import adminRouter from './routes/admin.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -73,7 +82,7 @@ const limiter = rateLimit({
   },
 });
 
-app.use('/api/', limiter);
+// app.use('/api/', limiter);
 
 // Health check
 app.get('/api/v1/health', (_req: Request, res: Response) => {
@@ -90,6 +99,8 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
       userService: env.USER_SERVICE_URL,
       taskService: env.TASK_SERVICE_URL,
       verificationService: env.VERIFICATION_SERVICE_URL,
+      paymentService: env.PAYMENT_SERVICE_URL,
+      notificationService: env.NOTIFICATION_SERVICE_URL,
     },
     message: 'This is the API Gateway - requests are routed to microservices',
   });
@@ -99,25 +110,48 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
 // Auth routes (public - no auth middleware)
 app.use('/api/v1/auth', authRouter);
 // Protected routes
-app.use('/api/v1/profiles', authMiddleware, profilesRouter);
-app.use('/api/v1/tasks', authMiddleware, tasksRouter);
-app.use('/api/v1/verification', authMiddleware, verificationRouter);
-app.use('/api/v1/applications', authMiddleware, applicationsRouter);
+// Wrap async authMiddleware to handle errors properly
+const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(authMiddleware(req, res, next)).catch(next);
+};
+
+app.use('/api/v1/profiles', asyncAuthMiddleware, profilesRouter);
+app.use('/api/v1/tasks', asyncAuthMiddleware, tasksRouter);
+app.use('/api/v1/verification', asyncAuthMiddleware, verificationRouter);
+app.use('/api/v1/applications', asyncAuthMiddleware, applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 app.use('/api/v1/reviews', reviewsRouter);
+app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
+app.use('/api/v1/payment', authMiddleware, paymentRouter);
+app.use('/api/v1/escrow', authMiddleware, escrowRouter);
+app.use('/api/v1/refunds', authMiddleware, refundRouter);
+app.use('/api/v1/payouts', authMiddleware, payoutRouter);
+app.use('/api/v1/earnings', authMiddleware, earningsRouter);
+app.use('/api/v1/transactions', authMiddleware, transactionRouter);
+app.use('/api/v1/admin', adminRouter);
+
+// Fees route (public - no auth required)
+app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
 
 // ✨ Log registered routes for debugging
-logger.info('✅ [API Gateway] Routes registered:', {
-  profiles: '/api/v1/profiles (with auth)',
-  tasks: '/api/v1/tasks (with auth)',
-  verification: '/api/v1/verification (with auth)',
-  applications: '/api/v1/applications (with auth)',
-  uploads: '/api/v1/uploads',
-  chats: '/api/v1/chats',
-  reviews: '/api/v1/reviews',
-  auth: '/api/v1/auth (public)'
-});
+  logger.info('✅ [API Gateway] Routes registered:', {
+    profiles: '/api/v1/profiles (with auth)',
+    tasks: '/api/v1/tasks (with auth)',
+    verification: '/api/v1/verification (with auth)',
+    applications: '/api/v1/applications (with auth)',
+    uploads: '/api/v1/uploads',
+    chats: '/api/v1/chats',
+    reviews: '/api/v1/reviews',
+    notifications: '/api/v1/notifications (with auth)',
+    payment: '/api/v1/payment (with auth)',
+    escrow: '/api/v1/escrow (with auth)',
+    refunds: '/api/v1/refunds (with auth)',
+    payouts: '/api/v1/payouts (with auth)',
+    earnings: '/api/v1/earnings (with auth)',
+    transactions: '/api/v1/transactions (with auth)',
+    auth: '/api/v1/auth (public)'
+  });
 
 // 404 handler for API routes
 app.use('/api', (req: Request, res: Response) => {

@@ -121,6 +121,9 @@ export abstract class BaseService {
         'X-Service-Auth': serviceAuthToken,
         'X-Service-Name': 'api-gateway',
       };
+      console.log(`🔐 [${this.serviceName}] Added service auth token (length: ${serviceAuthToken.length})`);
+    } else {
+      console.warn(`⚠️ [${this.serviceName}] SERVICE_AUTH_TOKEN not set! Service auth will fail.`);
     }
     return config;
   }
@@ -134,6 +137,7 @@ export abstract class BaseService {
       
       console.log(`🔐 [${this.serviceName}] Forwarding user auth:`, {
         uid: userToken.uid,
+        profileId: userToken.profileId?.toString() || 'not set',
         tokenType: typeof userToken.token,
         tokenLength: tokenString.length,
         tokenPrefix: tokenString.substring(0, 20) + '...',
@@ -142,7 +146,10 @@ export abstract class BaseService {
       config.headers = {
         ...config.headers,
         'Authorization': `Bearer ${tokenString}`,
-        'X-User-Id': userToken.uid,
+        'X-User-Id': userToken.uid, // Keep for backward compatibility
+        ...(userToken.profileId && {
+          'X-Profile-Id': userToken.profileId.toString(), // ✅ New header for ObjectId reference
+        }),
       };
     }
     return config;

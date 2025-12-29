@@ -6,9 +6,13 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('4000'),
+  MONGODB_URI: z.string().url(), // Required for Profile lookups
+  MONGODB_DB: z.string().optional(), // Optional - defaults to 'extrahand'
   USER_SERVICE_URL: z.string().url(),
   TASK_SERVICE_URL: z.string().url(),
   VERIFICATION_SERVICE_URL: z.string().url(),
+  PAYMENT_SERVICE_URL: z.string().url().default('http://localhost:4003'),
+  NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:4005'),
   OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
   SERVICE_AUTH_TOKEN: z.string().min(1),
   FIREBASE_PROJECT_ID: z.string(),

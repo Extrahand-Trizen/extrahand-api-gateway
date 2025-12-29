@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { auth } from '../config/firebase.js';
 import logger from '../config/logger.js';
+import { getConnectionStatus } from '../config/database.js';
+// Profile model removed - using direct MongoDB query for profileId lookup
 
 export async function authMiddleware(
   req: Request,
@@ -46,16 +49,54 @@ export async function authMiddleware(
     
     // ✨ CRITICAL: Verify the token first
     const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    
+    // ✨ Enrich with profileId (ObjectId) for database references
+    let profileId: mongoose.Types.ObjectId | undefined;
+    
+    if (getConnectionStatus()) {
+      try {
+        // Direct MongoDB query (no model needed) - just get _id for profileId
+        const db = mongoose.connection.db;
+        if (db) {
+          const profilesCollection = db.collection('profiles');
+          const profile = await profilesCollection.findOne(
+            { uid },
+            { projection: { _id: 1 } }
+          );
+          
+          if (profile && profile._id) {
+            profileId = profile._id;
+            logger.debug('Authentication: Profile found', {
+              uid,
+              profileId: profileId.toString(),
+            });
+          } else {
+            logger.debug('Authentication: Profile not found (new user?)', { uid });
+          }
+        }
+      } catch (error: any) {
+        logger.warn('Authentication: Failed to lookup Profile', {
+          uid,
+          error: error.message,
+        });
+        // Continue without profileId - service will handle it
+      }
+    } else {
+      logger.debug('Authentication: MongoDB not connected, skipping profileId lookup', { uid });
+    }
     
     // ✨ CRITICAL: Store the ORIGINAL JWT string, not the decoded object
     // The User Service expects the raw JWT string in the Authorization header
     req.user = { 
-      uid: decodedToken.uid, 
-      token: idToken // Store the original JWT string, not the decoded object
+      uid, 
+      token: idToken, // Store the original JWT string, not the decoded object
+      profileId, // ✅ ObjectId reference for database operations
     };
     
     logger.info('Authentication: User authenticated', {
-      uid: decodedToken.uid,
+      uid,
+      profileId: profileId?.toString() || 'not found',
       path: req.path,
       tokenStored: 'JWT string (original)',
     });
@@ -112,10 +153,36 @@ export async function optionalAuthMiddleware(
   if (match) {
     try {
       const idToken = match[1];
-      const token = await auth.verifyIdToken(idToken);
+      const decodedToken = await auth.verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+      
+      // ✨ Enrich with profileId if MongoDB is connected
+      let profileId: mongoose.Types.ObjectId | undefined;
+      
+      if (getConnectionStatus()) {
+        try {
+          // Direct MongoDB query (no model needed) - just get _id for profileId
+          const db = mongoose.connection.db;
+          if (db) {
+            const profilesCollection = db.collection('profiles');
+            const profile = await profilesCollection.findOne(
+              { uid },
+              { projection: { _id: 1 } }
+            );
+            
+            if (profile && profile._id) {
+              profileId = profile._id;
+            }
+          }
+        } catch (error) {
+          // Ignore - continue without profileId
+        }
+      }
+      
       req.user = { 
-        uid: token.uid, 
-        token 
+        uid, 
+        token: idToken,
+        profileId,
       };
     } catch (error) {
       // Invalid token - continue without user
