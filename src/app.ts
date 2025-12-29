@@ -106,7 +106,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/sessions", sessionsRouter);
 // Protected routes
 app.use("/api/v1/profiles", authMiddleware, profilesRouter);
-app.use("/api/v1/tasks", authMiddleware, tasksRouter);
+app.use("/api/v1/tasks", tasksRouter); // Auth handled at route level (some public, some protected)
 app.use("/api/v1/verification", authMiddleware, verificationRouter);
 app.use("/api/v1/applications", authMiddleware, applicationsRouter);
 app.use("/api/v1/uploads", uploadsRouter);
@@ -116,7 +116,7 @@ app.use("/api/v1/reviews", reviewsRouter);
 // ✨ Log registered routes for debugging
 logger.info("✅ [API Gateway] Routes registered:", {
    profiles: "/api/v1/profiles (with auth)",
-   tasks: "/api/v1/tasks (with auth)",
+   tasks: "/api/v1/tasks (auth at route level)",
    verification: "/api/v1/verification (with auth)",
    applications: "/api/v1/applications (with auth)",
    uploads: "/api/v1/uploads",

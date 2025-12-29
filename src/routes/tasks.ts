@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { taskController } from '../controllers/TaskController.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
-// Get all tasks (with filters)
-router.get('/', authMiddleware, taskController.getTasks.bind(taskController));
+// Get all tasks (with filters) - PUBLIC with optional auth
+router.get('/', optionalAuthMiddleware, taskController.getTasks.bind(taskController));
 
 // Task status and completion routes (must come before /:taskId route)
 router.patch('/:taskId/status', authMiddleware, taskController.updateTaskStatus.bind(taskController));
@@ -26,8 +26,8 @@ router.get('/:taskId/reports', authMiddleware, taskController.getTaskReports.bin
 // Get followed tasks (must come before /:taskId route)
 router.get('/followed', authMiddleware, taskController.getFollowedTasks.bind(taskController));
 
-// Get task by ID
-router.get('/:taskId', authMiddleware, taskController.getTaskById.bind(taskController));
+// Get task by ID - PUBLIC with optional auth
+router.get('/:taskId', optionalAuthMiddleware, taskController.getTaskById.bind(taskController));
 
 // Create task
 router.post('/', authMiddleware, taskController.createTask.bind(taskController));

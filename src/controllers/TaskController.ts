@@ -6,14 +6,7 @@ import { Task } from '../types/api.js';
 export class TaskController {
   async getTasks(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: 'Authentication required',
-        });
-        return;
-      }
-
+      // ✅ Public endpoint - req.user is optional (populated by optionalAuthMiddleware)
       // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
@@ -47,20 +40,13 @@ export class TaskController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: 'Authentication required',
-        });
-        return;
-      }
-
+      // ✅ Public endpoint - req.user is optional (populated by optionalAuthMiddleware)
       // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      const response = await taskService.getTaskById(taskId, req.user);
+      const response = await taskService.getTaskById(taskId, req.user); 
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'TaskController.getTaskById');
