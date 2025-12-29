@@ -40,6 +40,36 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getNearbyTasks(
+    queryParams: Record<string, any>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: queryParams,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/tasks/nearby', config)
+    );
+  }
+
+  async getMyTasks(
+    queryParams: Record<string, any>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: queryParams,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/tasks/my-tasks', config)
+    );
+  }
+
   async getTaskById(
     taskId: string,
     userToken: UserToken

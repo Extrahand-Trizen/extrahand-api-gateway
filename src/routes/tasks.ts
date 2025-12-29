@@ -23,6 +23,12 @@ router.get('/:taskId/follow', authMiddleware, taskController.checkFollowStatus.b
 router.post('/:taskId/report', authMiddleware, taskController.reportTask.bind(taskController));
 router.get('/:taskId/reports', authMiddleware, taskController.getTaskReports.bind(taskController));
 
+// Get nearby tasks (must come before /:taskId route)
+router.get('/nearby', authMiddleware, taskController.getNearbyTasks.bind(taskController));
+
+// Get my tasks (must come before /:taskId route)
+router.get('/my-tasks', authMiddleware, taskController.getMyTasks.bind(taskController));
+
 // Get followed tasks (must come before /:taskId route)
 router.get('/followed', authMiddleware, taskController.getFollowedTasks.bind(taskController));
 
