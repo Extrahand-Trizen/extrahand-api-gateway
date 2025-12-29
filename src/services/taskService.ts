@@ -197,6 +197,54 @@ export class TaskService extends BaseService {
     );
   }
 
+  async uploadCompletionProof(
+    taskId: string,
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ url: string; key: string }>>(
+        `/api/v1/uploads/completion-proof/${taskId}`,
+        formData,
+        config
+      )
+    );
+  }
+
+  async uploadMultipleCompletionProofs(
+    taskId: string,
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ urls: string[] }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ urls: string[] }>>(
+        `/api/v1/uploads/completion-proof/${taskId}/multiple`,
+        formData,
+        config
+      )
+    );
+  }
+
   async getTaskQuestions(
     taskId: string,
     userToken: UserToken
@@ -282,7 +330,7 @@ export class TaskService extends BaseService {
 
   async submitCompletionProof(
     taskId: string,
-    data: { proofUrls: string[]; notes?: string },
+    data: { proofUrls?: string[]; notes?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
     const config = this.addServiceAuth(
@@ -290,7 +338,7 @@ export class TaskService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/complete`, data, config)
+      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/submit-proof`, data, config)
     );
   }
 

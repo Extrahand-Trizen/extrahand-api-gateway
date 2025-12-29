@@ -109,6 +109,102 @@ export class UploadController {
     }
   }
 
+  async uploadCompletionProof(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const file = (req as any).file;
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          error: 'No image file provided',
+        });
+        return;
+      }
+
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      // Create FormData to forward to Task Service
+      const formData = new FormData();
+      formData.append('image', file.buffer, {
+        filename: file.originalname || 'proof.jpg',
+        contentType: file.mimetype,
+      });
+
+      // Forward to Task Service
+      const response = await taskService.uploadCompletionProof(taskId, formData, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'UploadController.uploadCompletionProof');
+    }
+  }
+
+  async uploadMultipleCompletionProofs(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const files = (req as any).files;
+      if (!files || files.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'No image files provided',
+        });
+        return;
+      }
+
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      // Create FormData to forward to Task Service
+      const formData = new FormData();
+      files.forEach((file: any) => {
+        formData.append('images', file.buffer, {
+          filename: file.originalname || 'proof.jpg',
+          contentType: file.mimetype,
+        });
+      });
+
+      // Forward to Task Service
+      const response = await taskService.uploadMultipleCompletionProofs(taskId, formData, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'UploadController.uploadMultipleCompletionProofs');
+    }
+  }
+
   async healthCheck(_req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');

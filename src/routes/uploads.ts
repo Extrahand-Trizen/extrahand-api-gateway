@@ -34,6 +34,12 @@ router.delete('/profile-picture', uploadController.deleteProfilePicture.bind(upl
 // POST /api/v1/uploads/task-image - Routes to Task Service
 router.post('/task-image', upload.single('image'), uploadController.uploadTaskImage.bind(uploadController));
 
+// POST /api/v1/uploads/completion-proof/:taskId - Routes to Task Service (single image)
+router.post('/completion-proof/:taskId', upload.single('image'), uploadController.uploadCompletionProof.bind(uploadController));
+
+// POST /api/v1/uploads/completion-proof/:taskId/multiple - Routes to Task Service (multiple images)
+router.post('/completion-proof/:taskId/multiple', upload.array('images', 10), uploadController.uploadMultipleCompletionProofs.bind(uploadController));
+
 // Health check
 router.get('/health', uploadController.healthCheck.bind(uploadController));
 
