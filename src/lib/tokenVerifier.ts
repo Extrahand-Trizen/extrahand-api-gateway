@@ -1,6 +1,7 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { validateEnv } from "../config/env.js";
 import logger from "../config/logger.js";
+import { verifyFirebaseToken, getFirebaseAuth } from "../config/firebase.js";
 
 const env = validateEnv();
 
@@ -9,6 +10,9 @@ interface AccessTokenClaims extends JwtPayload {
    sid: string;
 }
 
+/**
+ * Verify backend-issued access token (HS256)
+ */
 export function verifyAccessToken(token: string): {
    uid: string;
    sessionId: string;
@@ -29,5 +33,47 @@ export function verifyAccessToken(token: string): {
          error: (error as Error).message,
       });
       throw error;
+   }
+}
+
+/**
+ * Verify token - supports both Firebase ID tokens and backend access tokens
+ * Tries backend token first, then Firebase token if backend verification fails
+ */
+export async function verifyToken(token: string): Promise<{
+   uid: string;
+   sessionId?: string;
+   tokenType: 'backend' | 'firebase';
+}> {
+   // First, try to verify as backend token (HS256)
+   try {
+      const result = verifyAccessToken(token);
+      return {
+         uid: result.uid,
+         sessionId: result.sessionId,
+         tokenType: 'backend',
+      };
+   } catch (backendError) {
+      // If backend token verification fails, try Firebase token (RS256)
+      const firebaseAuth = getFirebaseAuth();
+      if (!firebaseAuth) {
+         // Firebase not initialized - can't verify Firebase tokens
+         throw new Error('Token verification failed: neither backend token nor Firebase token (Firebase not initialized)');
+      }
+
+      try {
+         const result = await verifyFirebaseToken(token);
+         return {
+            uid: result.uid,
+            tokenType: 'firebase',
+         };
+      } catch (firebaseError) {
+         // Both failed - throw a combined error
+         logger.warn('Token verification failed for both backend and Firebase tokens', {
+            backendError: (backendError as Error).message,
+            firebaseError: (firebaseError as Error).message,
+         });
+         throw new Error('Invalid token: not a valid backend token or Firebase token');
+      }
    }
 }

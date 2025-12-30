@@ -3,6 +3,7 @@ import app from './app.js';
 import logger from './config/logger.js';
 import { validateEnv } from './config/env.js';
 import { connectMongo, disconnectMongo } from './config/database.js';
+import { initializeFirebase } from './config/firebase.js';
 
 // Load environment variables
 dotenv.config();
@@ -19,6 +20,9 @@ async function start(): Promise<void> {
     logger.info('🚀 Starting ExtraHand API Gateway...');
     logger.info(`Environment: ${env.NODE_ENV}`);
     logger.info(`Port: ${PORT}`);
+
+    // Initialize Firebase Admin SDK (for Firebase token verification)
+    initializeFirebase();
 
     // Connect to MongoDB for Profile lookups
     try {

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { auth } from '../config/firebase.js';
+import { verifyAccessToken } from '../lib/tokenVerifier.js';
 import logger from '../config/logger.js';
 
 export interface AdminRequest extends Request {
@@ -25,14 +25,15 @@ export const adminAuthMiddleware = async (
       });
     }
 
-    const decodedToken = await auth.verifyIdToken(token);
+    // ✅ Use verifyAccessToken instead of Firebase Admin SDK
+    const { uid } = verifyAccessToken(token);
     
     // TODO: Check admin status in User Service or Admin Service
     // For now, we'll just verify the token and attach it
     // In production, you should check if the user is an admin
     
     req.adminToken = {
-      uid: decodedToken.uid,
+      uid,
       token,
       role: 'super_admin' // TODO: Get from admin service or profile
     };

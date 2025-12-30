@@ -7,10 +7,12 @@ const router = Router();
 router.post("/check-phone", AuthController.checkPhone.bind(AuthController));
 
 // POST /api/v1/auth/signup (PUBLIC - no auth required)
-router.post("/signup", AuthController.signup.bind(AuthController));
+// REDUNDANT: OTP flow handles signup via /otp/complete
+// router.post("/signup", AuthController.signup.bind(AuthController));
 
 // POST /api/v1/auth/login (PUBLIC - no auth required)
-router.post("/login", AuthController.login.bind(AuthController));
+// REDUNDANT: OTP flow handles login via /otp/complete
+// router.post("/login", AuthController.login.bind(AuthController));
 
 // POST /api/v1/auth/password/reset (PUBLIC - no auth required)
 // REDUNDANT: App uses phone OTP, not password-based auth

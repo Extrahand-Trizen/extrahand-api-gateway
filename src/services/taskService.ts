@@ -27,7 +27,7 @@ export class TaskService extends BaseService {
 
   async getTasks(
     filters: TaskFilters,
-    userToken: UserToken
+    userToken?: UserToken | null
   ): Promise<AxiosResponse<ApiResponse<Task[]>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -120,7 +120,7 @@ export class TaskService extends BaseService {
 
   async getTaskById(
     taskId: string,
-    userToken: UserToken
+    userToken?: UserToken | null
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
     const config = this.addServiceAuth(this.forwardUserAuth(userToken));
 

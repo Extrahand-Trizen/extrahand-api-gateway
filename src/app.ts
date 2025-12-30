@@ -122,7 +122,8 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
 };
 
 app.use('/api/v1/profiles', asyncAuthMiddleware, profilesRouter);
-app.use('/api/v1/tasks', asyncAuthMiddleware, tasksRouter);
+// Tasks router - some routes are public (optional auth), some require auth (handled in routes)
+app.use('/api/v1/tasks', tasksRouter);
 app.use('/api/v1/verification', asyncAuthMiddleware, verificationRouter);
 app.use('/api/v1/applications', asyncAuthMiddleware, applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);

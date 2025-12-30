@@ -11,15 +11,8 @@ export class TaskController {
     _next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: "Authentication required",
-        });
-        return;
-      }
-
       // ✅ Public endpoint - req.user is optional (populated by optionalAuthMiddleware)
+      // If user is authenticated, we can show personalized data, otherwise show public data
       // ✅ Add headers to show it's from gateway
       res.setHeader("X-Served-By", "api-gateway");
       res.setHeader("X-Target-Service", "task-service");
@@ -134,14 +127,11 @@ export class TaskController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: "Authentication required",
-        });
-        return;
-      }
-
+      // ✅ PUBLIC endpoint - accessible to users WITHOUT accounts
+      // req.user is optional (populated by optionalAuthMiddleware if user is logged in)
+      // If user is authenticated, we can show personalized data, otherwise show public data
+      // No authentication required - route works for unauthenticated users
+      
       // ✅ Add headers to show it's from gateway
       res.setHeader("X-Served-By", "api-gateway");
       res.setHeader("X-Target-Service", "task-service");
