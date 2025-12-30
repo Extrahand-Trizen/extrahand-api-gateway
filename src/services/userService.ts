@@ -194,14 +194,17 @@ export class UserService extends BaseService {
     );
   }
 
-  // Auth endpoints (public - no auth required)
+  // Auth endpoints (public - no auth required from user, but needs service auth for gateway)
   async checkPhone(
     phone: string
   ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
+    const config = this.addServiceAuth({});
+    
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
         "/api/v1/auth/check-phone",
-        { phone }
+        { phone },
+        config
       )
     );
   }
@@ -277,21 +280,6 @@ export class UserService extends BaseService {
                error?: string;
             }>
          >("/api/v1/auth/otp/complete", payload, config)
-      );
-   }
-
-   async syncProfile(
-      profileData: { name?: string; phone?: string },
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<any>>> {
-      const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<any>>(
-            "/api/v1/auth/sync",
-            profileData,
-            config
-         )
       );
    }
 

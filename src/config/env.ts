@@ -26,6 +26,9 @@ const envSchema = z.object({
    CORS_ORIGIN: z.string().default("http://localhost:3000"),
    RATE_LIMIT_WINDOW_MS: z.string().default("900000"),
    RATE_LIMIT_MAX_REQUESTS: z.string().default("100"),
+   FIREBASE_PROJECT_ID: z.string(),
+  FIREBASE_PRIVATE_KEY: z.string(),
+  FIREBASE_CLIENT_EMAIL: z.string().email(),
 });
 
 export function validateEnv() {
