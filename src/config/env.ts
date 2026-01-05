@@ -14,8 +14,8 @@ const envSchema = z.object({
    TASK_SERVICE_URL: z.string().url(),
    CHAT_SERVICE_URL: z.string().url(),
    VERIFICATION_SERVICE_URL: z.string().url(),
-  PAYMENT_SERVICE_URL: z.string().url().default('http://localhost:4003'),
-  NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:4005'),
+  PAYMENT_SERVICE_URL: z.string().url(),
+  NOTIFICATION_SERVICE_URL: z.string().url(),
    OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
    SERVICE_AUTH_TOKEN: z.string().min(1),
    ACCESS_TOKEN_SECRET: z

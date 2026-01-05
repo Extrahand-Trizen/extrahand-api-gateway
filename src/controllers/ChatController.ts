@@ -104,6 +104,74 @@ export class ChatController {
       handleServiceError(error, res, 'ChatController.getUserChats');
     }
   }
+
+  /**
+   * Mark chat as read
+   * POST /api/v1/chats/:chatId/read
+   */
+  async markChatAsRead(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { chatId } = req.params;
+      if (!chatId) {
+        res.status(400).json({
+          success: false,
+          error: 'Chat ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'chat-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await chatService.markChatAsRead(chatId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ChatController.markChatAsRead');
+    }
+  }
+
+  /**
+   * Start a chat for a specific task (with permission validation)
+   * POST /api/v1/chats/task/:taskId/start
+   */
+  async startChatForTask(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'chat-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await chatService.startChatForTask(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ChatController.startChatForTask');
+    }
+  }
 }
 
 export const chatController = new ChatController();
