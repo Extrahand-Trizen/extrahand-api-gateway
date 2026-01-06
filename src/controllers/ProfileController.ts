@@ -224,6 +224,118 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.deleteProfile');
     }
   }
+
+  // Address Management Methods
+  async getAddresses(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getAddresses(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getAddresses');
+    }
+  }
+
+  async addAddress(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.addAddress(req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.addAddress');
+    }
+  }
+
+  async updateAddress(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const addressId = req.params.addressId;
+      
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.updateAddress(addressId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.updateAddress');
+    }
+  }
+
+  async deleteAddress(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const addressId = req.params.addressId;
+      
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.deleteAddress(addressId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.deleteAddress');
+    }
+  }
+
+  async setDefaultAddress(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const addressId = req.params.addressId;
+      
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.setDefaultAddress(addressId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.setDefaultAddress');
+    }
+  }
 }
 
 export const profileController = new ProfileController();
