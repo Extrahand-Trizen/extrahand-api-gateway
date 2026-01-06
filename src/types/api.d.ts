@@ -82,9 +82,7 @@ export interface SessionTokens {
    sessionId: string;
    refreshToken?: string;
    refreshTokenExpiresAt?: string;
-}
-
-export interface SessionResponse {
+}export interface SessionResponse {
    success: boolean;
    tokens: SessionTokens;
    message?: string;
