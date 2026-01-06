@@ -12,7 +12,8 @@ export class AdminController {
   ): Promise<void> {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: "File required" });
+        res.status(400).json({ error: "File required" });
+        return;
       }
 
       const adminToken = (req as any).adminToken;

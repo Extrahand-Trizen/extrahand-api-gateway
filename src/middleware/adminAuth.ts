@@ -19,10 +19,11 @@ export const adminAuthMiddleware = async (
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Admin token required'
       });
+      return;
     }
 
     // ✅ Use verifyAccessToken instead of Firebase Admin SDK
@@ -41,22 +42,24 @@ export const adminAuthMiddleware = async (
     next();
   } catch (error: any) {
     logger.error('Admin auth failed:', error);
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       error: 'Invalid admin token'
     });
+    return;
   }
 };
 
 export const requireRole = (...allowedRoles: string[]) => {
   return (req: AdminRequest, res: Response, next: NextFunction): void => {
     if (!req.adminToken || !allowedRoles.includes(req.adminToken.role || '')) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         error: 'Insufficient permissions',
         required: allowedRoles,
         current: req.adminToken?.role
       });
+      return;
     }
     next();
   };
