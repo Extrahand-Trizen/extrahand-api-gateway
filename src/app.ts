@@ -1,13 +1,13 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import morgan from 'morgan';
 import { loggingMiddleware } from './middleware/logging.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { authMiddleware, optionalAuthMiddleware } from './middleware/auth.js';
+import { authMiddleware } from './middleware/auth.js';
 import profilesRouter from './routes/profiles.js';
 import tasksRouter from './routes/tasks.js';
 import verificationRouter from './routes/verification.js';
