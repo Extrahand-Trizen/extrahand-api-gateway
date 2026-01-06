@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { adminService } from "../services/adminService.js";
-import multer from "multer";
+// import multer from "multer";
 
-const upload = multer({ storage: multer.memoryStorage() });
+// const upload = multer({ storage: multer.memoryStorage() });
 
 export class AdminController {
   static async bulkUploadUsers(
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "File required" });
@@ -34,7 +34,7 @@ export class AdminController {
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
       const adminToken = (req as any).adminToken;
       const response = await adminService.getBulkUploadTemplate(adminToken);
@@ -54,7 +54,7 @@ export class AdminController {
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
       const adminToken = (req as any).adminToken;
       const response = await adminService.getImportHistory(
@@ -71,7 +71,7 @@ export class AdminController {
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
       const adminToken = (req as any).adminToken;
       const { importId } = req.params;

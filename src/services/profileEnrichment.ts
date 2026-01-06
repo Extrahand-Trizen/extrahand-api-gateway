@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import logger from '../config/logger.js';
 import { userService } from './userService.js';
 import { UserToken } from '../types/service.js';
@@ -37,8 +36,8 @@ async function getProfileById(
   try {
     const response = await userService.getProfileById(profileId, userToken);
     
-    if (response.data.success && response.data.profile) {
-      return response.data.profile;
+    if (response.data.success && (response.data as any).profile) {
+      return (response.data as any).profile;
     }
     
     return null;
@@ -147,8 +146,8 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
       const profileIdsArray = Array.from(profileIds);
       const response = await userService.getProfilesBatch(profileIdsArray, userToken);
       
-      if (response.data.success && Array.isArray(response.data.profiles)) {
-        response.data.profiles.forEach((profile: any) => {
+      if (response.data.success && Array.isArray((response.data as any).profiles)) {
+        (response.data as any).profiles.forEach((profile: any) => {
           profileMap.set(profile._id.toString(), profile);
         });
       }

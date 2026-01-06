@@ -72,20 +72,20 @@ if (env.NODE_ENV === "production") {
    app.use(morgan("dev"));
 }
 
-// Rate limiting
-const limiter = rateLimit({
-   windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
-   max: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10) * 10, // Higher limit for mobile apps
-   message: {
-      success: false,
-      error: "Too many requests from this IP, please try again later.",
-   },
-   standardHeaders: true,
-   legacyHeaders: false,
-   skip: (req: Request) => {
-      return req.path === "/api/v1/health" || req.path === "/health";
-   },
-});
+// Rate limiting (commented out for now)
+// const limiter = rateLimit({
+//    windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
+//    max: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10) * 10, // Higher limit for mobile apps
+//    message: {
+//       success: false,
+//       error: "Too many requests from this IP, please try again later.",
+//    },
+//    standardHeaders: true,
+//    legacyHeaders: false,
+//    skip: (req: Request) => {
+//       return req.path === "/api/v1/health" || req.path === "/health";
+//    },
+// });
 
 // app.use('/api/', limiter);
 
@@ -121,9 +121,10 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
-const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
-};
+// Commented out as it's not currently used
+// const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+//   Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
+// };
 
 app.use('/api/v1/profiles', asyncAuthMiddleware, profilesRouter);
 // Tasks router - some routes are public (optional auth), some require auth (handled in routes)

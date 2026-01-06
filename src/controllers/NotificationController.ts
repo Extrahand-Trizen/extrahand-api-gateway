@@ -8,7 +8,13 @@ export class NotificationController {
   async registerToken(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { token, platform, deviceId } = req.body;
-      const userToken = req.user ? { uid: req.user.uid, token: req.user.token } : null;
+      
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+      }
+      
+      const userToken = { uid: req.user.uid, token: req.user.token };
 
       const response = await notificationService.registerToken(
         token,
@@ -28,7 +34,13 @@ export class NotificationController {
   async removeToken(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { token } = req.body;
-      const userToken = req.user ? { uid: req.user.uid, token: req.user.token } : null;
+      
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+      }
+      
+      const userToken = { uid: req.user.uid, token: req.user.token };
 
       const response = await notificationService.removeToken(token, userToken);
 
@@ -42,7 +54,12 @@ export class NotificationController {
 
   async getPreferences(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const userToken = req.user ? { uid: req.user.uid, token: req.user.token } : null;
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+      }
+      
+      const userToken = { uid: req.user.uid, token: req.user.token };
 
       const response = await notificationService.getPreferences(userToken);
 
@@ -56,7 +73,12 @@ export class NotificationController {
 
   async updatePreferences(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const userToken = req.user ? { uid: req.user.uid, token: req.user.token } : null;
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+      }
+      
+      const userToken = { uid: req.user.uid, token: req.user.token };
 
       const response = await notificationService.updatePreferences(
         req.body,

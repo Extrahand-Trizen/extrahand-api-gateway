@@ -14,7 +14,7 @@ export const adminAuthMiddleware = async (
   req: AdminRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
@@ -49,7 +49,7 @@ export const adminAuthMiddleware = async (
 };
 
 export const requireRole = (...allowedRoles: string[]) => {
-  return (req: AdminRequest, res: Response, next: NextFunction) => {
+  return (req: AdminRequest, res: Response, next: NextFunction): void => {
     if (!req.adminToken || !allowedRoles.includes(req.adminToken.role || '')) {
       return res.status(403).json({
         success: false,

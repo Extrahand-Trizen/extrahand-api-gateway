@@ -42,10 +42,12 @@ export class TaskController {
       // task-service returns: { success: true, code: 200, message: string, data: Task[], meta: { pagination } }
       const taskServiceResponse = response.data;
       const tasks = taskServiceResponse?.data || taskServiceResponse || [];
-      const pagination = taskServiceResponse?.meta?.pagination;
+      const pagination = (taskServiceResponse as any)?.meta?.pagination;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTasks = await enrichTaskResponse(tasks, req.user);
+      const enrichedTasks = req.user 
+        ? await enrichTaskResponse(tasks, req.user)
+        : tasks;
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({
@@ -94,7 +96,7 @@ export class TaskController {
       // ✅ Extract tasks from task-service response format: { success, code, message, data, meta }
       const taskServiceResponse = response.data;
       const tasks = taskServiceResponse?.data?.tasks || taskServiceResponse?.data || taskServiceResponse || [];
-      const pagination = taskServiceResponse?.data?.pagination || taskServiceResponse?.meta?.pagination;
+      const pagination = taskServiceResponse?.data?.pagination || (taskServiceResponse as any)?.meta?.pagination;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
       const enrichedTasks = await enrichTaskResponse(tasks, req.user);
@@ -144,7 +146,9 @@ export class TaskController {
       const task = taskServiceResponse?.data || taskServiceResponse;
       
       // ✅ Enrich task with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTask = await enrichTaskResponse(task, req.user);
+      const enrichedTask = req.user
+        ? await enrichTaskResponse(task, req.user)
+        : task;
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({

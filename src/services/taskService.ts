@@ -58,66 +58,6 @@ export class TaskService extends BaseService {
     );
   }
 
-  async getNearbyTasks(
-    queryParams: Record<string, any>,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        params: queryParams,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/tasks/nearby', config)
-    );
-  }
-
-  async getMyTasks(
-    queryParams: Record<string, any>,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        params: queryParams,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/tasks/my-tasks', config)
-    );
-  }
-
-  async getNearbyTasks(
-    queryParams: Record<string, any>,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        params: queryParams,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/tasks/nearby', config)
-    );
-  }
-
-  async getMyTasks(
-    queryParams: Record<string, any>,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        params: queryParams,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>('/api/v1/tasks/my-tasks', config)
-    );
-  }
-
   async getTaskById(
     taskId: string,
     userToken?: UserToken | null
@@ -294,54 +234,6 @@ export class TaskService extends BaseService {
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ url: string; key: string }>>(
         `/api/v1/uploads/task-image`,
-        formData,
-        config
-      )
-    );
-  }
-
-  async uploadCompletionProof(
-    taskId: string,
-    formData: FormData,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<{ url: string; key: string }>>(
-        `/api/v1/uploads/completion-proof/${taskId}`,
-        formData,
-        config
-      )
-    );
-  }
-
-  async uploadMultipleCompletionProofs(
-    taskId: string,
-    formData: FormData,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<{ urls: string[] }>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<{ urls: string[] }>>(
-        `/api/v1/uploads/completion-proof/${taskId}/multiple`,
         formData,
         config
       )

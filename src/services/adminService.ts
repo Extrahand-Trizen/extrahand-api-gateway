@@ -1,6 +1,6 @@
 import { BaseService } from "./baseService.js";
 import { ServiceConfig, UserToken } from "../types/service.js";
-import axios, { AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import FormData from "form-data";
 
 export class AdminService extends BaseService {
