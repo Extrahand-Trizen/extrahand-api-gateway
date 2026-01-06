@@ -84,6 +84,46 @@ export class ChatService extends BaseService {
       this.client.get<ApiResponse<any[]>>('/api/v1/chats', config)
     );
   }
+
+  /**
+   * Start a chat for a specific task (with permission validation)
+   */
+  async startChatForTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = {
+      headers: {
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
+      },
+    };
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/chats/task/${taskId}/start`, {}, config)
+    );
+  }
+
+  /**
+   * Mark chat as read
+   */
+  async markChatAsRead(
+    chatId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = {
+      headers: {
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
+      },
+    };
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/chats/${chatId}/read`, {}, config)
+    );
+  }
 }
 
 export const chatService = new ChatService();

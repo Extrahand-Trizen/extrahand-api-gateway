@@ -14,8 +14,8 @@ const envSchema = z.object({
    TASK_SERVICE_URL: z.string().url(),
    CHAT_SERVICE_URL: z.string().url(),
    VERIFICATION_SERVICE_URL: z.string().url(),
-  PAYMENT_SERVICE_URL: z.string().url().default('http://localhost:4003'),
-  NOTIFICATION_SERVICE_URL: z.string().url().default('http://localhost:4005'),
+  PAYMENT_SERVICE_URL: z.string().url(),
+  NOTIFICATION_SERVICE_URL: z.string().url(),
    OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
    SERVICE_AUTH_TOKEN: z.string().min(1),
    ACCESS_TOKEN_SECRET: z
@@ -26,6 +26,9 @@ const envSchema = z.object({
    CORS_ORIGIN: z.string().default("http://localhost:3000"),
    RATE_LIMIT_WINDOW_MS: z.string().default("900000"),
    RATE_LIMIT_MAX_REQUESTS: z.string().default("100"),
+   FIREBASE_PROJECT_ID: z.string(),
+  FIREBASE_PRIVATE_KEY: z.string(),
+  FIREBASE_CLIENT_EMAIL: z.string().email(),
 });
 
 export function validateEnv() {

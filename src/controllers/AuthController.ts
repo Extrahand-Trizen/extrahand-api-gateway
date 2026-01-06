@@ -210,6 +210,7 @@ export class AuthController {
       }
    }
 
+
    /**
     * POST /api/v1/auth/sync
     * Authenticated endpoint to ensure Mongo profile is bound to the session user

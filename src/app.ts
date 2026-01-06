@@ -7,7 +7,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import { loggingMiddleware } from './middleware/logging.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { authMiddleware } from './middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from './middleware/auth.js';
 import profilesRouter from './routes/profiles.js';
 import tasksRouter from './routes/tasks.js';
 import verificationRouter from './routes/verification.js';
@@ -121,6 +121,10 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
+const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
+};
+
 app.use('/api/v1/profiles', asyncAuthMiddleware, profilesRouter);
 // Tasks router - some routes are public (optional auth), some require auth (handled in routes)
 app.use('/api/v1/tasks', tasksRouter);
@@ -144,7 +148,7 @@ app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(payment
 // ✨ Log registered routes for debugging
   logger.info('✅ [API Gateway] Routes registered:', {
     profiles: '/api/v1/profiles (with auth)',
-    tasks: '/api/v1/tasks (with auth)',
+    tasks: '/api/v1/tasks (with optional auth)',
     verification: '/api/v1/verification (with auth)',
     applications: '/api/v1/applications (with auth)',
     uploads: '/api/v1/uploads',
