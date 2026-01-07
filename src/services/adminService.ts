@@ -36,7 +36,7 @@ export class AdminService extends BaseService {
     const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
 
     return this.handleRequest(() =>
-      this.client.post("/api/v1/admin/bulk-upload/upload", formData, {
+      this.client.post("/api/v1/internal/bulk-upload/upload", formData, {
         ...config,
         headers: {
           ...config.headers,
@@ -52,7 +52,7 @@ export class AdminService extends BaseService {
     const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
 
     return this.handleRequest(() =>
-      this.client.get("/api/v1/admin/bulk-upload/template", {
+      this.client.get("/api/v1/internal/bulk-upload/template", {
         ...config,
         responseType: "arraybuffer",
       })
@@ -66,7 +66,7 @@ export class AdminService extends BaseService {
     const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
 
     return this.handleRequest(() =>
-      this.client.get("/api/v1/admin/bulk-upload/history", {
+      this.client.get("/api/v1/internal/bulk-upload/history", {
         ...config,
         params: filters,
       })
@@ -80,7 +80,7 @@ export class AdminService extends BaseService {
     const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
 
     return this.handleRequest(() =>
-      this.client.get(`/api/v1/admin/bulk-upload/${importId}`, config)
+      this.client.get(`/api/v1/internal/bulk-upload/${importId}`, config)
     );
   }
 }
