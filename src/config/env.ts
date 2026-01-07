@@ -23,7 +23,7 @@ const envSchema = z.object({
       .min(32, "ACCESS_TOKEN_SECRET must be at least 32 characters"),
    TOKEN_ISSUER: z.string().default("extrahand-user-service"),
    TOKEN_AUDIENCE: z.string().default("extrahand-clients"),
-   CORS_ORIGIN: z.string().default("http://localhost:3000"),
+   CORS_ORIGIN: z.string(),
    RATE_LIMIT_WINDOW_MS: z.string().default("900000"),
    RATE_LIMIT_MAX_REQUESTS: z.string().default("100"),
    FIREBASE_PROJECT_ID: z.string(),
