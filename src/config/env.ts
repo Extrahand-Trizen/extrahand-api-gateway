@@ -61,8 +61,16 @@ export function getCorsConfig(env: ReturnType<typeof validateEnv>) {
          // 🔍 Debug: Log every CORS check
          console.log("🔍 [CORS CHECK] Incoming origin:", origin || "undefined");
          
-         if (!origin || origins.includes(origin)) {
+         // Allow requests with no origin (mobile apps, server-to-server, Postman)
+         if (!origin) {
+            callback(null, true);
+            return;
+         }
+         
+         // Check if origin is in allowed list
+         if (origins.includes(origin)) {
             console.log("✅ [CORS] Origin allowed:", origin || "no-origin");
+            console.log('✅ CORS: Allowed origin:', origin);
             callback(null, true);
          } else {
             console.log("❌ [CORS] Origin BLOCKED:", origin);
@@ -80,6 +88,6 @@ export function getCorsConfig(env: ReturnType<typeof validateEnv>) {
          "X-Service-Name",
          "X-Refresh-Token",
       ],
-      exposedHeaders: ["X-Request-Id"],
+      exposedHeaders: ["X-Request-Id", "X-Gateway", "X-Gateway-Version"],
    };
 }

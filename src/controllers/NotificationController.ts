@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { NotificationService } from '../services/notificationService';
-import { handleServiceError } from '../utils/errorHandler';
+import { NotificationService } from '../services/notificationService.js';
+import { handleServiceError } from '../utils/errorHandler.js';
 
 const notificationService = new NotificationService();
 
