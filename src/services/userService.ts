@@ -408,6 +408,77 @@ export class UserService extends BaseService {
       )
     );
   }
+
+  // Address Management Methods
+  async getAddresses(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/profiles/me/addresses", config)
+    );
+  }
+
+  async addAddress(
+    addressData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/profiles/me/addresses",
+        addressData,
+        config
+      )
+    );
+  }
+
+  async updateAddress(
+    addressId: string,
+    addressData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<any>>(
+        `/api/v1/profiles/me/addresses/${addressId}`,
+        addressData,
+        config
+      )
+    );
+  }
+
+  async deleteAddress(
+    addressId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<any>>(
+        `/api/v1/profiles/me/addresses/${addressId}`,
+        config
+      )
+    );
+  }
+
+  async setDefaultAddress(
+    addressId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<any>>(
+        `/api/v1/profiles/me/addresses/${addressId}/default`,
+        {},
+        config
+      )
+    );
+  }
 }
 
 export const userService = new UserService();

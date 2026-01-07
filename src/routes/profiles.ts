@@ -38,6 +38,13 @@ router.get('/:userId', authMiddleware, profileController.getProfile.bind(profile
 // Update profile by ID (parameterized route - must come last)
 router.put('/:userId', authMiddleware, profileController.updateProfile.bind(profileController));
 
+// Address Management Routes (must come after /me routes)
+router.get('/me/addresses', authMiddleware, profileController.getAddresses.bind(profileController));
+router.post('/me/addresses', authMiddleware, profileController.addAddress.bind(profileController));
+router.put('/me/addresses/:addressId', authMiddleware, profileController.updateAddress.bind(profileController));
+router.patch('/me/addresses/:addressId/default', authMiddleware, profileController.setDefaultAddress.bind(profileController));
+router.delete('/me/addresses/:addressId', authMiddleware, profileController.deleteAddress.bind(profileController));
+
 // Upsert profile (create or update)
 router.post('/', authMiddleware, profileController.upsertProfile.bind(profileController));
 

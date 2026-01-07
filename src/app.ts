@@ -26,6 +26,8 @@ import earningsRouter from './routes/earnings.js';
 import transactionRouter from './routes/transactions.js';
 import adminRouter from './routes/admin.js';
 import sessionsRouter from './routes/sessions.js';
+import businessRouter from './routes/business.js';
+import privacyRouter from './routes/privacy.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -142,6 +144,8 @@ app.use('/api/v1/payouts', authMiddleware, payoutRouter);
 app.use('/api/v1/earnings', authMiddleware, earningsRouter);
 app.use('/api/v1/transactions', authMiddleware, transactionRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/business', asyncAuthMiddleware, businessRouter);
+app.use('/api/v1/privacy', asyncAuthMiddleware, privacyRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
@@ -162,6 +166,8 @@ app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(payment
     payouts: '/api/v1/payouts (with auth)',
     earnings: '/api/v1/earnings (with auth)',
     transactions: '/api/v1/transactions (with auth)',
+    business: '/api/v1/business (with auth)',
+    privacy: '/api/v1/privacy (with auth)',
     auth: '/api/v1/auth (public)'
   });
 
