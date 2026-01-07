@@ -49,14 +49,24 @@ export function validateEnv() {
 export function getCorsConfig(env: ReturnType<typeof validateEnv>) {
    const origins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
+   // 🔍 Debug: Log allowed origins on startup
+   console.log("🌍 [CORS] Allowed origins configured:", origins);
+   console.log("🌍 [CORS] Total allowed origins:", origins.length);
+
    return {
       origin: (
          origin: string | undefined,
          callback: (err: Error | null, allow?: boolean) => void
       ) => {
+         // 🔍 Debug: Log every CORS check
+         console.log("🔍 [CORS CHECK] Incoming origin:", origin || "undefined");
+         
          if (!origin || origins.includes(origin)) {
+            console.log("✅ [CORS] Origin allowed:", origin || "no-origin");
             callback(null, true);
          } else {
+            console.log("❌ [CORS] Origin BLOCKED:", origin);
+            console.log("❌ [CORS] Allowed origins are:", origins);
             callback(new Error("Not allowed by CORS"));
          }
       },

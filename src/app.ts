@@ -55,6 +55,7 @@ app.use(
 const corsOptions = getCorsConfig(env);
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
+console.log("✅ [CORS] CORS middleware applied with credentials:", corsOptions.credentials);
 
 // Body parsing
 app.use(compression());
