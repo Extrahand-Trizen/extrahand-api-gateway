@@ -15,20 +15,26 @@ export class ProfileController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: 'Authentication required',
-        });
-        return;
-      }
+      // Public profiles are accessible without authentication
+      // req.user will be undefined for unauthenticated requests
 
       // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'user-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      const response = await userService.getProfile(userId, req.user);
+      // Check if userId is a MongoDB ObjectId (24 hex characters)
+      const isMongoId = /^[0-9a-fA-F]{24}$/.test(userId);
+      
+      let response;
+      if (isMongoId) {
+        // Route to MongoDB ID endpoint (public profile)
+        response = await userService.getPublicProfileById(userId, req.user);
+      } else {
+        // Route to Firebase UID endpoint  
+        response = await userService.getProfile(userId, req.user);
+      }
+      
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'ProfileController.getProfile');
@@ -82,6 +88,29 @@ export class ProfileController {
     } catch (error) {
       console.error('❌ [ProfileController.getCurrentProfile] Error:', error);
       handleServiceError(error, res, 'ProfileController.getCurrentProfile');
+    }
+  }
+
+  async getProfileStats(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      
+      if (!userId) {
+        res.status(400).json({
+          success: false,
+          error: 'User ID is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getProfileStats(userId);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getProfileStats');
     }
   }
 
@@ -334,6 +363,49 @@ export class ProfileController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'ProfileController.setDefaultAddress');
+    }
+  }
+
+  // Profile Stats Methods
+  async getMyStats(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getMyStats(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getMyStats');
+    }
+  }
+
+  async recalculateStats(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.recalculateStats(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.recalculateStats');
     }
   }
 }
