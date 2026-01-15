@@ -368,7 +368,17 @@ export class PaymentService extends BaseService {
       this.client.get('/api/v1/fees/structure')
     );
   }
+
+  /**
+   * Calculate fees for an amount - public endpoint
+   */
+  async calculateFees(amount: number): Promise<AxiosResponse> {
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/fees/calculate?amount=${amount}`)
+    );
+  }
 }
 
 export const paymentService = new PaymentService();
+
 

@@ -87,6 +87,107 @@ export class PaymentController {
       handleServiceError(error, res, 'PaymentController.getFeeStructure');
     }
   }
+
+  async calculateFees(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { amount } = req.query;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.calculateFees(Number(amount));
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.calculateFees');
+    }
+  }
+
+  async createEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.createEscrow(
+        req.body.taskId,
+        req.body.applicationId,
+        req.body.posterUid,
+        req.body.performerUid,
+        req.body.amount,
+        req.body.currency || 'INR',
+        req.body.autoReleaseAfterDays,
+        req.body.metadata,
+        req.user || null
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.createEscrow');
+    }
+  }
+
+  async getEscrowStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { escrowId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getEscrowStatus(escrowId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getEscrowStatus');
+    }
+  }
+
+  async getEscrowByTaskId(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getEscrowByTaskId(taskId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getEscrowByTaskId');
+    }
+  }
+
+  async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getUserEarnings(userId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getUserEarnings');
+    }
+  }
+
+  async getUserTransactions(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const options = {
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+        type: req.query.type as string,
+        status: req.query.status as string,
+        category: req.query.category as any,
+      };
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getUserTransactions(userId, options, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getUserTransactions');
+    }
+  }
 }
 
 export const paymentController = new PaymentController();
