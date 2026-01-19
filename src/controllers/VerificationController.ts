@@ -171,6 +171,111 @@ export class VerificationController {
       handleServiceError(error, res, 'VerificationController.getVerificationStatus');
     }
   }
+
+  // ============ Email Verification ============
+
+  async initiateEmailVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const { email, consentGiven } = req.body;
+      if (!email) {
+        res.status(400).json({
+          success: false,
+          error: 'Email is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.initiateEmailVerification(email, consentGiven, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.initiateEmailVerification');
+    }
+  }
+
+  async verifyEmailOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const { otp, verificationId } = req.body;
+      if (!otp) {
+        res.status(400).json({
+          success: false,
+          error: 'OTP is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.verifyEmailOTP(otp, verificationId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyEmailOTP');
+    }
+  }
+
+  async resendEmailOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.resendEmailOTP(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.resendEmailOTP');
+    }
+  }
+
+  async getEmailVerificationStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const userId = req.params.userId || req.user.uid;
+      const response = await verificationService.getEmailVerificationStatus(userId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.getEmailVerificationStatus');
+    }
+  }
 }
 
 export const verificationController = new VerificationController();

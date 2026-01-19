@@ -164,6 +164,76 @@ export class VerificationService extends BaseService {
       )
     );
   }
+
+  // ============ Email Verification ============
+
+  async initiateEmailVerification(
+    email: string,
+    consentGiven: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/email/initiate',
+        { email, consentGiven },
+        config
+      )
+    );
+  }
+
+  async verifyEmailOTP(
+    otp: string,
+    verificationId: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/email/verify',
+        { otp, verificationId },
+        config
+      )
+    );
+  }
+
+  async resendEmailOTP(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/email/resend',
+        {},
+        config
+      )
+    );
+  }
+
+  async getEmailVerificationStatus(
+    userId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/verification/email/status/${userId}`,
+        config
+      )
+    );
+  }
 }
 
 export const verificationService = new VerificationService();
