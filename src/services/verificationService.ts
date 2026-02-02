@@ -39,28 +39,14 @@ export class VerificationService extends BaseService {
     });
   }
 
-  async initiateAadhaarVerification(
-    aadhaarNumber: string,
-    consent: any, // Consent from frontend
+  async initiateDigilockerVerification(
+    params: { mobileNumber?: string; aadhaarNumber?: string; consentGiven?: boolean },
     userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<AadhaarVerificationResponse>>> {
-    // Use consent from frontend if provided, otherwise create default
-    const consentData = consent || {
-      given: true,
-      givenAt: new Date().toISOString(),
-      consentVersion: 'v1.0',
-      consentText: 'I consent to verify my Aadhaar for identity verification on ExtraHand platform.',
-    };
-
-    // Verification service expects both consentGiven (boolean) and consent (object)
-    const requestData: any = {
-      aadhaarNumber,
-      consentGiven: consentData.given || true, // Required top-level boolean field
-      consent: {
-        given: consentData.given || true,
-        text: consentData.consentText || consentData.text || 'I consent to verify my Aadhaar for identity verification on ExtraHand platform.',
-        version: consentData.consentVersion || consentData.version || 'v1.0'
-      },
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const requestData = {
+      mobileNumber: params.mobileNumber,
+      aadhaarNumber: params.aadhaarNumber,
+      consentGiven: params.consentGiven ?? true,
     };
 
     const config = this.addServiceAuth(
@@ -68,32 +54,42 @@ export class VerificationService extends BaseService {
     );
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<AadhaarVerificationResponse>>(
-        '/api/v1/verification/aadhaar/initiate',
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/digilocker/initiate',
         requestData,
         config
       )
     );
   }
 
-  async verifyAadhaarOTP(
-    refId: string,
-    otp: string,
+  async getDigilockerStatus(
+    verificationId: string,
     userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<VerificationStatus>>> {
-    const requestData: OTPVerificationRequest = {
-      refId,
-      otp,
-    };
-
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<VerificationStatus>>(
-        '/api/v1/verification/aadhaar/verify',
-        requestData,
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/verification/aadhaar/digilocker/status?verification_id=${encodeURIComponent(verificationId)}`,
+        config
+      )
+    );
+  }
+
+  async completeDigilockerVerification(
+    verificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/digilocker/complete',
+        { verification_id: verificationId },
         config
       )
     );

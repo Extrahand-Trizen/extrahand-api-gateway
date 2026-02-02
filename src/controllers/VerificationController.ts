@@ -3,7 +3,7 @@ import { verificationService } from '../services/verificationService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 
 export class VerificationController {
-  async initiateAadhaarVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
+  async initiateDigilockerVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -13,44 +13,31 @@ export class VerificationController {
         return;
       }
 
-      // Log request body for debugging
-      console.log('🔍 [API Gateway] Received initiateAadhaarVerification request');
-      console.log('🔍 [API Gateway] Request Body:', req.body);
-      const { aadhaarNumber, consent } = req.body;
-      console.log('🔍 [API Gateway] Extracted aadhaarNumber:', aadhaarNumber);
-      console.log('🔍 [API Gateway] Extracted consent:', consent);
+      const { mobileNumber, aadhaarNumber, consentGiven } = req.body;
 
-      if (!aadhaarNumber) {
-        console.error('❌ [VerificationController] Missing aadhaarNumber in request body');
-        console.error('❌ [VerificationController] Full body:', req.body);
+      if (!mobileNumber && !aadhaarNumber) {
         res.status(400).json({
           success: false,
-          error: 'Aadhaar number is required',
-          details: {
-            receivedBody: req.body,
-            bodyKeys: Object.keys(req.body || {}),
-          },
+          error: 'Either mobile number or Aadhaar number is required',
         });
         return;
       }
 
-      // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      const response = await verificationService.initiateAadhaarVerification(
-        aadhaarNumber,
-        consent, // Pass consent to service
+      const response = await verificationService.initiateDigilockerVerification(
+        { mobileNumber, aadhaarNumber, consentGiven },
         req.user
       );
       res.status(response.status).json(response.data);
     } catch (error) {
-      handleServiceError(error, res, 'VerificationController.initiateAadhaarVerification');
+      handleServiceError(error, res, 'VerificationController.initiateDigilockerVerification');
     }
   }
 
-  async verifyAadhaarOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
+  async getDigilockerStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -60,24 +47,53 @@ export class VerificationController {
         return;
       }
 
-      const { refId, otp } = req.body;
-      if (!refId || !otp) {
+      const verificationId = req.query.verification_id as string;
+      if (!verificationId) {
         res.status(400).json({
           success: false,
-          error: 'Reference ID and OTP are required',
+          error: 'verification_id query parameter is required',
         });
         return;
       }
 
-      // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
-      const response = await verificationService.verifyAadhaarOTP(refId, otp, req.user);
+      const response = await verificationService.getDigilockerStatus(verificationId, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
-      handleServiceError(error, res, 'VerificationController.verifyAadhaarOTP');
+      handleServiceError(error, res, 'VerificationController.getDigilockerStatus');
+    }
+  }
+
+  async completeDigilockerVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const { verification_id: verificationId } = req.body;
+      if (!verificationId) {
+        res.status(400).json({
+          success: false,
+          error: 'verification_id is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.completeDigilockerVerification(verificationId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.completeDigilockerVerification');
     }
   }
 

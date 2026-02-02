@@ -4,11 +4,10 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
-// Initiate Aadhaar verification
-router.post('/aadhaar/initiate', authMiddleware, verificationController.initiateAadhaarVerification.bind(verificationController));
-
-// Verify Aadhaar OTP
-router.post('/aadhaar/verify', authMiddleware, verificationController.verifyAadhaarOTP.bind(verificationController));
+// Aadhaar verification (DigiLocker - OTP flow removed)
+router.post('/aadhaar/digilocker/initiate', authMiddleware, verificationController.initiateDigilockerVerification.bind(verificationController));
+router.get('/aadhaar/digilocker/status', authMiddleware, verificationController.getDigilockerStatus.bind(verificationController));
+router.post('/aadhaar/digilocker/complete', authMiddleware, verificationController.completeDigilockerVerification.bind(verificationController));
 
 // Verify PAN
 router.post('/pan/verify', authMiddleware, verificationController.verifyPAN.bind(verificationController));
