@@ -248,7 +248,7 @@ export class UserService extends BaseService {
       mode: "login" | "signup",
       phone: string,
       name?: string,
-      options?: { clientType?: "web" | "mobile"; deviceId?: string }
+      options?: { clientType?: "web" | "mobile"; deviceId?: string; otp?: string }
    ): Promise<
       AxiosResponse<
          ApiResponse<{
@@ -264,6 +264,7 @@ export class UserService extends BaseService {
          mode,
          phone,
          name,
+         otp: options?.otp,
          clientType: options?.clientType ?? "web",
          deviceId: options?.deviceId,
       };
