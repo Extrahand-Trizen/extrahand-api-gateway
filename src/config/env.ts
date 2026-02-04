@@ -3,12 +3,21 @@ import { z } from "zod";
 
 dotenv.config();
 
+const mongoUriSchema = z.preprocess(
+   (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+   },
+   z.string().regex(/^mongodb(\+srv)?:\/\//, "Invalid MongoDB URI")
+);
+
 const envSchema = z.object({
    NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
    PORT: z.string().default("4000"),
-  MONGODB_URI: z.string().url(), // Required for Profile lookups
+   MONGODB_URI: mongoUriSchema, // Required for Profile lookups
   MONGODB_DB: z.string().optional(), // Optional - defaults to 'extrahand'
    USER_SERVICE_URL: z.string().url(),
    TASK_SERVICE_URL: z.string().url(),

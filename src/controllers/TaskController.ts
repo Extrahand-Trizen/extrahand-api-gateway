@@ -21,6 +21,10 @@ export class TaskController {
       const filters: TaskFilters = {
         category: req.query.category as string,
         status: req.query.status as string,
+        search: req.query.search as string,
+        suburb: req.query.suburb as string,
+        remotely: req.query.remotely as string,
+        sortBy: req.query.sortBy as string,
         minBudget: req.query.minBudget
           ? parseInt(req.query.minBudget as string, 10)
           : undefined,
@@ -31,8 +35,8 @@ export class TaskController {
         limit: req.query.limit
           ? parseInt(req.query.limit as string, 10)
           : undefined,
-        skip: req.query.skip
-          ? parseInt(req.query.skip as string, 10)
+        page: req.query.page
+          ? parseInt(req.query.page as string, 10)
           : undefined,
       };
 

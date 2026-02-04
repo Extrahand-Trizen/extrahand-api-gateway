@@ -10,8 +10,12 @@ export interface TaskFilters {
   minBudget?: number;
   maxBudget?: number;
   city?: string;
+  search?: string;
+  suburb?: string;
+  remotely?: string | boolean;
+  sortBy?: string;
   limit?: number;
-  skip?: number;
+  page?: number;
 }
 
 export class TaskService extends BaseService {
