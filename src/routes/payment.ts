@@ -10,7 +10,23 @@ router.post('/verify-payment', authMiddleware, paymentController.verifyPayment.b
 router.get('/order-status/:orderId', authMiddleware, paymentController.getOrderStatus.bind(paymentController));
 router.post('/refund', authMiddleware, paymentController.processRefund.bind(paymentController));
 
+// Escrow routes
+router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
+router.get('/escrow/status/:escrowId', authMiddleware, paymentController.getEscrowStatus.bind(paymentController));
+router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowByTaskId.bind(paymentController));
+
+// Fee routes
+router.get('/fees/calculate', paymentController.calculateFees.bind(paymentController)); // Public endpoint
+router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentController)); // Public endpoint
+
+// Earnings routes
+router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));
+
+// Transaction routes
+router.get('/transactions/user/:userId', authMiddleware, paymentController.getUserTransactions.bind(paymentController));
+
 export default router;
+
 
 
 

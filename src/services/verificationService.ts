@@ -161,10 +161,12 @@ export class VerificationService extends BaseService {
     );
   }
 
-  async initiateEmail(
+  // ============ Email Verification ============
+
+  async initiateEmailVerification(
     email: string,
-    userToken: UserToken,
-    consentGiven: boolean = true
+    consentGiven: boolean,
+    userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
@@ -179,7 +181,7 @@ export class VerificationService extends BaseService {
     );
   }
 
-  async verifyEmail(
+  async verifyEmailOTP(
     otp: string,
     verificationId: string | undefined,
     userToken: UserToken
@@ -197,7 +199,7 @@ export class VerificationService extends BaseService {
     );
   }
 
-  async resendEmailOtp(
+  async resendEmailOTP(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
@@ -213,7 +215,7 @@ export class VerificationService extends BaseService {
     );
   }
 
-  async getEmailStatus(
+  async getEmailVerificationStatus(
     userId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {

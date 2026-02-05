@@ -24,5 +24,19 @@ router.get('/email/status/:userId?', authMiddleware, verificationController.getE
 // Get verification status
 router.get('/status/:userId?', authMiddleware, verificationController.getVerificationStatus.bind(verificationController));
 
+// ============ Email Verification ============
+
+// Initiate email verification (send OTP)
+router.post('/email/initiate', authMiddleware, verificationController.initiateEmailVerification.bind(verificationController));
+
+// Verify email OTP
+router.post('/email/verify', authMiddleware, verificationController.verifyEmailOTP.bind(verificationController));
+
+// Resend email OTP
+router.post('/email/resend', authMiddleware, verificationController.resendEmailOTP.bind(verificationController));
+
+// Get email verification status
+router.get('/email/status/:userId?', authMiddleware, verificationController.getEmailVerificationStatus.bind(verificationController));
+
 export default router;
 

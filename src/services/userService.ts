@@ -157,6 +157,19 @@ export class UserService extends BaseService {
     );
   }
 
+  async getProfileStats(
+    userId: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/profiles/${userId}/stats`,
+        config
+      )
+    );
+  }
+
    async uploadProfilePicture(
       formData: FormData,
       userToken: UserToken
@@ -455,6 +468,24 @@ export class UserService extends BaseService {
     );
   }
 
+  /**
+   * GET /api/v1/profiles/public/id/:profileId
+   * Get public profile by MongoDB ObjectId (full public profile)
+   */
+  async getPublicProfileById(
+    profileId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<Profile>>(
+        `/api/v1/profiles/public/id/${profileId}`,
+        config
+      )
+    );
+  }
+
   // Address Management Methods
   async getAddresses(
     userToken: UserToken
@@ -523,6 +554,51 @@ export class UserService extends BaseService {
         {},
         config
       )
+    );
+  }
+
+  // Profile Stats Methods
+  async getMyStats(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    totalTasks: number;
+    completedTasks: number;
+    postedTasks: number;
+    totalReviews: number;
+    rating: number;
+  }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{
+        totalTasks: number;
+        completedTasks: number;
+        postedTasks: number;
+        totalReviews: number;
+        rating: number;
+      }>>("/api/v1/profiles/me/stats", config)
+    );
+  }
+
+  async recalculateStats(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    totalTasks: number;
+    completedTasks: number;
+    postedTasks: number;
+    totalReviews: number;
+    rating: number;
+  }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{
+        totalTasks: number;
+        completedTasks: number;
+        postedTasks: number;
+        totalReviews: number;
+        rating: number;
+      }>>("/api/v1/profiles/me/stats/recalculate", {}, config)
     );
   }
 }
