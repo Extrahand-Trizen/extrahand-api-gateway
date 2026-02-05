@@ -212,6 +212,56 @@ export class AuthController {
 
 
    /**
+    * POST /api/v1/auth/otp/complete-dev
+    * Dev-only: dummy signin/signup with +91 9876543210, OTP 123456. Forwards cookies.
+    * Enabled when LOCAL_TEST=true or NODE_ENV=development.
+    */
+   static async completeOTPDev(req: Request, res: Response): Promise<void> {
+      const allowDev =
+         process.env.LOCAL_TEST === "true" ||
+         process.env.LOCAL_TEST === "1" ||
+         process.env.NODE_ENV === "development";
+      if (!allowDev) {
+         res.status(404).json({ success: false, error: "Not found" });
+         return;
+      }
+      try {
+         const { phone, otp, mode, name, clientType, deviceId } = req.body;
+         if (!phone || !otp || !mode) {
+            res.status(400).json({
+               success: false,
+               error: "Missing required fields: phone, otp, mode",
+            });
+            return;
+         }
+         const response = await userService.completeOTPDev(
+            phone,
+            otp,
+            mode,
+            name,
+            { clientType: clientType === "mobile" ? "mobile" : "web", deviceId }
+         );
+         const upstreamCookies = response.headers["set-cookie"];
+         forwardOrSetAuthCookies(
+            res,
+            upstreamCookies,
+            (response.data as any)?.tokens
+         );
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data as any)
+         );
+      } catch (error: any) {
+         logger.error("OTP complete-dev failed", {
+            error: error.message,
+         });
+         res.status(error.response?.status || 500).json({
+            success: false,
+            error: error.response?.data?.error || error.message || "OTP complete-dev failed",
+         });
+      }
+   }
+
+   /**
     * POST /api/v1/auth/sync
     * Authenticated endpoint to ensure Mongo profile is bound to the session user
     */

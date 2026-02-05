@@ -284,6 +284,51 @@ export class UserService extends BaseService {
       );
    }
 
+   /**
+    * Dev-only: dummy signin/signup with +91 9876543210, OTP 123456 (no Firebase).
+    * Use when LOCAL_TEST=true or NODE_ENV=development.
+    */
+   async completeOTPDev(
+      phone: string,
+      otp: string,
+      mode: "login" | "signup",
+      name?: string,
+      options?: { clientType?: "web" | "mobile"; deviceId?: string }
+   ): Promise<
+      AxiosResponse<
+         ApiResponse<{
+            success: boolean;
+            profile?: any;
+            user?: any;
+            sessionId?: string;
+            accessTokenExpiresAt?: string;
+            error?: string;
+         }>
+      >
+   > {
+      const payload = {
+         phone,
+         otp,
+         mode,
+         name,
+         clientType: options?.clientType ?? "web",
+         deviceId: options?.deviceId,
+      };
+      const config = this.addServiceAuth({});
+      return this.handleRequest(() =>
+         this.client.post<
+            ApiResponse<{
+               success: boolean;
+               profile?: any;
+               user?: any;
+               sessionId?: string;
+               accessTokenExpiresAt?: string;
+               error?: string;
+            }>
+         >("/api/v1/auth/otp/complete-dev", payload, config)
+      );
+   }
+
    async refreshSession(
       options: SessionRequestOptions
    ): Promise<AxiosResponse<SessionResponse>> {

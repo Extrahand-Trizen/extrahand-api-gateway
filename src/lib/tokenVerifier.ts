@@ -5,6 +5,10 @@ import { verifyFirebaseToken, getFirebaseAuth } from "../config/firebase.js";
 
 const env = validateEnv();
 
+// CRITICAL: ACCESS_TOKEN_SECRET and TOKEN_ISSUER/TOKEN_AUDIENCE must match
+// extrahand-user-service exactly. User-service signs the JWT; gateway verifies it.
+// If you see "invalid signature", copy ACCESS_TOKEN_SECRET from user-service .env to api-gateway .env.
+
 interface AccessTokenClaims extends JwtPayload {
    sub: string;
    sid: string;

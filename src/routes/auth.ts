@@ -26,6 +26,9 @@ router.post("/check-phone", AuthController.checkPhone.bind(AuthController));
 // POST /api/v1/auth/otp/complete (PUBLIC - no auth required, but requires valid ID token in body)
 router.post("/otp/complete", AuthController.completeOTP.bind(AuthController));
 
+// POST /api/v1/auth/otp/complete-dev (DEV only - test phone + OTP)
+router.post("/otp/complete-dev", AuthController.completeOTPDev.bind(AuthController));
+
 // POST /api/v1/auth/sync (AUTHENTICATED)
 router.post("/sync", authMiddleware, AuthController.sync.bind(AuthController));
 
