@@ -15,12 +15,6 @@ router.post('/pan/verify', authMiddleware, verificationController.verifyPAN.bind
 // Verify Bank Account
 router.post('/bank/verify', authMiddleware, verificationController.verifyBankAccount.bind(verificationController));
 
-// Email verification (OTP flow)
-router.post('/email/initiate', authMiddleware, verificationController.initiateEmail.bind(verificationController));
-router.post('/email/verify', authMiddleware, verificationController.verifyEmail.bind(verificationController));
-router.post('/email/resend', authMiddleware, verificationController.resendEmailOtp.bind(verificationController));
-router.get('/email/status/:userId?', authMiddleware, verificationController.getEmailStatus.bind(verificationController));
-
 // Get verification status
 router.get('/status/:userId?', authMiddleware, verificationController.getVerificationStatus.bind(verificationController));
 

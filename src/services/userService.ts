@@ -25,14 +25,18 @@ export class UserService extends BaseService {
 
   async getProfile(
     userId: string,
-    userToken: UserToken
+    userToken: UserToken | undefined
   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const baseConfig = {
+      headers: {
+        "X-User-Id": userId,
+      },
+    };
+
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        headers: {
-          "X-User-Id": userId,
-        },
-      })
+      userToken
+        ? this.forwardUserAuth(userToken, baseConfig)
+        : baseConfig
     );
 
     return this.handleRequest(() =>
@@ -474,9 +478,11 @@ export class UserService extends BaseService {
    */
   async getPublicProfileById(
     profileId: string,
-    userToken: UserToken
+    userToken: UserToken | undefined
   ): Promise<AxiosResponse<ApiResponse<Profile>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      userToken ? this.forwardUserAuth(userToken) : {}
+    );
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Profile>>(
