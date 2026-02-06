@@ -14,6 +14,7 @@ export interface TaskFilters {
   suburb?: string;
   remotely?: string | boolean;
   sortBy?: string;
+  excludeRequesterId?: string;
   limit?: number;
   page?: number;
 }

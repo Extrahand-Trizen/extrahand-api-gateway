@@ -25,6 +25,7 @@ export class TaskController {
         suburb: req.query.suburb as string,
         remotely: req.query.remotely as string,
         sortBy: req.query.sortBy as string,
+        excludeRequesterId: req.user?.profileId,
         minBudget: req.query.minBudget
           ? parseInt(req.query.minBudget as string, 10)
           : undefined,
