@@ -16,12 +16,10 @@ export interface ServiceResponse<T = any> extends AxiosResponse<T> {
   config: ServiceRequestConfig;
 }
 
-import mongoose from 'mongoose';
-
 export interface UserToken {
   uid: string;
   token: any;
-  profileId?: mongoose.Types.ObjectId; // ObjectId reference to Profile
+  profileId?: string; // Profile ID from user-service
   sessionId?: string;
 }
 

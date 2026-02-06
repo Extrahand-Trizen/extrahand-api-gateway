@@ -21,7 +21,8 @@ import paymentRouter from './routes/payment.js';
 import { paymentController } from './controllers/PaymentController.js';
 import escrowRouter from './routes/escrow.js';
 import refundRouter from './routes/refunds.js';
-import payoutRouter from './routes/payouts.js';
+// Payouts disabled - handled elsewhere
+// import payoutRouter from './routes/payouts.js';
 import earningsRouter from './routes/earnings.js';
 import transactionRouter from './routes/transactions.js';
 import adminRouter from './routes/admin.js';
@@ -141,7 +142,8 @@ app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
 app.use('/api/v1/payment', authMiddleware, paymentRouter);
 app.use('/api/v1/escrow', authMiddleware, escrowRouter);
 app.use('/api/v1/refunds', authMiddleware, refundRouter);
-app.use('/api/v1/payouts', authMiddleware, payoutRouter);
+// Payouts disabled - handled elsewhere
+// app.use('/api/v1/payouts', authMiddleware, payoutRouter);
 app.use('/api/v1/earnings', authMiddleware, earningsRouter);
 app.use('/api/v1/transactions', authMiddleware, transactionRouter);
 app.use('/api/v1/admin', adminRouter);
@@ -164,7 +166,7 @@ app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(payment
     payment: '/api/v1/payment (with auth)',
     escrow: '/api/v1/escrow (with auth)',
     refunds: '/api/v1/refunds (with auth)',
-    payouts: '/api/v1/payouts (with auth)',
+    // payouts: '/api/v1/payouts (with auth)', // disabled
     earnings: '/api/v1/earnings (with auth)',
     transactions: '/api/v1/transactions (with auth)',
     business: '/api/v1/business (with auth)',

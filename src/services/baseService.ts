@@ -148,7 +148,7 @@ export abstract class BaseService {
         'Authorization': `Bearer ${tokenString}`,
         'X-User-Id': userToken.uid, // Keep for backward compatibility
         ...(userToken.profileId && {
-          'X-Profile-Id': userToken.profileId.toString(), // ✅ New header for ObjectId reference
+          'X-Profile-Id': typeof userToken.profileId === 'string' ? userToken.profileId : userToken.profileId.toString(),
         }),
         ...(userToken.sessionId && { 'X-Session-Id': userToken.sessionId }),
       };

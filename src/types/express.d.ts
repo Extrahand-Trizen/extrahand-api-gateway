@@ -1,6 +1,5 @@
 import { Request } from "express";
 import { DecodedIdToken } from "firebase-admin/auth";
-import mongoose from "mongoose";
 
 declare global {
   namespace Express {
@@ -9,7 +8,7 @@ declare global {
         uid: string;
         token: string | DecodedIdToken;
         sessionId?: string;
-        profileId?: mongoose.Types.ObjectId; // ObjectId reference to Profile for database operations
+        profileId?: string; // Profile ID from user-service, forwarded as X-Profile-Id
       };
       requestId?: string;
       startTime?: number;

@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import logger from './config/logger.js';
 import { validateEnv } from './config/env.js';
-import { connectMongo, disconnectMongo } from './config/database.js';
 import { initializeFirebase } from './config/firebase.js';
 
 // Load environment variables
@@ -24,13 +23,7 @@ async function start(): Promise<void> {
     // Initialize Firebase Admin SDK (for Firebase token verification)
     initializeFirebase();
 
-    // Connect to MongoDB for Profile lookups
-    try {
-      await connectMongo(env.MONGODB_URI);
-    } catch (error) {
-      logger.error('❌ Failed to connect to MongoDB. Profile enrichment will not work:', error);
-      // Don't exit - API Gateway can still work, just without profileId enrichment
-    }
+    // No MongoDB in gateway - profileId is resolved via user-service only
 
     // Start HTTP server
     // Bind to 0.0.0.0 to make it accessible from outside the container (Nginx/CapRover)
@@ -75,13 +68,6 @@ async function gracefulShutdown(signal: string): Promise<void> {
     server.close(() => {
       logger.info('✅ HTTP server closed');
     });
-  }
-
-  // Disconnect MongoDB
-  try {
-    await disconnectMongo();
-  } catch (error) {
-    logger.error('Error disconnecting MongoDB:', error);
   }
 
   logger.info('✅ Graceful shutdown completed');

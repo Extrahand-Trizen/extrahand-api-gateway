@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import mongoose from 'mongoose';
 import logger from "../config/logger.js";
 import { verifyToken } from "../lib/tokenVerifier.js";
 import { ACCESS_COOKIE_NAME } from "../utils/cookies.js";
-import { getConnectionStatus } from '../config/database.js';
+import { userService } from '../services/userService.js';
 
 function getAccessToken(req: Request): string | undefined {
    const header = req.headers.authorization || "";
@@ -36,54 +35,40 @@ function getAccessToken(req: Request): string | undefined {
 }
 
 /**
- * Shared helper function to verify token and get user info
- * Used by both authMiddleware and optionalAuthMiddleware
+ * Shared helper: verify token and get user info.
+ * profileId is resolved only via user-service (no DB in gateway).
  */
-async function verifyTokenAndGetUser(token: string): Promise<{ uid: string; tokenType: string; profileId?: mongoose.Types.ObjectId }> {
-  // Log token info (first 20 chars only for security)
+async function verifyTokenAndGetUser(token: string): Promise<{ uid: string; tokenType: string; profileId?: string }> {
   logger.debug('Token Verification: Verifying token', {
     tokenPrefix: token.substring(0, 20) + '...',
     tokenLength: token.length,
   });
-  
-  // ✨ CRITICAL: Verify the token (supports both backend tokens and Firebase tokens)
+
   const { uid, tokenType } = await verifyToken(token);
-  
-  // ✨ Enrich with profileId (ObjectId) for database references
-  let profileId: mongoose.Types.ObjectId | undefined;
-  
-  if (getConnectionStatus()) {
-    try {
-      // Direct MongoDB query (no model needed) - just get _id for profileId
-      const db = mongoose.connection.db;
-      if (db) {
-        const profilesCollection = db.collection('profiles');
-        const profile = await profilesCollection.findOne(
-          { uid },
-          { projection: { _id: 1 } }
-        );
-        
-        if (profile && profile._id) {
-          profileId = profile._id;
-          logger.debug('Token Verification: Profile found', {
-            uid,
-            profileId: profileId.toString(),
-          });
-        } else {
-          logger.debug('Token Verification: Profile not found (new user?)', { uid });
-        }
-      }
-    } catch (error: any) {
-      logger.warn('Token Verification: Failed to lookup Profile', {
+
+  // Resolve profileId from user-service only (single source of truth)
+  let profileId: string | undefined;
+  try {
+    const userToken = { uid, token };
+    const response = await userService.getCurrentProfile(userToken);
+    const data = response?.data as any;
+    const profileDoc = data?.data ?? data;
+    const id = profileDoc?._id ?? profileDoc?.id;
+    if (id != null) {
+      profileId = typeof id === 'string' ? id : String(id);
+      logger.debug('Token Verification: Profile resolved via user-service', {
         uid,
-        error: error.message,
+        profileId,
       });
-      // Continue without profileId - service will handle it
     }
-  } else {
-    logger.debug('Token Verification: MongoDB not connected, skipping profileId lookup', { uid });
+  } catch (err: any) {
+    logger.debug('Token Verification: User-service profile lookup failed (user may need onboarding)', {
+      uid,
+      status: err?.response?.status ?? err?.status,
+      message: err?.message ?? err?.response?.data?.error,
+    });
   }
-  
+
   return { uid, tokenType, profileId };
 }
 
@@ -113,19 +98,17 @@ export async function authMiddleware(
   try {
     // ✨ Use shared helper function to verify token and get user info
     const { uid, tokenType, profileId } = await verifyTokenAndGetUser(token);
-    
-    // ✨ CRITICAL: Store the ORIGINAL JWT string, not the decoded object
-    // The User Service expects the raw JWT string in the Authorization header
-    req.user = { 
-      uid, 
-      token: token, // Store the original JWT string, not the decoded object
-      profileId, // ✅ ObjectId reference for database operations
-    };
-    
+
+    req.user = {
+      uid,
+      token,
+      profileId,
+    } as Express.Request['user'];
+
     logger.info('Authentication: User authenticated', {
       uid,
       tokenType,
-      profileId: profileId?.toString() || 'not found',
+      profileId: profileId ?? 'not found',
       path: req.path,
       tokenStored: 'JWT string (original)',
     });
@@ -203,18 +186,17 @@ export async function optionalAuthMiddleware(
   try {
     // ✨ Use shared helper function to verify token and get user info
     const { uid, tokenType, profileId } = await verifyTokenAndGetUser(token);
-    
-    // ✨ Store the ORIGINAL JWT string, not the decoded object
-    req.user = { 
-      uid, 
-      token: token, // Store the original JWT string, not the decoded object
-      profileId, // ✅ ObjectId reference for database operations
-    };
-    
+
+    req.user = {
+      uid,
+      token,
+      profileId,
+    } as Express.Request['user'];
+
     logger.info('Optional Auth: User authenticated', {
       uid,
       tokenType,
-      profileId: profileId?.toString() || 'not found',
+      profileId: profileId ?? 'not found',
       path: req.path,
     });
     
