@@ -93,7 +93,8 @@ export class PaymentService extends BaseService {
     currency: string,
     autoReleaseAfterDays: number | undefined,
     metadata: Record<string, any> | undefined,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    taskCategory?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
@@ -108,7 +109,8 @@ export class PaymentService extends BaseService {
         amount,
         currency,
         autoReleaseAfterDays,
-        metadata
+        metadata,
+        taskCategory: taskCategory ?? undefined,
       }, config)
     );
   }
@@ -370,11 +372,14 @@ export class PaymentService extends BaseService {
   }
 
   /**
-   * Calculate fees for an amount - public endpoint
+   * Calculate fees for an amount - public endpoint.
+   * Pass taskCategory for category-specific GST/fees (CategoryFeeConfig).
    */
-  async calculateFees(amount: number): Promise<AxiosResponse> {
+  async calculateFees(amount: number, taskCategory?: string): Promise<AxiosResponse> {
+    const params = new URLSearchParams({ amount: String(amount) });
+    if (taskCategory?.trim()) params.set('taskCategory', taskCategory.trim());
     return this.handleRequest(() =>
-      this.client.get(`/api/v1/fees/calculate?amount=${amount}`)
+      this.client.get(`/api/v1/fees/calculate?${params.toString()}`)
     );
   }
 }

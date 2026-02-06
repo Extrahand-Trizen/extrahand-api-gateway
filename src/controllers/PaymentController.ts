@@ -90,12 +90,15 @@ export class PaymentController {
 
   async calculateFees(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const { amount } = req.query;
+      const { amount, taskCategory } = req.query;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.calculateFees(Number(amount));
+      const response = await paymentService.calculateFees(
+        Number(amount),
+        typeof taskCategory === 'string' ? taskCategory : undefined
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.calculateFees');
@@ -116,7 +119,8 @@ export class PaymentController {
         req.body.currency || 'INR',
         req.body.autoReleaseAfterDays,
         req.body.metadata,
-        req.user || null
+        req.user || null,
+        req.body.taskCategory
       );
       res.status(response.status).json(response.data);
     } catch (error) {

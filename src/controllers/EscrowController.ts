@@ -14,6 +14,7 @@ export class EscrowController {
         currency,
         autoReleaseAfterDays,
         metadata,
+        taskCategory,
       } = req.body;
 
       res.setHeader('X-Served-By', 'api-gateway');
@@ -28,7 +29,8 @@ export class EscrowController {
         currency || 'INR',
         autoReleaseAfterDays,
         metadata,
-        req.user || null
+        req.user || null,
+        taskCategory
       );
       res.status(response.status).json(response.data);
     } catch (error) {
