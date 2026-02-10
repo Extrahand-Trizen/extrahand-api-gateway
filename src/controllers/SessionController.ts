@@ -67,11 +67,10 @@ export class SessionController {
          });
 
          const upstreamCookies = response.headers["set-cookie"];
-         if (upstreamCookies) {
-            res.setHeader("set-cookie", upstreamCookies);
-         } else {
-            res.setHeader("set-cookie", clearAuthCookies());
-         }
+         forwardOrSetAuthCookies(
+            res,
+            upstreamCookies ?? clearAuthCookies()
+         );
 
          res.status(response.status).json(
             sanitizeSessionPayload(response.data)

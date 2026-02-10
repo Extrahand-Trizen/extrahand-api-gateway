@@ -82,19 +82,44 @@ export function clearAuthCookies(): string[] {
    ];
 }
 
+/**
+ * Normalize upstream Set-Cookie value from axios (string or array) to string[].
+ * Axios may return response.headers["set-cookie"] as string (single cookie) or
+ * string[] (multiple); Express requires each cookie to be sent separately for
+ * multiple Set-Cookie headers to reach the client.
+ */
+function normalizeSetCookieHeaders(upstreamCookies: string[] | string | undefined): string[] {
+   if (upstreamCookies == null) return [];
+   if (Array.isArray(upstreamCookies)) {
+      return upstreamCookies.filter((c): c is string => typeof c === "string" && c.length > 0);
+   }
+   if (typeof upstreamCookies === "string" && upstreamCookies.length > 0) {
+      return [upstreamCookies];
+   }
+   return [];
+}
+
 export function forwardOrSetAuthCookies(
    res: Response,
    upstreamCookies?: string[] | string,
    tokens?: Partial<SessionTokens>
 ) {
-   if (upstreamCookies && (Array.isArray(upstreamCookies) || typeof upstreamCookies === "string")) {
-      res.setHeader("set-cookie", upstreamCookies);
+   const cookies = normalizeSetCookieHeaders(upstreamCookies);
+   if (cookies.length > 0) {
+      // Remove any existing Set-Cookie so we can set multiple via append
+      res.removeHeader("Set-Cookie");
+      for (const cookie of cookies) {
+         res.append("Set-Cookie", cookie);
+      }
       return;
    }
 
-   const cookies = buildAuthCookies(tokens);
-   if (cookies.length) {
-      res.setHeader("set-cookie", cookies);
+   const built = buildAuthCookies(tokens);
+   if (built.length) {
+      res.removeHeader("Set-Cookie");
+      for (const cookie of built) {
+         res.append("Set-Cookie", cookie);
+      }
    }
 }
 
