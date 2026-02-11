@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { taskService } from "../services/taskService.js";
+import { userService } from "../services/userService.js";
 import { handleServiceError } from "../utils/errorHandler.js";
+import { getOfferSubmissionVerificationStatus } from "../lib/verificationGate.js";
 
 export class ApplicationController {
   async getApplications(
@@ -47,6 +49,19 @@ export class ApplicationController {
         res.status(401).json({
           success: false,
           error: "Authentication required",
+        });
+        return;
+      }
+
+      // Enforce verification (Aadhaar, Bank, PAN) before allowing offer submission
+      const profileResponse = await userService.getCurrentProfile(req.user);
+      const profile = (profileResponse.data as any)?.data ?? profileResponse.data;
+      const verificationStatus = getOfferSubmissionVerificationStatus(profile ?? null);
+      if (!verificationStatus.allowed) {
+        res.status(403).json({
+          success: false,
+          error: "Verification required to apply",
+          missing: verificationStatus.missing,
         });
         return;
       }

@@ -30,6 +30,11 @@ export interface Profile {
   totalReviews?: number;
   isVerified?: boolean;
   isAadhaarVerified?: boolean;
+  isBankVerified?: boolean;
+  isPanVerified?: boolean;
+  business?: {
+    pan?: { isPANVerified?: boolean };
+  };
   location?: {
     type: "Point";
     coordinates: [number, number];
