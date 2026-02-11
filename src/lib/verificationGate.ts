@@ -21,14 +21,6 @@ export interface VerificationGateResult {
   missing: string[];
 }
 
-function isPanVerified(profile: VerificationGateProfile | null): boolean {
-  if (!profile) return false;
-  if (profile.userType === "business") {
-    return Boolean(profile.business?.pan?.isPANVerified);
-  }
-  return Boolean(profile.isPanVerified);
-}
-
 /**
  * Returns whether the user has completed required verifications for posting a task.
  * Currently only Aadhaar is required for task creation.
