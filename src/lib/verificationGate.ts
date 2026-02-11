@@ -1,6 +1,8 @@
 /**
- * Backend verification gate: require Aadhaar, PAN, and Bank verified
- * before allowing task posting or offer submission.
+ * Backend verification gate.
+ * Currently:
+ * - Task posting: requires Aadhaar only.
+ * - Offer submission: requires Aadhaar only (PAN and Bank optional for now).
  * Matches frontend logic so API cannot be bypassed.
  */
 
@@ -28,23 +30,36 @@ function isPanVerified(profile: VerificationGateProfile | null): boolean {
 }
 
 /**
- * Returns whether the user has completed required verifications (Aadhaar, Bank, PAN)
- * for posting a task or submitting an offer.
+ * Returns whether the user has completed required verifications for posting a task.
+ * Currently only Aadhaar is required for task creation.
  */
 export function getTaskPostingVerificationStatus(
   profile: VerificationGateProfile | null
 ): VerificationGateResult {
   const missing: string[] = [];
   if (!profile) {
-    return { allowed: false, missing: ["Aadhaar", "Bank", "PAN"] };
+    return { allowed: false, missing: ["Aadhaar"] };
   }
   if (!profile.isAadhaarVerified) missing.push("Aadhaar");
-  if (!profile.isBankVerified) missing.push("Bank");
-  if (!isPanVerified(profile)) missing.push("PAN");
   return {
     allowed: missing.length === 0,
     missing,
   };
 }
 
-export const getOfferSubmissionVerificationStatus = getTaskPostingVerificationStatus;
+/**
+ * Offer submission gate: Aadhaar + Bank + PAN (business can satisfy via business PAN).
+ */
+export function getOfferSubmissionVerificationStatus(
+  profile: VerificationGateProfile | null
+): VerificationGateResult {
+  const missing: string[] = [];
+  if (!profile) {
+    return { allowed: false, missing: ["Aadhaar"] };
+  }
+  if (!profile.isAadhaarVerified) missing.push("Aadhaar");
+  return {
+    allowed: missing.length === 0,
+    missing,
+  };
+}

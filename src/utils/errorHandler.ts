@@ -41,9 +41,16 @@ export function handleServiceError(
   }
 
   if (isServiceError(error)) {
+    // When Task Service returns 500, surface the actual error message from data if available
+    const errorData = error.data as Record<string, unknown> | undefined;
+    const upstreamMessage = errorData?.message as string | undefined;
+    const displayError = upstreamMessage && typeof upstreamMessage === 'string' && upstreamMessage !== 'An unexpected error occurred'
+      ? upstreamMessage
+      : error.message;
+
     res.status(error.status).json({
       success: false,
-      error: error.message,
+      error: displayError,
       data: error.data,
       service: error.service,
     });
