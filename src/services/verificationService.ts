@@ -168,13 +168,16 @@ export class VerificationService extends BaseService {
     consentGiven: boolean,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    // Email verification is handled by user-service, not verification-service
+    const userServiceURL = process.env.USER_SERVICE_URL || 'http://localhost:4001';
+
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
-        '/api/v1/verification/email/initiate',
+        `${userServiceURL}/api/v1/verification/email/initiate`,
         { email, consentGiven },
         config
       )
@@ -186,13 +189,16 @@ export class VerificationService extends BaseService {
     verificationId: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    // Email verification is handled by user-service, not verification-service
+    const userServiceURL = process.env.USER_SERVICE_URL || 'http://localhost:4001';
+
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
-        '/api/v1/verification/email/verify',
+        `${userServiceURL}/api/v1/verification/email/verify`,
         { otp, verificationId },
         config
       )
@@ -202,13 +208,16 @@ export class VerificationService extends BaseService {
   async resendEmailOTP(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    // Email verification is handled by user-service, not verification-service
+    const userServiceURL = process.env.USER_SERVICE_URL || 'http://localhost:4001';
+
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
-        '/api/v1/verification/email/resend',
+        `${userServiceURL}/api/v1/verification/email/resend`,
         {},
         config
       )
@@ -219,13 +228,16 @@ export class VerificationService extends BaseService {
     userId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    // Email verification is handled by user-service, not verification-service
+    const userServiceURL = process.env.USER_SERVICE_URL || 'http://localhost:4001';
+
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
     );
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
-        `/api/v1/verification/email/status/${userId}`,
+        `${userServiceURL}/api/v1/verification/email/status`,
         config
       )
     );

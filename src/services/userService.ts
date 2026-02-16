@@ -5,12 +5,12 @@ import { Profile, ApiResponse, SessionResponse } from "../types/api.js";
 import FormData from "form-data";
 
 interface SessionRequestOptions {
-   cookies?: string;
-   deviceId?: string;
-   clientType?: "web" | "mobile";
-   userAgent?: string;
-   ipAddress?: string;
-   refreshToken?: string;
+  cookies?: string;
+  deviceId?: string;
+  clientType?: "web" | "mobile";
+  userAgent?: string;
+  ipAddress?: string;
+  refreshToken?: string;
 }
 
 export class UserService extends BaseService {
@@ -93,18 +93,18 @@ export class UserService extends BaseService {
         : 0,
       savedAddressesPreview:
         Array.isArray(profileData.savedAddresses) &&
-        profileData.savedAddresses.length > 0
+          profileData.savedAddresses.length > 0
           ? {
-              firstAddress: {
-                label: profileData.savedAddresses[0].label,
-                addressLength:
-                  profileData.savedAddresses[0].address?.length || 0,
-                hasCoordinates: Array.isArray(
-                  profileData.savedAddresses[0].coordinates
-                ),
-                coordinates: profileData.savedAddresses[0].coordinates,
-              },
-            }
+            firstAddress: {
+              label: profileData.savedAddresses[0].label,
+              addressLength:
+                profileData.savedAddresses[0].address?.length || 0,
+              hasCoordinates: Array.isArray(
+                profileData.savedAddresses[0].coordinates
+              ),
+              coordinates: profileData.savedAddresses[0].coordinates,
+            },
+          }
           : null,
     });
 
@@ -132,16 +132,16 @@ export class UserService extends BaseService {
     );
   }
 
-   async searchProfiles(
-      query: string,
-      limit: number = 10,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<Profile[]>>> {
-      const config = this.addServiceAuth(
-         this.forwardUserAuth(userToken, {
-            params: { q: query, limit },
-         })
-      );
+  async searchProfiles(
+    query: string,
+    limit: number = 10,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Profile[]>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: { q: query, limit },
+      })
+    );
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Profile[]>>("/api/v1/profiles/search", config)
@@ -174,20 +174,20 @@ export class UserService extends BaseService {
     );
   }
 
-   async uploadProfilePicture(
-      formData: FormData,
-      userToken: UserToken
-   ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
-      const config = this.addServiceAuth(
-         this.forwardUserAuth(userToken, {
-            headers: {
-               ...formData.getHeaders(),
-               // Remove Content-Type to let axios set it with boundary
-            },
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-         })
-      );
+  async uploadProfilePicture(
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: {
+          ...formData.getHeaders(),
+          // Remove Content-Type to let axios set it with boundary
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ url: string; key: string }>>(
@@ -216,7 +216,7 @@ export class UserService extends BaseService {
     phone: string
   ): Promise<AxiosResponse<ApiResponse<{ exists: boolean; phone: string }>>> {
     const config = this.addServiceAuth({});
-    
+
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ exists: boolean; phone: string }>>(
         "/api/v1/auth/check-phone",
@@ -226,180 +226,180 @@ export class UserService extends BaseService {
     );
   }
 
-   // =========================================================================
-   // REDUNDANT METHODS - Commented out as app uses OTP-based auth flow
-   // These methods are never called since their controller methods are disabled
-   // =========================================================================
+  // =========================================================================
+  // REDUNDANT METHODS - Commented out as app uses OTP-based auth flow
+  // These methods are never called since their controller methods are disabled
+  // =========================================================================
 
-   // async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
-   //    return this.handleRequest(() =>
-   //       this.client.post<ApiResponse<any>>("/api/v1/auth/signup", signupData)
-   //    );
-   // }
+  // async signup(signupData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+  //    return this.handleRequest(() =>
+  //       this.client.post<ApiResponse<any>>("/api/v1/auth/signup", signupData)
+  //    );
+  // }
 
-   // async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
-   //    return this.handleRequest(() =>
-   //       this.client.post<ApiResponse<any>>("/api/v1/auth/login", loginData)
-   //    );
-   // }
+  // async login(loginData: any): Promise<AxiosResponse<ApiResponse<any>>> {
+  //    return this.handleRequest(() =>
+  //       this.client.post<ApiResponse<any>>("/api/v1/auth/login", loginData)
+  //    );
+  // }
 
-   // async passwordReset(
-   //    email: string,
-   //    continueUrl?: string
-   // ): Promise<
-   //    AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>
-   // > {
-   //    return this.handleRequest(() =>
-   //       this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
-   //          "/api/v1/auth/password/reset",
-   //          { email, continueUrl }
-   //       )
-   //    );
-   // }
+  // async passwordReset(
+  //    email: string,
+  //    continueUrl?: string
+  // ): Promise<
+  //    AxiosResponse<ApiResponse<{ email: string; resetLink: string }>>
+  // > {
+  //    return this.handleRequest(() =>
+  //       this.client.post<ApiResponse<{ email: string; resetLink: string }>>(
+  //          "/api/v1/auth/password/reset",
+  //          { email, continueUrl }
+  //       )
+  //    );
+  // }
 
-   // =========================================================================
+  // =========================================================================
 
 
-   async completeOTP(
-      idToken: string,
-      mode: "login" | "signup",
-      phone: string,
-      name?: string,
-      options?: { clientType?: "web" | "mobile"; deviceId?: string; otp?: string }
-   ): Promise<
-      AxiosResponse<
-         ApiResponse<{
-            success: boolean;
-            profile?: any;
-            user?: any;
-            error?: string;
-         }>
-      >
-   > {
-      const payload = {
-         idToken,
-         mode,
-         phone,
-         name,
-         otp: options?.otp,
-         clientType: options?.clientType ?? "web",
-         deviceId: options?.deviceId,
-      };
+  async completeOTP(
+    idToken: string,
+    mode: "login" | "signup",
+    phone: string,
+    name?: string,
+    options?: { clientType?: "web" | "mobile"; deviceId?: string; otp?: string }
+  ): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        success: boolean;
+        profile?: any;
+        user?: any;
+        error?: string;
+      }>
+    >
+  > {
+    const payload = {
+      idToken,
+      mode,
+      phone,
+      name,
+      otp: options?.otp,
+      clientType: options?.clientType ?? "web",
+      deviceId: options?.deviceId,
+    };
 
-      // Service auth is required by User Service's gatewayAuthMiddleware
-      const config = this.addServiceAuth({});
+    // Service auth is required by User Service's gatewayAuthMiddleware
+    const config = this.addServiceAuth({});
 
-      return this.handleRequest(() =>
-         this.client.post<
-            ApiResponse<{
-               success: boolean;
-               profile?: any;
-               user?: any;
-               error?: string;
-            }>
-         >("/api/v1/auth/otp/complete", payload, config)
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.post<
+        ApiResponse<{
+          success: boolean;
+          profile?: any;
+          user?: any;
+          error?: string;
+        }>
+      >("/api/v1/auth/otp/complete", payload, config)
+    );
+  }
 
-   /**
-    * Dev-only: dummy signin/signup with +91 9876543210, OTP 123456 (no Firebase).
-    * Use when LOCAL_TEST=true or NODE_ENV=development.
-    */
-   async completeOTPDev(
-      phone: string,
-      otp: string,
-      mode: "login" | "signup",
-      name?: string,
-      options?: { clientType?: "web" | "mobile"; deviceId?: string }
-   ): Promise<
-      AxiosResponse<
-         ApiResponse<{
-            success: boolean;
-            profile?: any;
-            user?: any;
-            sessionId?: string;
-            accessTokenExpiresAt?: string;
-            error?: string;
-         }>
-      >
-   > {
-      const payload = {
-         phone,
-         otp,
-         mode,
-         name,
-         clientType: options?.clientType ?? "web",
-         deviceId: options?.deviceId,
-      };
-      const config = this.addServiceAuth({});
-      return this.handleRequest(() =>
-         this.client.post<
-            ApiResponse<{
-               success: boolean;
-               profile?: any;
-               user?: any;
-               sessionId?: string;
-               accessTokenExpiresAt?: string;
-               error?: string;
-            }>
-         >("/api/v1/auth/otp/complete-dev", payload, config)
-      );
-   }
+  /**
+   * Dev-only: dummy signin/signup with +91 9876543210, OTP 123456 (no Firebase).
+   * Use when LOCAL_TEST=true or NODE_ENV=development.
+   */
+  async completeOTPDev(
+    phone: string,
+    otp: string,
+    mode: "login" | "signup",
+    name?: string,
+    options?: { clientType?: "web" | "mobile"; deviceId?: string }
+  ): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        success: boolean;
+        profile?: any;
+        user?: any;
+        sessionId?: string;
+        accessTokenExpiresAt?: string;
+        error?: string;
+      }>
+    >
+  > {
+    const payload = {
+      phone,
+      otp,
+      mode,
+      name,
+      clientType: options?.clientType ?? "web",
+      deviceId: options?.deviceId,
+    };
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<
+        ApiResponse<{
+          success: boolean;
+          profile?: any;
+          user?: any;
+          sessionId?: string;
+          accessTokenExpiresAt?: string;
+          error?: string;
+        }>
+      >("/api/v1/auth/otp/complete-dev", payload, config)
+    );
+  }
 
-   async refreshSession(
-      options: SessionRequestOptions
-   ): Promise<AxiosResponse<SessionResponse>> {
-      const config = this.addServiceAuth({
-         withCredentials: true,
-         headers: {
-            ...(options.cookies ? { Cookie: options.cookies } : {}),
-            ...(options.userAgent ? { "User-Agent": options.userAgent } : {}),
-            ...(options.ipAddress
-               ? { "X-Forwarded-For": options.ipAddress }
-               : {}),
-         },
-      });
+  async refreshSession(
+    options: SessionRequestOptions
+  ): Promise<AxiosResponse<SessionResponse>> {
+    const config = this.addServiceAuth({
+      withCredentials: true,
+      headers: {
+        ...(options.cookies ? { Cookie: options.cookies } : {}),
+        ...(options.userAgent ? { "User-Agent": options.userAgent } : {}),
+        ...(options.ipAddress
+          ? { "X-Forwarded-For": options.ipAddress }
+          : {}),
+      },
+    });
 
-      return this.handleRequest(() =>
-         this.client.post<SessionResponse>(
-            "/api/v1/sessions/refresh",
-            {
-               clientType: options.clientType ?? "web",
-               deviceId: options.deviceId,
-               refreshToken: options.refreshToken,
-            },
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.post<SessionResponse>(
+        "/api/v1/sessions/refresh",
+        {
+          clientType: options.clientType ?? "web",
+          deviceId: options.deviceId,
+          refreshToken: options.refreshToken,
+        },
+        config
+      )
+    );
+  }
 
-   async logoutSession(
-      options: SessionRequestOptions = {}
-   ): Promise<AxiosResponse<ApiResponse<{ message?: string }>>> {
-      const config = this.addServiceAuth({
-         withCredentials: true,
-         headers: {
-            ...(options.cookies ? { Cookie: options.cookies } : {}),
-            ...(options.userAgent ? { "User-Agent": options.userAgent } : {}),
-            ...(options.ipAddress
-               ? { "X-Forwarded-For": options.ipAddress }
-               : {}),
-         },
-      });
+  async logoutSession(
+    options: SessionRequestOptions = {}
+  ): Promise<AxiosResponse<ApiResponse<{ message?: string }>>> {
+    const config = this.addServiceAuth({
+      withCredentials: true,
+      headers: {
+        ...(options.cookies ? { Cookie: options.cookies } : {}),
+        ...(options.userAgent ? { "User-Agent": options.userAgent } : {}),
+        ...(options.ipAddress
+          ? { "X-Forwarded-For": options.ipAddress }
+          : {}),
+      },
+    });
 
-      return this.handleRequest(() =>
-         this.client.post<ApiResponse<{ message?: string }>>(
-            "/api/v1/sessions/logout",
-            {
-               clientType: options.clientType ?? "web",
-               deviceId: options.deviceId,
-            },
-            config
-         )
-      );
-   }
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ message?: string }>>(
+        "/api/v1/sessions/logout",
+        {
+          clientType: options.clientType ?? "web",
+          deviceId: options.deviceId,
+        },
+        config
+      )
+    );
+  }
 
-   async syncProfile(
+  async syncProfile(
     profileData: { name?: string; phone?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
