@@ -237,7 +237,7 @@ export class VerificationService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
-        `${userServiceURL}/api/v1/verification/email/status`,
+        `${userServiceURL}/api/v1/verification/email/status?userId=${encodeURIComponent(userId)}`,
         config
       )
     );
