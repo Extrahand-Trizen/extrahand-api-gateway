@@ -30,6 +30,7 @@ import sessionsRouter from './routes/sessions.js';
 import businessRouter from './routes/business.js';
 import privacyRouter from './routes/privacy.js';
 import referralRouter from './routes/referral.js';
+import userRouter from './routes/user.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 
@@ -151,6 +152,7 @@ app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/business', asyncAuthMiddleware, businessRouter);
 app.use('/api/v1/privacy', asyncAuthMiddleware, privacyRouter);
 app.use('/api/v1/referral', authMiddleware, referralRouter);
+app.use('/api/v1/user', userRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
@@ -173,6 +175,8 @@ app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(payment
     transactions: '/api/v1/transactions (with auth)',
     business: '/api/v1/business (with auth)',
     privacy: '/api/v1/privacy (with auth)',
+    referral: '/api/v1/referral (with auth)',
+    user: '/api/v1/user (badge & referral endpoints)',
     auth: '/api/v1/auth (public)'
   });
 
