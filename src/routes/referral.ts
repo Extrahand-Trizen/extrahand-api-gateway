@@ -31,7 +31,7 @@ const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3001'
  */
 const proxyToUserService = async (
   req: Request,
-  res: Response,
+  _res: Response,
   path: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET'
 ) => {
@@ -79,7 +79,7 @@ const proxyToUserService = async (
  * GET /api/v1/referral/code
  * Get user's referral code
  */
-router.get('/code', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/code', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const data = await proxyToUserService(req, res, '/v1/user/referral-code', 'GET');
     sendSuccess(res, data.data || data, 'Referral code retrieved successfully');
@@ -93,7 +93,7 @@ router.get('/code', authMiddleware, async (req: Request, res: Response, next: Ne
  * GET /api/v1/referral/dashboard
  * Get referral dashboard
  */
-router.get('/dashboard', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/dashboard', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const data = await proxyToUserService(req, res, '/v1/user/referral-dashboard', 'GET');
     sendSuccess(res, data.data || data, 'Referral dashboard retrieved successfully');
@@ -107,7 +107,7 @@ router.get('/dashboard', authMiddleware, async (req: Request, res: Response, nex
  * GET /api/v1/referral/credits/balance
  * Get credit balance
  */
-router.get('/credits/balance', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/credits/balance', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const data = await proxyToUserService(req, res, '/v1/user/credits/balance', 'GET');
     sendSuccess(res, data.data || data, 'Credit balance retrieved successfully');
@@ -121,7 +121,7 @@ router.get('/credits/balance', authMiddleware, async (req: Request, res: Respons
  * GET /api/v1/referral/credits/transactions
  * Get credit transactions
  */
-router.get('/credits/transactions', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/credits/transactions', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const data = await proxyToUserService(req, res, '/v1/user/credits/transactions', 'GET');
     sendSuccess(res, data.data || data, 'Credit transactions retrieved successfully');
@@ -202,7 +202,7 @@ router.get('/batch-jobs/logs', authMiddleware, async (req: Request, res: Respons
  * GET /api/v1/referral/batch-jobs/status
  * Get batch job execution status
  */
-router.get('/batch-jobs/status', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/batch-jobs/status', authMiddleware, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const now = new Date();
     const lastRun = new Date(now.getTime() - 24 * 60 * 60 * 1000);

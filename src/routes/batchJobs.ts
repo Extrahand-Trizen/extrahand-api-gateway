@@ -1,9 +1,17 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
-import { sendSuccess, sendError } from '../utils/response.js';
 import logger from '../config/logger.js';
 
 const router = Router();
+
+// Inline sendSuccess function for consistency
+const sendSuccess = (res: Response, data: any, message: string, statusCode = 200) => {
+  res.status(statusCode).json({
+    success: true,
+    message,
+    data,
+  });
+};
 
 /**
  * GET /api/v1/batch-jobs/logs
@@ -84,7 +92,7 @@ router.get('/logs', authMiddleware, async (req: Request, res: Response, next: Ne
  * GET /api/v1/batch-jobs/status
  * Get batch job status and last execution times
  */
-router.get('/status', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/status', authMiddleware, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     // For now, return mock status - in production this would query job execution history
     const now = new Date();
