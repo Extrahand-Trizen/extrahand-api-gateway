@@ -5,6 +5,7 @@ import { handleServiceError } from "../utils/errorHandler.js";
 import { Task } from "../types/api.js";
 import { enrichTaskResponse } from "../services/profileEnrichment.js";
 import { getTaskPostingVerificationStatus } from "../lib/verificationGate.js";
+import { UserToken } from "../types/service.js";
 
 export class TaskController {
   async getTasks(
@@ -146,16 +147,20 @@ export class TaskController {
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
-      const response = await taskService.getTaskById(taskId, req.user);
+      const response = await taskService.getTaskById(taskId, req.user as any);
       
       // ✅ Extract task from task-service response format: { success, code, message, data }
       const taskServiceResponse = response.data;
       const task = taskServiceResponse?.data || taskServiceResponse;
       
       // ✅ Enrich task with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTask = req.user
-        ? await enrichTaskResponse(task, req.user)
-        : task;
+      // For public routes we still want names even if the caller is not authenticated,
+      // so fall back to a system-level token when req.user is undefined.
+      const userToken: UserToken = (req.user as UserToken) || {
+        uid: "system",
+        token: null,
+      };
+      const enrichedTask = await enrichTaskResponse(task, userToken);
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({
