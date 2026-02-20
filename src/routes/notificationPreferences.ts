@@ -30,7 +30,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       },
     });
 
-    res.status(response.status).json(response.data);
+    return res.status(response.status).json(response.data);
   } catch (error: any) {
     const axiosError = error as AxiosError<{ error?: string }>;
     logger.error('Notification preferences GET failed', {
@@ -40,7 +40,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response, next: NextFu
     if (axiosError.response) {
       return res.status(axiosError.response.status).json(axiosError.response.data);
     }
-    next(error);
+    return next(error);
   }
 });
 
@@ -63,7 +63,7 @@ router.put('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       },
     });
 
-    res.status(response.status).json(response.data);
+    return res.status(response.status).json(response.data);
   } catch (error: any) {
     const axiosError = error as AxiosError<{ error?: string }>;
     logger.error('Notification preferences PUT failed', {
@@ -73,7 +73,7 @@ router.put('/', authMiddleware, async (req: Request, res: Response, next: NextFu
     if (axiosError.response) {
       return res.status(axiosError.response.status).json(axiosError.response.data);
     }
-    next(error);
+    return next(error);
   }
 });
 
