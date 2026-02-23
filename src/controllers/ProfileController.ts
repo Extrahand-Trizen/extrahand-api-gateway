@@ -408,6 +408,92 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.recalculateStats');
     }
   }
+
+  async getCategoryAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getCategoryAlerts(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getCategoryAlerts');
+    }
+  }
+
+  async updateCategoryAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const categories = Array.isArray(req.body?.categories) ? req.body.categories : [];
+      const response = await userService.updateCategoryAlerts(categories, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.updateCategoryAlerts');
+    }
+  }
+
+  async getKeywordAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getKeywordAlerts(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getKeywordAlerts');
+    }
+  }
+
+  async updateKeywordAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const keywords = Array.isArray(req.body?.keywords) ? req.body.keywords : [];
+      const response = await userService.updateKeywordAlerts(keywords, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.updateKeywordAlerts');
+    }
+  }
 }
 
 export const profileController = new ProfileController();

@@ -117,6 +117,62 @@ export class UserService extends BaseService {
     );
   }
 
+  async getCategoryAlerts(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ categories: Array<{ slug: string; name: string }> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{ categories: Array<{ slug: string; name: string }> }>>(
+        "/api/v1/profiles/me/category-alerts",
+        config
+      )
+    );
+  }
+
+  async updateCategoryAlerts(
+    categories: Array<{ slug: string; name: string }>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ categories: Array<{ slug: string; name: string }> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<{ categories: Array<{ slug: string; name: string }> }>>(
+        "/api/v1/profiles/me/category-alerts",
+        { categories },
+        config
+      )
+    );
+  }
+
+  async getKeywordAlerts(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ keywords: string[] }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{ keywords: string[] }>>(
+        "/api/v1/profiles/me/keyword-alerts",
+        config
+      )
+    );
+  }
+
+  async updateKeywordAlerts(
+    keywords: string[],
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ keywords: string[] }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<{ keywords: string[] }>>(
+        "/api/v1/profiles/me/keyword-alerts",
+        { keywords },
+        config
+      )
+    );
+  }
+
   async upsertProfile(
     profileData: Partial<Profile>,
     userToken: UserToken

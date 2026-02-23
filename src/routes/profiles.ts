@@ -32,6 +32,14 @@ router.delete('/me', authMiddleware, profileController.deleteProfile.bind(profil
 // Update current user profile (must come before /:userId)
 router.put('/me', authMiddleware, profileController.updateProfile.bind(profileController));
 
+// Category alerts (must come before /:userId)
+router.get('/me/category-alerts', authMiddleware, profileController.getCategoryAlerts.bind(profileController));
+router.put('/me/category-alerts', authMiddleware, profileController.updateCategoryAlerts.bind(profileController));
+
+// Keyword alerts (must come before /:userId)
+router.get('/me/keyword-alerts', authMiddleware, profileController.getKeywordAlerts.bind(profileController));
+router.put('/me/keyword-alerts', authMiddleware, profileController.updateKeywordAlerts.bind(profileController));
+
 // Get profile by ID (parameterized route - must come last, public access allowed)
 router.get('/:userId/stats', profileController.getProfileStats.bind(profileController));
 
