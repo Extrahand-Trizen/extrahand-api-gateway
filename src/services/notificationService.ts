@@ -32,6 +32,88 @@ export class NotificationService extends BaseService {
     );
   }
 
+  /**
+   * In-app notifications (polling) - proxied via gateway
+   */
+
+  async getInAppNotifications(
+    userToken: UserToken,
+    options: { limit?: number; skip?: number; unreadOnly?: boolean } = {}
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const { limit = 50, skip = 0, unreadOnly = false } = options;
+
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          limit,
+          skip,
+          unreadOnly,
+        },
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse>('/api/v1/notifications/in-app', config)
+    );
+  }
+
+  async getUnreadInAppCount(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse>('/api/v1/notifications/in-app/unread-count', config)
+    );
+  }
+
+  async markAllInAppRead(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse>('/api/v1/notifications/in-app/mark-all-read', null, config)
+    );
+  }
+
+  async markInAppRead(
+    notificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse>(
+        `/api/v1/notifications/in-app/${notificationId}/read`,
+        null,
+        config
+      )
+    );
+  }
+
+  async deleteInAppNotification(
+    notificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse>(
+        `/api/v1/notifications/in-app/${notificationId}`,
+        config
+      )
+    );
+  }
+
   async removeToken(
     token: string,
     userToken: UserToken
