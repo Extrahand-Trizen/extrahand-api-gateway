@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verificationService } from '../services/verificationService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
+import logger from '../config/logger.js';
 
 export class VerificationController {
   async initiateDigilockerVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
@@ -209,11 +210,21 @@ export class VerificationController {
         return;
       }
 
+      logger.info('Email verification initiated', {
+        uid: req.user.uid,
+        email,
+        consentGiven: !!consentGiven,
+      });
+
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.initiateEmailVerification(email, consentGiven, req.user);
+      logger.info('Email verification initiate response', {
+        uid: req.user.uid,
+        status: response.status,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.initiateEmailVerification');
@@ -239,11 +250,21 @@ export class VerificationController {
         return;
       }
 
+      logger.info('Email OTP verification requested', {
+        uid: req.user.uid,
+        hasOtp: !!otp,
+        verificationId,
+      });
+
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.verifyEmailOTP(otp, verificationId, req.user);
+      logger.info('Email OTP verification response', {
+        uid: req.user.uid,
+        status: response.status,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.verifyEmailOTP');
@@ -260,11 +281,19 @@ export class VerificationController {
         return;
       }
 
+      logger.info('Email OTP resend requested', {
+        uid: req.user.uid,
+      });
+
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.resendEmailOTP(req.user);
+      logger.info('Email OTP resend response', {
+        uid: req.user.uid,
+        status: response.status,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.resendEmailOTP');
@@ -286,7 +315,15 @@ export class VerificationController {
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const userId = req.params.userId || req.user.uid;
+      logger.info('Email verification status requested', {
+        uid: req.user.uid,
+        targetUserId: userId,
+      });
       const response = await verificationService.getEmailVerificationStatus(userId, req.user);
+      logger.info('Email verification status response', {
+        uid: req.user.uid,
+        status: response.status,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.getEmailVerificationStatus');

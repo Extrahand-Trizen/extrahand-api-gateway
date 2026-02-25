@@ -66,12 +66,22 @@ export class ApplicationController {
         return;
       }
 
+      // ✅ Enrich application body with applicant's profile information
+      const applicantProfile = profile;
+      const enrichedBody = {
+        ...req.body,
+        applicantName: applicantProfile?.name || applicantProfile?.fullName,
+        applicantPhotoURL: applicantProfile?.photoURL,
+        applicantRating: applicantProfile?.rating,
+        applicantTotalReviews: applicantProfile?.totalReviews,
+      };
+
       // ✅ Add headers to show it's from gateway
       res.setHeader("X-Served-By", "api-gateway");
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
-      const response = await taskService.submitApplication(req.body, req.user);
+      const response = await taskService.submitApplication(enrichedBody, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, "ApplicationController.submitApplication");

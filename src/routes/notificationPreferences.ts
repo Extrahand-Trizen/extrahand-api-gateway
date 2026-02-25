@@ -19,6 +19,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
+    logger.info('Notification preferences GET requested', {
+      uid: userId,
+    });
+
     const response = await axios({
       method: 'GET',
       url: `${env.USER_SERVICE_URL}/api/v1/notification-preferences`,
@@ -30,6 +34,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       },
     });
 
+    logger.info('Notification preferences GET response', {
+      uid: userId,
+      status: response.status,
+    });
     return res.status(response.status).json(response.data);
   } catch (error: any) {
     const axiosError = error as AxiosError<{ error?: string }>;
@@ -51,6 +59,11 @@ router.put('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
+    logger.info('Notification preferences PUT requested', {
+      uid: userId,
+      bodyKeys: Object.keys(req.body || {}),
+    });
+
     const response = await axios({
       method: 'PUT',
       url: `${env.USER_SERVICE_URL}/api/v1/notification-preferences`,
@@ -63,6 +76,10 @@ router.put('/', authMiddleware, async (req: Request, res: Response, next: NextFu
       },
     });
 
+    logger.info('Notification preferences PUT response', {
+      uid: userId,
+      status: response.status,
+    });
     return res.status(response.status).json(response.data);
   } catch (error: any) {
     const axiosError = error as AxiosError<{ error?: string }>;
