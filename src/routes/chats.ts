@@ -16,6 +16,9 @@ router.post('/task/:taskId/start', chatController.startChatForTask.bind(chatCont
 // Get chat messages
 router.get('/:chatId/messages', chatController.getMessages.bind(chatController));
 
+// Get chat details
+router.get('/:chatId', chatController.getChatById.bind(chatController));
+
 // Send a message
 router.post('/:chatId/messages', chatController.sendMessage.bind(chatController));
 
