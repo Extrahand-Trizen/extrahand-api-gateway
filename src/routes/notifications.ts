@@ -9,6 +9,37 @@ router.delete('/token', authMiddleware, notificationController.removeToken.bind(
 router.get('/preferences', authMiddleware, notificationController.getPreferences.bind(notificationController));
 router.put('/preferences', authMiddleware, notificationController.updatePreferences.bind(notificationController));
 
+// In-app notifications (polling) - user-facing endpoints
+router.get(
+  '/in-app',
+  authMiddleware,
+  notificationController.getInAppNotifications.bind(notificationController)
+);
+
+router.get(
+  '/in-app/unread-count',
+  authMiddleware,
+  notificationController.getUnreadInAppCount.bind(notificationController)
+);
+
+router.patch(
+  '/in-app/mark-all-read',
+  authMiddleware,
+  notificationController.markAllInAppRead.bind(notificationController)
+);
+
+router.patch(
+  '/in-app/:notificationId/read',
+  authMiddleware,
+  notificationController.markInAppRead.bind(notificationController)
+);
+
+router.delete(
+  '/in-app/:notificationId',
+  authMiddleware,
+  notificationController.deleteInAppNotification.bind(notificationController)
+);
+
 export default router;
 
 
