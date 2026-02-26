@@ -85,6 +85,23 @@ export class ChatService extends BaseService {
     );
   }
 
+  async getChatDetails(
+    chatId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = {
+      headers: {
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
+      },
+    };
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/chats/${chatId}`, config)
+    );
+  }
+
   /**
    * Start a chat for a specific task (with permission validation)
    */
