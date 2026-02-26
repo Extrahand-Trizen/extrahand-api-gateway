@@ -76,8 +76,11 @@ export class NotificationService extends BaseService {
       this.forwardUserAuth(userToken)
     );
 
+    // Send userId in body as fallback in case X-User-Id header is stripped by proxy
+    const body = userToken?.uid ? { userId: userToken.uid } : undefined;
+
     return this.handleRequest(() =>
-      this.client.patch<ApiResponse>('/api/v1/notifications/in-app/mark-all-read', null, config)
+      this.client.patch<ApiResponse>('/api/v1/notifications/in-app/mark-all-read', body ?? null, config)
     );
   }
 
