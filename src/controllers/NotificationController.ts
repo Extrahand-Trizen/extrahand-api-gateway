@@ -147,7 +147,13 @@ export class NotificationController {
         return;
       }
 
-      const userToken = { uid: req.user.uid, token: req.user.token };
+      const uid = req.user.uid != null && String(req.user.uid).trim() !== '' ? req.user.uid : undefined;
+      if (!uid) {
+        res.status(400).json({ success: false, error: 'User ID is required (missing from token)' });
+        return;
+      }
+
+      const userToken = { uid, token: req.user.token };
 
       const response = await notificationService.markAllInAppRead(userToken);
 

@@ -131,22 +131,24 @@ export abstract class BaseService {
   protected forwardUserAuth(userToken: UserToken | null | undefined, config: AxiosRequestConfig = {}): AxiosRequestConfig {
     if (userToken) {
       // ✨ CRITICAL: Ensure token is a string (JWT), not an object
-      const tokenString = typeof userToken.token === 'string' 
-        ? userToken.token 
+      const tokenString = typeof userToken.token === 'string'
+        ? userToken.token
         : JSON.stringify(userToken.token); // Fallback if it's an object (shouldn't happen)
-      
+
+      const uid = userToken.uid != null && String(userToken.uid).trim() !== '' ? String(userToken.uid) : undefined;
+
       console.log(`🔐 [${this.serviceName}] Forwarding user auth:`, {
-        uid: userToken.uid,
+        uid: uid ?? 'NOT SET',
         profileId: userToken.profileId?.toString() || 'not set',
         tokenType: typeof userToken.token,
         tokenLength: tokenString.length,
         tokenPrefix: tokenString.substring(0, 20) + '...',
       });
-      
+
       config.headers = {
         ...config.headers,
         'Authorization': `Bearer ${tokenString}`,
-        'X-User-Id': userToken.uid, // Keep for backward compatibility
+        ...(uid && { 'X-User-Id': uid }),
         ...(userToken.profileId && {
           'X-Profile-Id': userToken.profileId,
         }),
