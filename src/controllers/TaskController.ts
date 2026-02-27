@@ -665,6 +665,46 @@ export class TaskController {
     }
   }
 
+  async requestChanges(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { message } = req.body;
+
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: "Task ID is required",
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: "Authentication required",
+        });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.requestChanges(
+        taskId,
+        { message },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.requestChanges");
+    }
+  }
+
   async followTask(
     req: Request,
     res: Response,

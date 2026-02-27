@@ -420,6 +420,22 @@ export class TaskService extends BaseService {
     );
   }
 
+  async requestChanges(
+    taskId: string,
+    data: { message?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/request-changes`,
+        data,
+        config
+      )
+    );
+  }
+
   async followTask(
     taskId: string,
     userToken: UserToken
