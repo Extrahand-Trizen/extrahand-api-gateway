@@ -70,6 +70,11 @@ router.post(
   authMiddleware,
   taskController.rejectCompletion.bind(taskController)
 );
+router.post(
+  "/:taskId/request-changes",
+  authMiddleware,
+  taskController.requestChanges.bind(taskController)
+);
 
 // Follow routes (must come before /:taskId route) - require authentication
 router.post(
