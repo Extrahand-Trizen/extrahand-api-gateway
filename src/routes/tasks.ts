@@ -1,37 +1,37 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+// import rateLimit from "express-rate-limit";
 import { taskController } from "../controllers/TaskController.js";
 import { optionalAuthMiddleware, authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
 
-const publicRouteLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per 15 minutes per IP
-  message: {
-    success: false,
-    error: "Too many requests from this IP, please try again later.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Use IP address for rate limiting (works for users without accounts)
-  keyGenerator: (req) => {
-    // Get IP from various sources (respects proxy headers)
-    return (
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      (req.headers['x-real-ip'] as string) ||
-      req.socket.remoteAddress ||
-      req.ip ||
-      'unknown'
-    );
-  },
-});
+// const publicRouteLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 500, // 500 requests per 15 min per key (supports 100–500 concurrent users)
+//   message: {
+//     success: false,
+//     error: "Too many requests, please try again later.",
+//   },
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   // Key by authenticated user when present so many users behind one IP don't share one limit
+//   keyGenerator: (req: any) => {
+//     if (req.user?.uid) return `user:${req.user.uid}`;
+//     return (
+//       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+//       (req.headers['x-real-ip'] as string) ||
+//       req.socket?.remoteAddress ||
+//       req.ip ||
+//       'unknown'
+//     );
+//   },
+// });
 
 // ✅ PUBLIC routes - accessible to users WITHOUT accounts
 // Optional auth allows personalization for logged-in users, but route works without authentication
 // Get all tasks (with filters) - public route with IP-based rate limiting
-router.get("/", publicRouteLimiter, optionalAuthMiddleware, taskController.getTasks.bind(taskController));
+router.get("/", optionalAuthMiddleware, taskController.getTasks.bind(taskController));
 
 // ✅ PROTECTED routes (require authentication)
 // Get nearby tasks - requires authentication
@@ -124,7 +124,6 @@ router.post(
 // Optional auth allows personalization for logged-in users, but route works without authentication
 router.get(
   "/:taskId",
-  publicRouteLimiter,
   optionalAuthMiddleware,
   taskController.getTaskById.bind(taskController)
 );
