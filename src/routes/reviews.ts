@@ -13,6 +13,9 @@ router.post('/', authMiddleware, reviewController.createReview.bind(reviewContro
 // GET /api/v1/reviews/task/:taskId - Get review for a task (requires auth)
 router.get('/task/:taskId', authMiddleware, reviewController.getTaskReview.bind(reviewController));
 
+// POST /api/v1/reviews/:id/vote - Vote helpful/not helpful (requires auth)
+router.post('/:id/vote', authMiddleware, reviewController.voteHelpful.bind(reviewController));
+
 export default router;
 
 

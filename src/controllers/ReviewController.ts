@@ -67,6 +67,27 @@ export class ReviewController {
       handleServiceError(error, res, 'ReviewController.getTaskReview');
     }
   }
+
+  async voteHelpful(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const { id } = req.params;
+      const { helpful } = req.body;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await reviewService.voteHelpful(id, helpful, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ReviewController.voteHelpful');
+    }
+  }
 }
 
 export const reviewController = new ReviewController();

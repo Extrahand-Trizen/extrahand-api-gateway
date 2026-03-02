@@ -55,6 +55,20 @@ export class ReviewService extends BaseService {
       this.client.get<ApiResponse<any>>(`/api/v1/reviews/task/${taskId}`, config)
     );
   }
+
+  async voteHelpful(
+    reviewId: string,
+    helpful: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(`/api/v1/reviews/${reviewId}/vote`, { helpful }, config)
+    );
+  }
 }
 
 export const reviewService = new ReviewService();
