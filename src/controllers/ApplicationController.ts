@@ -11,14 +11,6 @@ export class ApplicationController {
     _next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: "Authentication required",
-        });
-        return;
-      }
-
       // Extract query parameters
       const queryParams: Record<string, any> = {};
       if (req.query.mine) queryParams.mine = req.query.mine;
@@ -27,12 +19,22 @@ export class ApplicationController {
       if (req.query.limit) queryParams.limit = req.query.limit;
       if (req.query.page) queryParams.page = req.query.page;
 
+      // ✅ Require authentication for "mine" queries
+      if (req.query.mine && !req.user) {
+        res.status(401).json({
+          success: false,
+          error: "Authentication required to view your applications",
+        });
+        return;
+      }
+
       // ✅ Add headers to show it's from gateway
       res.setHeader("X-Served-By", "api-gateway");
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const response = await taskService.getApplications(queryParams, req.user);
+      
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, "ApplicationController.getApplications");

@@ -128,15 +128,16 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
 };
 
 // Commented out as it's not currently used
-// const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-//   Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
-// };
+const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
+};
 
 app.use('/api/v1/profiles', profilesRouter);
 // Tasks router - some routes are public (optional auth), some require auth (handled in routes)
 app.use('/api/v1/tasks', tasksRouter);
 app.use('/api/v1/verification', asyncAuthMiddleware, verificationRouter);
-app.use('/api/v1/applications', asyncAuthMiddleware, applicationsRouter);
+// Applications router - GET is public (optional auth), mutations require auth (handled in routes)
+app.use('/api/v1/applications', applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 app.use('/api/v1/reviews', reviewsRouter);

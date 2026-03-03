@@ -128,7 +128,7 @@ export class TaskService extends BaseService {
 
   async getApplications(
     queryParams: Record<string, any>,
-    userToken: UserToken
+    userToken: UserToken | undefined
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
