@@ -53,9 +53,9 @@ export class TaskController {
       const pagination = (taskServiceResponse as any)?.meta?.pagination;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTasks = req.user 
-        ? await enrichTaskResponse(tasks, req.user)
-        : tasks;
+      // Always enrich, even for unauthenticated (public) requests so profile images show in cards
+      const userToken: UserToken = (req.user as UserToken) || { uid: 'system', token: null };
+      const enrichedTasks = await enrichTaskResponse(tasks, userToken);
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({
