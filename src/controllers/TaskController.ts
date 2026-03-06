@@ -4,7 +4,7 @@ import { userService } from "../services/userService.js";
 import { handleServiceError } from "../utils/errorHandler.js";
 import { Task } from "../types/api.js";
 import { enrichTaskResponse } from "../services/profileEnrichment.js";
-import { getTaskPostingVerificationStatus, getTaskStartVerificationStatus } from "../lib/verificationGate.js";
+import { getTaskPostingVerificationStatus } from "../lib/verificationGate.js";
 import { UserToken } from "../types/service.js";
 
 export class TaskController {
@@ -528,32 +528,6 @@ export class TaskController {
           error: "Authentication required",
         });
         return;
-      }
-
-      // STEP 3: Check Aadhaar verification before allowing task start
-      if (status === "started") {
-        try {
-          const profileResponse = await userService.getCurrentProfile(req.user);
-          const profile = profileResponse?.data?.data ?? null;
-
-          const verificationStatus = getTaskStartVerificationStatus(profile);
-          if (!verificationStatus.allowed) {
-            res.status(403).json({
-              success: false,
-              error: "Aadhaar verification required to start the task",
-              message: verificationStatus.message,
-              missing: verificationStatus.missing,
-            });
-            return;
-          }
-        } catch (error) {
-          console.error("Failed to fetch user profile for verification check:", error);
-          res.status(500).json({
-            success: false,
-            error: "Failed to verify user credentials",
-          });
-          return;
-        }
       }
 
       res.setHeader("X-Served-By", "api-gateway");
