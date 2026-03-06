@@ -533,8 +533,8 @@ export class TaskController {
       // STEP 3: Check Aadhaar verification before allowing task start
       if (status === "started") {
         try {
-          const profileResponse = await userService.getUserProfile(req.user);
-          const profile = profileResponse?.data ?? null;
+          const profileResponse = await userService.getCurrentProfile(req.user);
+          const profile = profileResponse?.data?.data ?? null;
 
           const verificationStatus = getTaskStartVerificationStatus(profile);
           if (!verificationStatus.allowed) {
