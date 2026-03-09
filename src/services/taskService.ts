@@ -389,6 +389,52 @@ export class TaskService extends BaseService {
     );
   }
 
+  async sendStartOtp(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
+        `/api/v1/tasks/${taskId}/start-otp/send`,
+        {},
+        config
+      )
+    );
+  }
+
+  async resendStartOtp(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
+        `/api/v1/tasks/${taskId}/start-otp/resend`,
+        {},
+        config
+      )
+    );
+  }
+
+  async verifyStartOtp(
+    taskId: string,
+    otp: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/start-otp/verify`,
+        { otp },
+        config
+      )
+    );
+  }
+
   async approveCompletion(
     taskId: string,
     userToken: UserToken

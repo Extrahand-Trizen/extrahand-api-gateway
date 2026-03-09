@@ -54,6 +54,21 @@ router.patch(
   authMiddleware,
   taskController.updateTaskStatus.bind(taskController)
 );
+router.post(
+  "/:taskId/start-otp/send",
+  authMiddleware,
+  taskController.sendStartOtp.bind(taskController)
+);
+router.post(
+  "/:taskId/start-otp/resend",
+  authMiddleware,
+  taskController.resendStartOtp.bind(taskController)
+);
+router.post(
+  "/:taskId/start-otp/verify",
+  authMiddleware,
+  taskController.verifyStartOtp.bind(taskController)
+);
 router.post('/:taskId/submit-proof', authMiddleware, taskController.submitCompletionProof.bind(taskController));
 router.post(
   "/:taskId/complete",
