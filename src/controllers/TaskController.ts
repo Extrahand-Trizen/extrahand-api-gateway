@@ -53,9 +53,9 @@ export class TaskController {
       const pagination = (taskServiceResponse as any)?.meta?.pagination;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTasks = req.user 
-        ? await enrichTaskResponse(tasks, req.user)
-        : tasks;
+      // Always enrich, even for unauthenticated (public) requests so profile images show in cards
+      const userToken: UserToken = (req.user as UserToken) || { uid: 'system', token: null };
+      const enrichedTasks = await enrichTaskResponse(tasks, userToken);
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({
@@ -587,6 +587,100 @@ export class TaskController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, "TaskController.submitCompletionProof");
+    }
+  }
+
+  async sendStartOtp(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.sendStartOtp(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.sendStartOtp");
+    }
+  }
+
+  async resendStartOtp(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.resendStartOtp(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.resendStartOtp");
+    }
+  }
+
+  async verifyStartOtp(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { otp } = req.body;
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+
+      if (!otp) {
+        res.status(400).json({ success: false, error: "OTP is required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.verifyStartOtp(taskId, String(otp), req.user);
+      const enrichedData = await enrichTaskResponse(response.data, req.user);
+      res.status(response.status).json(enrichedData);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.verifyStartOtp");
     }
   }
 

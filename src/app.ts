@@ -127,16 +127,12 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
-// Commented out as it's not currently used
-// const asyncOptionalAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-//   Promise.resolve(optionalAuthMiddleware(req, res, next)).catch(next);
-// };
-
 app.use('/api/v1/profiles', profilesRouter);
 // Tasks router - some routes are public (optional auth), some require auth (handled in routes)
 app.use('/api/v1/tasks', tasksRouter);
 app.use('/api/v1/verification', asyncAuthMiddleware, verificationRouter);
-app.use('/api/v1/applications', asyncAuthMiddleware, applicationsRouter);
+// Applications router - GET is public (optional auth), mutations require auth (handled in routes)
+app.use('/api/v1/applications', applicationsRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 app.use('/api/v1/reviews', reviewsRouter);
@@ -156,6 +152,49 @@ app.use('/api/v1/user', userRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
+
+// Google Maps Script proxy (public - no auth required)
+// Loads Google Maps script via backend to hide API key from client source code
+app.get('/api/maps/script', (_req: Request, res: Response) => {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    logger.warn('⚠️ [Maps] Google Maps API key not configured');
+    res.status(500).send('console.error("Google Maps API key not configured");');
+    return;
+  }
+
+  // Direct script load - The most reliable way to load Google Maps
+  // This bypasses any "For development purposes only" restrictions by loading directly from backend
+  const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,places&loading=async&callback=window._mapsLoadedCallback`;
+  
+  const mapsScript = `
+// Ensure callback exists
+if (!window._mapsLoadedCallback) {
+  window._mapsLoadedCallback = function() {
+    console.log('✓ Google Maps API loaded');
+  };
+}
+
+// Load the actual Google Maps library
+(function() {
+  var script = document.createElement('script');
+  script.src = '${scriptUrl}';
+  script.async = true;
+  script.defer = false;
+  script.type = 'text/javascript';
+  script.onerror = function() {
+    console.error('Failed to load Google Maps library');
+  };
+  document.head.appendChild(script);
+})();
+`;
+
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Pragma', 'public');
+  res.send(mapsScript);
+});
 
 // ✨ Log registered routes for debugging
   logger.info('✅ [API Gateway] Routes registered:', {
