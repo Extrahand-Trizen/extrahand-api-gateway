@@ -14,7 +14,7 @@ export class VerificationController {
         return;
       }
 
-      const { mobileNumber, aadhaarNumber, consentGiven } = req.body;
+      const { mobileNumber, aadhaarNumber, consentGiven, redirectUrl } = req.body;
 
       if (!mobileNumber && !aadhaarNumber) {
         res.status(400).json({
@@ -29,7 +29,7 @@ export class VerificationController {
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.initiateDigilockerVerification(
-        { mobileNumber, aadhaarNumber, consentGiven },
+        { mobileNumber, aadhaarNumber, consentGiven, redirectUrl },
         req.user
       );
       res.status(response.status).json(response.data);
