@@ -3,6 +3,7 @@ import logger from './logger.js';
 
 let isConnected = false;
 
+
 export async function connectMongo(uri: string): Promise<typeof mongoose.connection> {
   if (!uri) {
     throw new Error('Missing MONGODB_URI');
