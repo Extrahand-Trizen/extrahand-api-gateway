@@ -198,13 +198,19 @@ export class AuthController {
             sanitizeSessionPayload(response.data)
          );
       } catch (error: any) {
+         const status = error.response?.status ?? 500;
+         const data = error.response?.data;
+         const upstreamError =
+            data?.error ?? data?.message ?? error.message ?? "OTP completion failed";
          logger.error("Error during OTP completion", {
+            status,
+            upstreamError,
             error: error.message,
             stack: error.stack,
          });
-         res.status(500).json({
+         res.status(status).json({
             success: false,
-            error: "OTP completion failed",
+            error: upstreamError,
             message: error.message,
          });
       }

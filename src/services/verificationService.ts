@@ -40,14 +40,17 @@ export class VerificationService extends BaseService {
   }
 
   async initiateDigilockerVerification(
-    params: { mobileNumber?: string; aadhaarNumber?: string; consentGiven?: boolean },
+    params: { mobileNumber?: string; aadhaarNumber?: string; consentGiven?: boolean; redirectUrl?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const requestData = {
+    const requestData: Record<string, unknown> = {
       mobileNumber: params.mobileNumber,
       aadhaarNumber: params.aadhaarNumber,
       consentGiven: params.consentGiven ?? true,
     };
+    if (params.redirectUrl != null && typeof params.redirectUrl === 'string' && params.redirectUrl.trim()) {
+      requestData.redirectUrl = params.redirectUrl.trim();
+    }
 
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
