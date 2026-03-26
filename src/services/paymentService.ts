@@ -338,6 +338,45 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async upsertBankAccount(
+    data: {
+      accountNumber: string;
+      ifscCode: string;
+      accountHolderName: string;
+      bankName?: string;
+      email?: string;
+      phone?: string;
+      setAsDefault?: boolean;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/bank-accounts', data, config)
+    );
+  }
+
+  async getMyBankAccounts(userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.get('/api/v1/bank-accounts/me', config));
+  }
+
+  async processTaskCompletionPayout(
+    data: {
+      taskId: string;
+      performerUid: string;
+      amount: number;
+      taskTitle?: string;
+      userId?: string;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payouts/task-completion', data, config)
+    );
+  }
+
   async getTransactionSummary(
     userId: string,
     startDate: string | undefined,

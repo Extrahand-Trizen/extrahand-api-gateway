@@ -25,6 +25,13 @@ router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarning
 // Transaction routes
 router.get('/transactions/user/:userId', authMiddleware, paymentController.getUserTransactions.bind(paymentController));
 
+// Bank account routes (tasker payouts)
+router.post('/bank-accounts', authMiddleware, paymentController.upsertBankAccount.bind(paymentController));
+router.get('/bank-accounts/me', authMiddleware, paymentController.getMyBankAccounts.bind(paymentController));
+
+// Non-escrow task completion payout route
+router.post('/payout/task-completion', authMiddleware, paymentController.processTaskCompletionPayout.bind(paymentController));
+
 export default router;
 
 

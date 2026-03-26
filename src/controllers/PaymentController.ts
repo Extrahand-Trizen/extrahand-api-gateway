@@ -192,6 +192,42 @@ export class PaymentController {
       handleServiceError(error, res, 'PaymentController.getUserTransactions');
     }
   }
+
+  async upsertBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.upsertBankAccount(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.upsertBankAccount');
+    }
+  }
+
+  async getMyBankAccounts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getMyBankAccounts(req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getMyBankAccounts');
+    }
+  }
+
+  async processTaskCompletionPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.processTaskCompletionPayout(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.processTaskCompletionPayout');
+    }
+  }
 }
 
 export const paymentController = new PaymentController();
