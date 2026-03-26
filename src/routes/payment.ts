@@ -28,6 +28,8 @@ router.get('/transactions/user/:userId', authMiddleware, paymentController.getUs
 // Bank account routes (tasker payouts)
 router.post('/bank-accounts', authMiddleware, paymentController.upsertBankAccount.bind(paymentController));
 router.get('/bank-accounts/me', authMiddleware, paymentController.getMyBankAccounts.bind(paymentController));
+router.put('/bank-accounts/:bankAccountId/default', authMiddleware, paymentController.setDefaultBankAccount.bind(paymentController));
+router.delete('/bank-accounts/:bankAccountId', authMiddleware, paymentController.deleteBankAccount.bind(paymentController));
 
 // Non-escrow task completion payout route
 router.post('/payout/task-completion', authMiddleware, paymentController.processTaskCompletionPayout.bind(paymentController));

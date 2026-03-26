@@ -361,6 +361,16 @@ export class PaymentService extends BaseService {
     return this.handleRequest(() => this.client.get('/api/v1/bank-accounts/me', config));
   }
 
+  async deleteBankAccount(bankAccountId: string, userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.delete(`/api/v1/bank-accounts/${bankAccountId}`, config));
+  }
+
+  async setDefaultBankAccount(bankAccountId: string, userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.put(`/api/v1/bank-accounts/${bankAccountId}/default`, {}, config));
+  }
+
   async processTaskCompletionPayout(
     data: {
       taskId: string;

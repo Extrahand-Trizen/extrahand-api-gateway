@@ -217,6 +217,32 @@ export class PaymentController {
     }
   }
 
+  async deleteBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bankAccountId } = req.params;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.deleteBankAccount(bankAccountId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.deleteBankAccount');
+    }
+  }
+
+  async setDefaultBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bankAccountId } = req.params;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.setDefaultBankAccount(bankAccountId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.setDefaultBankAccount');
+    }
+  }
+
   async processTaskCompletionPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
