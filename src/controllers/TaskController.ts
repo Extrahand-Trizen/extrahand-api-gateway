@@ -535,6 +535,12 @@ export class TaskController {
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
+      logger.info("➡️ Gateway: update-task-status called", {
+        taskId,
+        userUid: req.user.uid,
+        status,
+      });
+
       const response = await taskService.updateTaskStatus(
         taskId,
         status,
