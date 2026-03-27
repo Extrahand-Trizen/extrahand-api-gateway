@@ -6,6 +6,7 @@ import { Task } from "../types/api.js";
 import { enrichTaskResponse } from "../services/profileEnrichment.js";
 import { getTaskPostingVerificationStatus } from "../lib/verificationGate.js";
 import { UserToken } from "../types/service.js";
+import logger from "../config/logger.js";
 
 export class TaskController {
   async getTasks(
@@ -711,6 +712,11 @@ export class TaskController {
       res.setHeader("X-Served-By", "api-gateway");
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      logger.info("➡️ Gateway: approve-completion called", {
+        taskId,
+        userUid: req.user.uid,
+      });
 
       const response = await taskService.approveCompletion(taskId, req.user);
       res.status(response.status).json(response.data);
