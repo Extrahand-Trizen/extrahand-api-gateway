@@ -80,6 +80,19 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async cancelPayment(
+    body: Record<string, unknown>,
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/cancel', body, config)
+    );
+  }
+
   // =====================================================
   // ESCROW METHODS
   // =====================================================

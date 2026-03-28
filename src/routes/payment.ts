@@ -9,6 +9,7 @@ router.post('/create-order', authMiddleware, paymentController.createOrder.bind(
 router.post('/verify-payment', authMiddleware, paymentController.verifyPayment.bind(paymentController));
 router.get('/order-status/:orderId', authMiddleware, paymentController.getOrderStatus.bind(paymentController));
 router.post('/refund', authMiddleware, paymentController.processRefund.bind(paymentController));
+router.post('/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
 
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
