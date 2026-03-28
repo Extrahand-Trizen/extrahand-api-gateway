@@ -10,7 +10,11 @@ export class EarningsController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getPendingCancellationPenalties(userId, req.user || null);
+      const response = await paymentService.getPendingCancellationPenalties(
+        userId,
+        req.user || null,
+        typeof req.query.linkedUserIds === 'string' ? req.query.linkedUserIds : undefined
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'EarningsController.getPendingCancellationPenalties');

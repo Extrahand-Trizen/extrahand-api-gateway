@@ -175,7 +175,11 @@ export class PaymentController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getPendingCancellationPenalties(userId, req.user || null);
+      const response = await paymentService.getPendingCancellationPenalties(
+        userId,
+        req.user || null,
+        typeof req.query.linkedUserIds === 'string' ? req.query.linkedUserIds : undefined
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getPendingCancellationPenalties');
@@ -207,6 +211,7 @@ export class PaymentController {
         type: req.query.type as string,
         status: req.query.status as string,
         category: req.query.category as any,
+        linkedUserIds: req.query.linkedUserIds as string | undefined,
       };
 
       res.setHeader('X-Served-By', 'api-gateway');

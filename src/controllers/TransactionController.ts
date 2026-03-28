@@ -6,7 +6,7 @@ export class TransactionController {
   async getUserTransactions(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
-      const { limit, offset, startDate, endDate, type, status, category } = req.query;
+      const { limit, offset, startDate, endDate, type, status, category, linkedUserIds } = req.query;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
@@ -20,7 +20,8 @@ export class TransactionController {
           endDate: endDate as string | undefined,
           type: type as string | undefined,
           status: status as string | undefined,
-          category: category as 'earnings' | 'payments' | 'all' | undefined
+          category: category as 'earnings' | 'payments' | 'all' | undefined,
+          linkedUserIds: linkedUserIds as string | undefined,
         },
         req.user || null
       );

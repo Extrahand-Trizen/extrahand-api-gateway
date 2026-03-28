@@ -315,17 +315,23 @@ export class PaymentService extends BaseService {
 
   async getPendingCancellationPenalties(
     userId: string,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    linkedUserIds?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
     );
 
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) {
+      params.linkedUserIds = linkedUserIds.trim();
+    }
+
     return this.handleRequest(() =>
-      this.client.get(
-        `/api/v1/earnings/${userId}/pending-cancellation-penalties`,
-        config
-      )
+      this.client.get(`/api/v1/earnings/${userId}/pending-cancellation-penalties`, {
+        ...config,
+        params,
+      })
     );
   }
 
@@ -343,6 +349,7 @@ export class PaymentService extends BaseService {
       type?: string;
       status?: string;
       category?: 'earnings' | 'payments' | 'all';
+      linkedUserIds?: string;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -358,6 +365,7 @@ export class PaymentService extends BaseService {
     if (options.type) params.type = options.type;
     if (options.status) params.status = options.status;
     if (options.category) params.category = options.category;
+    if (options.linkedUserIds?.trim()) params.linkedUserIds = options.linkedUserIds.trim();
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}`, {
