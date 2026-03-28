@@ -20,7 +20,12 @@ router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowBy
 router.get('/fees/calculate', paymentController.calculateFees.bind(paymentController)); // Public endpoint
 router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentController)); // Public endpoint
 
-// Earnings routes
+// Earnings routes (specific paths before /:userId)
+router.get(
+  '/earnings/:userId/pending-cancellation-penalties',
+  authMiddleware,
+  paymentController.getPendingCancellationPenalties.bind(paymentController)
+);
 router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));
 
 // Transaction routes

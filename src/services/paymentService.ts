@@ -313,6 +313,22 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async getPendingCancellationPenalties(
+    userId: string,
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get(
+        `/api/v1/earnings/${userId}/pending-cancellation-penalties`,
+        config
+      )
+    );
+  }
+
   // =====================================================
   // TRANSACTION HISTORY METHODS
   // =====================================================

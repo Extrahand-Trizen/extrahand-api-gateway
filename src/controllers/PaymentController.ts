@@ -168,6 +168,20 @@ export class PaymentController {
     }
   }
 
+  async getPendingCancellationPenalties(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getPendingCancellationPenalties(userId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getPendingCancellationPenalties');
+    }
+  }
+
   async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
