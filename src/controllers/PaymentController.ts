@@ -76,18 +76,6 @@ export class PaymentController {
     }
   }
 
-  async cancelPayment(req: Request, res: Response, _next: NextFunction): Promise<void> {
-    try {
-      res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'payment-service');
-
-      const response = await paymentService.cancelPayment(req.body, req.user || null);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, 'PaymentController.cancelPayment');
-    }
-  }
-
   async getFeeStructure(_req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
@@ -168,9 +156,45 @@ export class PaymentController {
     }
   }
 
+  async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getUserEarnings(userId, req.user || null, linkedUserIdsMerged);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getUserEarnings');
+    }
+  }
+
   async getPendingCancellationPenalties(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
@@ -178,7 +202,7 @@ export class PaymentController {
       const response = await paymentService.getPendingCancellationPenalties(
         userId,
         req.user || null,
-        typeof req.query.linkedUserIds === 'string' ? req.query.linkedUserIds : undefined
+        linkedUserIdsMerged
       );
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -186,23 +210,20 @@ export class PaymentController {
     }
   }
 
-  async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
-    try {
-      const { userId } = req.params;
-
-      res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'payment-service');
-
-      const response = await paymentService.getUserEarnings(userId, req.user || null);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, 'PaymentController.getUserEarnings');
-    }
-  }
-
   async getUserTransactions(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
       const options = {
         limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
         offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,
@@ -211,7 +232,7 @@ export class PaymentController {
         type: req.query.type as string,
         status: req.query.status as string,
         category: req.query.category as any,
-        linkedUserIds: req.query.linkedUserIds as string | undefined,
+        linkedUserIds: linkedUserIdsMerged,
       };
 
       res.setHeader('X-Served-By', 'api-gateway');
@@ -221,6 +242,38 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getUserTransactions');
+    }
+  }
+
+  async getTransactionSummary(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const { startDate, endDate } = req.query;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getTransactionSummary(
+        userId,
+        startDate as string | undefined,
+        endDate as string | undefined,
+        req.user || null,
+        linkedUserIdsMerged
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getTransactionSummary');
     }
   }
 

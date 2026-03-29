@@ -9,7 +9,6 @@ router.post('/create-order', authMiddleware, paymentController.createOrder.bind(
 router.post('/verify-payment', authMiddleware, paymentController.verifyPayment.bind(paymentController));
 router.get('/order-status/:orderId', authMiddleware, paymentController.getOrderStatus.bind(paymentController));
 router.post('/refund', authMiddleware, paymentController.processRefund.bind(paymentController));
-router.post('/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
 
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
@@ -20,16 +19,17 @@ router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowBy
 router.get('/fees/calculate', paymentController.calculateFees.bind(paymentController)); // Public endpoint
 router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentController)); // Public endpoint
 
-// Earnings routes (specific paths before /:userId)
-router.get(
-  '/earnings/:userId/pending-cancellation-penalties',
-  authMiddleware,
-  paymentController.getPendingCancellationPenalties.bind(paymentController)
-);
+// Earnings routes
 router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));
+router.get(
+	'/earnings/:userId/pending-cancellation-penalties',
+	authMiddleware,
+	paymentController.getPendingCancellationPenalties.bind(paymentController)
+);
 
 // Transaction routes
 router.get('/transactions/user/:userId', authMiddleware, paymentController.getUserTransactions.bind(paymentController));
+router.get('/transactions/user/:userId/summary', authMiddleware, paymentController.getTransactionSummary.bind(paymentController));
 
 // Bank account routes (tasker payouts)
 router.post('/bank-accounts', authMiddleware, paymentController.upsertBankAccount.bind(paymentController));

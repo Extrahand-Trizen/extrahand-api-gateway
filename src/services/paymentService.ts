@@ -80,19 +80,6 @@ export class PaymentService extends BaseService {
     );
   }
 
-  async cancelPayment(
-    body: Record<string, unknown>,
-    userToken: UserToken | null
-  ): Promise<AxiosResponse> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken || undefined)
-    );
-
-    return this.handleRequest(() =>
-      this.client.post('/api/v1/payment/cancel', body, config)
-    );
-  }
-
   // =====================================================
   // ESCROW METHODS
   // =====================================================
@@ -267,14 +254,45 @@ export class PaymentService extends BaseService {
 
   async getUserEarnings(
     userId: string,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    linkedUserIds?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
     );
 
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) {
+      params.linkedUserIds = linkedUserIds.trim();
+    }
+
     return this.handleRequest(() =>
-      this.client.get(`/api/v1/earnings/${userId}`, config)
+      this.client.get(`/api/v1/earnings/${userId}`, {
+        ...config,
+        params,
+      })
+    );
+  }
+
+  async getPendingCancellationPenalties(
+    userId: string,
+    userToken: UserToken | null,
+    linkedUserIds?: string
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) {
+      params.linkedUserIds = linkedUserIds.trim();
+    }
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/earnings/${userId}/pending-cancellation-penalties`, {
+        ...config,
+        params,
+      })
     );
   }
 
@@ -313,28 +331,6 @@ export class PaymentService extends BaseService {
     );
   }
 
-  async getPendingCancellationPenalties(
-    userId: string,
-    userToken: UserToken | null,
-    linkedUserIds?: string
-  ): Promise<AxiosResponse> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken || undefined)
-    );
-
-    const params: Record<string, string> = {};
-    if (linkedUserIds?.trim()) {
-      params.linkedUserIds = linkedUserIds.trim();
-    }
-
-    return this.handleRequest(() =>
-      this.client.get(`/api/v1/earnings/${userId}/pending-cancellation-penalties`, {
-        ...config,
-        params,
-      })
-    );
-  }
-
   // =====================================================
   // TRANSACTION HISTORY METHODS
   // =====================================================
@@ -365,7 +361,7 @@ export class PaymentService extends BaseService {
     if (options.type) params.type = options.type;
     if (options.status) params.status = options.status;
     if (options.category) params.category = options.category;
-    if (options.linkedUserIds?.trim()) params.linkedUserIds = options.linkedUserIds.trim();
+    if (options.linkedUserIds) params.linkedUserIds = options.linkedUserIds;
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}`, {
@@ -428,7 +424,8 @@ export class PaymentService extends BaseService {
     userId: string,
     startDate: string | undefined,
     endDate: string | undefined,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    linkedUserIds?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
@@ -437,6 +434,7 @@ export class PaymentService extends BaseService {
     const params: Record<string, string> = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
+    if (linkedUserIds?.trim()) params.linkedUserIds = linkedUserIds.trim();
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}/summary`, {
