@@ -60,9 +60,9 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 console.log("✅ [CORS] CORS middleware applied with credentials:", corsOptions.credentials);
 
-// Body parsing
+// Body parsing — strict: false so JSON primitives (e.g. `null`) from clients don't 400 before routes run
 app.use(compression());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10mb", strict: false }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
 

@@ -95,7 +95,7 @@ export class NotificationService extends BaseService {
     return this.handleRequest(() =>
       this.client.patch<ApiResponse>(
         `/api/v1/notifications/in-app/${notificationId}/read`,
-        null,
+        {},
         config
       )
     );
