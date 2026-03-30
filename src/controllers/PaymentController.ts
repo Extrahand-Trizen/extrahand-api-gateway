@@ -171,20 +171,71 @@ export class PaymentController {
   async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getUserEarnings(userId, req.user || null);
+      const response = await paymentService.getUserEarnings(userId, req.user || null, linkedUserIdsMerged);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getUserEarnings');
     }
   }
 
+  async getPendingCancellationPenalties(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getPendingCancellationPenalties(
+        userId,
+        req.user || null,
+        linkedUserIdsMerged
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getPendingCancellationPenalties');
+    }
+  }
+
   async getUserTransactions(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
       const options = {
         limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
         offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,
@@ -193,6 +244,7 @@ export class PaymentController {
         type: req.query.type as string,
         status: req.query.status as string,
         category: req.query.category as any,
+        linkedUserIds: linkedUserIdsMerged,
       };
 
       res.setHeader('X-Served-By', 'api-gateway');
@@ -202,6 +254,100 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getUserTransactions');
+    }
+  }
+
+  async getTransactionSummary(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const { startDate, endDate } = req.query;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getTransactionSummary(
+        userId,
+        startDate as string | undefined,
+        endDate as string | undefined,
+        req.user || null,
+        linkedUserIdsMerged
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getTransactionSummary');
+    }
+  }
+
+  async upsertBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.upsertBankAccount(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.upsertBankAccount');
+    }
+  }
+
+  async getMyBankAccounts(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getMyBankAccounts(req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getMyBankAccounts');
+    }
+  }
+
+  async deleteBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bankAccountId } = req.params;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.deleteBankAccount(bankAccountId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.deleteBankAccount');
+    }
+  }
+
+  async setDefaultBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bankAccountId } = req.params;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.setDefaultBankAccount(bankAccountId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.setDefaultBankAccount');
+    }
+  }
+
+  async processTaskCompletionPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.processTaskCompletionPayout(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.processTaskCompletionPayout');
     }
   }
 }

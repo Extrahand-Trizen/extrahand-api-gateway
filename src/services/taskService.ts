@@ -116,13 +116,12 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any[]>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params: { taskId } })
+    );
 
     return this.handleRequest(() =>
-      this.client.get<ApiResponse<any[]>>(
-        `/api/v1/tasks/${taskId}/applications`,
-        config
-      )
+      this.client.get<ApiResponse<any[]>>("/api/v1/applications", config)
     );
   }
 

@@ -12,6 +12,7 @@ router.post('/start', chatController.startChat.bind(chatController));
 
 // Start a task-based chat (with permission validation)
 router.post('/task/:taskId/start', chatController.startChatForTask.bind(chatController));
+router.get('/task/:taskId', chatController.getTaskChatForUser.bind(chatController));
 
 // Get chat messages
 router.get('/:chatId/messages', chatController.getMessages.bind(chatController));

@@ -202,6 +202,40 @@ export class ChatController {
       handleServiceError(error, res, 'ChatController.startChatForTask');
     }
   }
+
+  /**
+   * Get existing task chat without creating one
+   * GET /api/v1/chats/task/:taskId
+   */
+  async getTaskChatForUser(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: 'Task ID is required',
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'chat-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await chatService.getTaskChatForUser(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ChatController.getTaskChatForUser');
+    }
+  }
 }
 
 export const chatController = new ChatController();

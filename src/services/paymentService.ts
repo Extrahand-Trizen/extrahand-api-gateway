@@ -254,14 +254,45 @@ export class PaymentService extends BaseService {
 
   async getUserEarnings(
     userId: string,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    linkedUserIds?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
     );
 
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) {
+      params.linkedUserIds = linkedUserIds.trim();
+    }
+
     return this.handleRequest(() =>
-      this.client.get(`/api/v1/earnings/${userId}`, config)
+      this.client.get(`/api/v1/earnings/${userId}`, {
+        ...config,
+        params,
+      })
+    );
+  }
+
+  async getPendingCancellationPenalties(
+    userId: string,
+    userToken: UserToken | null,
+    linkedUserIds?: string
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) {
+      params.linkedUserIds = linkedUserIds.trim();
+    }
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/earnings/${userId}/pending-cancellation-penalties`, {
+        ...config,
+        params,
+      })
     );
   }
 
@@ -314,6 +345,7 @@ export class PaymentService extends BaseService {
       type?: string;
       status?: string;
       category?: 'earnings' | 'payments' | 'all';
+      linkedUserIds?: string;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -329,6 +361,7 @@ export class PaymentService extends BaseService {
     if (options.type) params.type = options.type;
     if (options.status) params.status = options.status;
     if (options.category) params.category = options.category;
+    if (options.linkedUserIds) params.linkedUserIds = options.linkedUserIds;
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}`, {
@@ -338,11 +371,61 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async upsertBankAccount(
+    data: {
+      accountNumber: string;
+      ifscCode: string;
+      accountHolderName: string;
+      bankName?: string;
+      email?: string;
+      phone?: string;
+      setAsDefault?: boolean;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/bank-accounts', data, config)
+    );
+  }
+
+  async getMyBankAccounts(userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.get('/api/v1/bank-accounts/me', config));
+  }
+
+  async deleteBankAccount(bankAccountId: string, userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.delete(`/api/v1/bank-accounts/${bankAccountId}`, config));
+  }
+
+  async setDefaultBankAccount(bankAccountId: string, userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() => this.client.put(`/api/v1/bank-accounts/${bankAccountId}/default`, {}, config));
+  }
+
+  async processTaskCompletionPayout(
+    data: {
+      taskId: string;
+      performerUid: string;
+      amount: number;
+      taskTitle?: string;
+      userId?: string;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payouts/task-completion', data, config)
+    );
+  }
+
   async getTransactionSummary(
     userId: string,
     startDate: string | undefined,
     endDate: string | undefined,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    linkedUserIds?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
@@ -351,6 +434,7 @@ export class PaymentService extends BaseService {
     const params: Record<string, string> = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
+    if (linkedUserIds?.trim()) params.linkedUserIds = linkedUserIds.trim();
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}/summary`, {

@@ -123,6 +123,26 @@ export class ChatService extends BaseService {
   }
 
   /**
+   * Get existing task chat for current user without creating one
+   */
+  async getTaskChatForUser(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = {
+      headers: {
+        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
+        'X-Service-Name': 'api-gateway',
+        Authorization: `Bearer ${JSON.stringify(userToken)}`,
+      },
+    };
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/chats/task/${taskId}`, config)
+    );
+  }
+
+  /**
    * Mark chat as read
    */
   async markChatAsRead(
