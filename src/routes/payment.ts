@@ -4,6 +4,9 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
+// Publishable Razorpay Key ID (requires user JWT — for mobile when public app.get route is not deployed yet)
+router.get('/razorpay-key', paymentController.getRazorpayKeyId.bind(paymentController));
+
 // Payment routes (with auth middleware)
 router.post('/create-order', authMiddleware, paymentController.createOrder.bind(paymentController));
 router.post('/verify-payment', authMiddleware, paymentController.verifyPayment.bind(paymentController));

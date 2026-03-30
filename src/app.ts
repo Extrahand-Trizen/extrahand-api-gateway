@@ -137,6 +137,11 @@ app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
+// Public Razorpay Key ID for checkout (must be registered before /api/v1/payment auth router)
+app.get(
+  '/api/v1/payment/razorpay-key',
+  paymentController.getRazorpayKeyId.bind(paymentController),
+);
 app.use('/api/v1/payment', authMiddleware, paymentRouter);
 app.use('/api/v1/escrow', authMiddleware, escrowRouter);
 app.use('/api/v1/refunds', authMiddleware, refundRouter);

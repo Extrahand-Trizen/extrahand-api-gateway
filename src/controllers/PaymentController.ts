@@ -88,6 +88,18 @@ export class PaymentController {
     }
   }
 
+  async getRazorpayKeyId(_req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getRazorpayKeyId();
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getRazorpayKeyId');
+    }
+  }
+
   async calculateFees(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { amount, taskCategory } = req.query;
