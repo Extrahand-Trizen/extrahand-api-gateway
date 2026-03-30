@@ -458,6 +458,16 @@ export class PaymentService extends BaseService {
   }
 
   /**
+   * Razorpay publishable Key ID for client checkout (same payload as web /api/razorpay-key).
+   * Public on payment service — no service or user auth.
+   */
+  async getRazorpayKeyId(): Promise<AxiosResponse<{ keyId: string }>> {
+    return this.handleRequest(() =>
+      this.client.get('/api/v1/payment/razorpay-key')
+    );
+  }
+
+  /**
    * Calculate fees for an amount - public endpoint.
    * Pass taskCategory for category-specific GST/fees (CategoryFeeConfig).
    */

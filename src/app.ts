@@ -60,9 +60,9 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 console.log("✅ [CORS] CORS middleware applied with credentials:", corsOptions.credentials);
 
-// Body parsing
+// Body parsing — strict: false so JSON primitives (e.g. `null`) from clients don't 400 before routes run
 app.use(compression());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10mb", strict: false }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
 
@@ -137,6 +137,11 @@ app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/chats', chatsRouter);
 app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
+// Public Razorpay Key ID for checkout (must be registered before /api/v1/payment auth router)
+app.get(
+  '/api/v1/payment/razorpay-key',
+  paymentController.getRazorpayKeyId.bind(paymentController),
+);
 app.use('/api/v1/payment', authMiddleware, paymentRouter);
 app.use('/api/v1/escrow', authMiddleware, escrowRouter);
 app.use('/api/v1/refunds', authMiddleware, refundRouter);
