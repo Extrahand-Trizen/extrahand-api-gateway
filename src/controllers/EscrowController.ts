@@ -11,6 +11,7 @@ export class EscrowController {
         posterUid,
         performerUid,
         amount,
+        taskAmount,
         currency,
         autoReleaseAfterDays,
         metadata,
@@ -30,7 +31,8 @@ export class EscrowController {
         autoReleaseAfterDays,
         metadata,
         req.user || null,
-        taskCategory
+        taskCategory,
+        taskAmount
       );
       res.status(response.status).json(response.data);
     } catch (error) {

@@ -94,7 +94,8 @@ export class PaymentService extends BaseService {
     autoReleaseAfterDays: number | undefined,
     metadata: Record<string, any> | undefined,
     userToken: UserToken | null,
-    taskCategory?: string
+    taskCategory?: string,
+    taskAmount?: number
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
@@ -107,6 +108,7 @@ export class PaymentService extends BaseService {
         posterUid,
         performerUid,
         amount,
+        taskAmount,
         currency,
         autoReleaseAfterDays,
         metadata,

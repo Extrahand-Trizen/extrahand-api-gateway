@@ -120,7 +120,8 @@ export class PaymentController {
         req.body.autoReleaseAfterDays,
         req.body.metadata,
         req.user || null,
-        req.body.taskCategory
+        req.body.taskCategory,
+        req.body.taskAmount
       );
       res.status(response.status).json(response.data);
     } catch (error) {
