@@ -76,6 +76,39 @@ export class PaymentController {
     }
   }
 
+  async processRefundWithCancellation(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const {
+        razorpayOrderId,
+        razorpayPaymentId,
+        reason,
+        cancelledBy,
+        taskStartDate,
+        cancelledAt,
+        userId,
+        amount,
+      } = req.body;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.processRefundWithCancellation(
+        razorpayOrderId,
+        razorpayPaymentId,
+        reason,
+        cancelledBy,
+        taskStartDate,
+        cancelledAt,
+        userId,
+        amount,
+        req.user || null
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.processRefundWithCancellation');
+    }
+  }
+
   async getFeeStructure(_req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
@@ -349,6 +382,46 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.processTaskCompletionPayout');
+    }
+  }
+
+  async getRefundStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { refundId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getRefundStatus(refundId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getRefundStatus');
+    }
+  }
+
+  async getRefundsByEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { escrowId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getRefundsByEscrowId(escrowId, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getRefundsByEscrow');
+    }
+  }
+
+  async cancelPayment(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.cancelPayment(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.cancelPayment');
     }
   }
 }

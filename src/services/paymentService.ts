@@ -80,6 +80,30 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async cancelPayment(
+    data: {
+      razorpayOrderId?: string;
+      escrowId?: string;
+      taskId?: string;
+      reason?: string;
+      userId?: string;
+      cancelledBy?: 'poster' | 'performer';
+      taskStartDate?: string;
+      assignedAt?: string;
+      feeBaseAmount?: number;
+      taskTitle?: string;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/cancel', data, config)
+    );
+  }
+
   // =====================================================
   // ESCROW METHODS
   // =====================================================

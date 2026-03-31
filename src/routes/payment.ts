@@ -11,7 +11,11 @@ router.get('/razorpay-key', paymentController.getRazorpayKeyId.bind(paymentContr
 router.post('/create-order', authMiddleware, paymentController.createOrder.bind(paymentController));
 router.post('/verify-payment', authMiddleware, paymentController.verifyPayment.bind(paymentController));
 router.get('/order-status/:orderId', authMiddleware, paymentController.getOrderStatus.bind(paymentController));
-router.post('/refund', authMiddleware, paymentController.processRefund.bind(paymentController));
+router.post('/refund', authMiddleware, paymentController.processRefund.bind(paymentController)); // legacy simple refund
+router.post('/refunds/process', authMiddleware, paymentController.processRefundWithCancellation.bind(paymentController));
+router.get('/refunds/status/:refundId', authMiddleware, paymentController.getRefundStatus.bind(paymentController));
+router.get('/refunds/escrow/:escrowId', authMiddleware, paymentController.getRefundsByEscrow.bind(paymentController));
+router.post('/payment/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
 
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
