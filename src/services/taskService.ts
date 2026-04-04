@@ -185,6 +185,22 @@ export class TaskService extends BaseService {
     );
   }
 
+  async negotiateApplication(
+    applicationId: string,
+    negotiationData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}/negotiate`,
+        negotiationData,
+        config
+      )
+    );
+  }
+
   async withdrawPendingApplication(
     applicationId: string,
     userToken: UserToken

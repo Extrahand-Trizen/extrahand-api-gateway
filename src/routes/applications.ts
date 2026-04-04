@@ -33,6 +33,13 @@ router.put(
   applicationController.updateApplication.bind(applicationController)
 );
 
+// POST /api/v1/applications/:id/negotiate - Counter/accept/reject negotiation
+router.post(
+  "/:id/negotiate",
+  authMiddleware,
+  applicationController.negotiateApplication.bind(applicationController)
+);
+
 // POST /api/v1/applications/:id/withdraw-pending - Withdraw pending application
 router.post(
   "/:id/withdraw-pending",

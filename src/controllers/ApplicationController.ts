@@ -164,6 +164,44 @@ export class ApplicationController {
     }
   }
 
+  async negotiateApplication(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: "Application ID is required",
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: "Authentication required",
+        });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.negotiateApplication(
+        id,
+        req.body,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "ApplicationController.negotiateApplication");
+    }
+  }
+
   async withdrawPendingApplication(
     req: Request,
     res: Response,
