@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { profileController } from '../controllers/ProfileController.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import logger from '../config/logger.js';
 // Note: authMiddleware is applied both at app level AND on individual routes for extra security
 
@@ -10,6 +10,8 @@ const router = Router();
 logger.info('📋 [Profiles Router] Registering routes:', {
   'GET /me': 'getCurrentProfile',
   'GET /search': 'searchProfiles',
+  'GET /public/id/:profileId': 'getPublicProfileByObjectId',
+  'GET /public/:uid': 'getPublicProfile',
   'GET /:userId': 'getProfile',
   'PUT /me': 'updateProfile (current user)',
   'PUT /:userId': 'updateProfile (by ID)',
@@ -42,6 +44,19 @@ router.put('/me/keyword-alerts', authMiddleware, profileController.updateKeyword
 
 // Get profile by ID (parameterized route - must come last, public access allowed)
 router.get('/:userId/stats', profileController.getProfileStats.bind(profileController));
+
+// Public profile routes — optional auth so visibility rules can use viewer identity
+// IMPORTANT: /public/* must come before /:userId to avoid route conflicts
+router.get(
+  '/public/id/:profileId',
+  optionalAuthMiddleware,
+  profileController.getPublicProfileByObjectId.bind(profileController)
+);
+router.get(
+  '/public/:uid',
+  optionalAuthMiddleware,
+  profileController.getPublicProfile.bind(profileController)
+);
 
 // Get profile by ID (parameterized route - must come last, public access allowed)
 router.get('/:userId', profileController.getProfile.bind(profileController));

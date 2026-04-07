@@ -494,6 +494,44 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.updateKeywordAlerts');
     }
   }
+  async getPublicProfile(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const uid = req.params.uid;
+      if (!uid) {
+        res.status(400).json({ success: false, error: 'User ID is required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      // Forward optional auth so user-service can check registered/connections rules
+      const response = await userService.getPublicProfileByUid(uid, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getPublicProfile');
+    }
+  }
+
+  async getPublicProfileByObjectId(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const profileId = req.params.profileId;
+      if (!profileId) {
+        res.status(400).json({ success: false, error: 'Profile ID is required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getPublicProfileById(profileId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getPublicProfileByObjectId');
+    }
+  }
 }
 
 export const profileController = new ProfileController();

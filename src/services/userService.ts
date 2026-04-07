@@ -548,6 +548,30 @@ export class UserService extends BaseService {
     );
   }
 
+  /**
+   * GET /api/v1/profiles/public/:uid
+   * Get public profile by Firebase UID (full public profile with visibility enforcement)
+   * Visibility rules applied server-side:
+   *   - public       → anyone can view
+   *   - registered   → must be logged in
+   *   - connections  → must have a completed task together
+   */
+  async getPublicProfileByUid(
+    uid: string,
+    userToken: UserToken | undefined
+  ): Promise<AxiosResponse<ApiResponse<Profile>>> {
+    const config = this.addServiceAuth(
+      userToken ? this.forwardUserAuth(userToken) : {}
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<Profile>>(
+        `/api/v1/profiles/public/${uid}`,
+        config
+      )
+    );
+  }
+
   // Address Management Methods
   async getAddresses(
     userToken: UserToken
