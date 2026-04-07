@@ -164,63 +164,6 @@ export class ApplicationController {
     }
   }
 
-  async editApplication(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({
-          success: false,
-          error: "Application ID is required",
-        });
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: "Authentication required",
-        });
-        return;
-      }
-
-      const editPayload: any = {};
-      if (req.body.coverLetter !== undefined) {
-        editPayload.coverLetter = req.body.coverLetter;
-      }
-      if (req.body.proposedBudget !== undefined) {
-        editPayload.proposedBudget = req.body.proposedBudget;
-      }
-
-      if (
-        editPayload.coverLetter === undefined &&
-        editPayload.proposedBudget === undefined
-      ) {
-        res.status(400).json({
-          success: false,
-          error: "Provide coverLetter or proposedBudget to edit your offer.",
-        });
-        return;
-      }
-
-      res.setHeader("X-Served-By", "api-gateway");
-      res.setHeader("X-Target-Service", "task-service");
-      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
-
-      const response = await taskService.editApplication(
-        id,
-        editPayload,
-        req.user
-      );
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, "ApplicationController.editApplication");
-    }
-  }
-
   async negotiateApplication(
     req: Request,
     res: Response,
