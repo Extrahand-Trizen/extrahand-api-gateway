@@ -4,7 +4,7 @@ import { userService } from "../services/userService.js";
 import { handleServiceError } from "../utils/errorHandler.js";
 import { Task } from "../types/api.js";
 import { enrichTaskResponse } from "../services/profileEnrichment.js";
-import { getTaskPostingVerificationStatus } from "../lib/verificationGate.js";
+
 import { UserToken } from "../types/service.js";
 import logger from "../config/logger.js";
 
@@ -185,19 +185,6 @@ export class TaskController {
         res.status(401).json({
           success: false,
           error: "Authentication required",
-        });
-        return;
-      }
-
-      // Enforce verification (Aadhaar, Bank, PAN) before allowing task creation
-      const profileResponse = await userService.getCurrentProfile(req.user);
-      const profile = (profileResponse.data as any)?.data ?? profileResponse.data;
-      const verificationStatus = getTaskPostingVerificationStatus(profile ?? null);
-      if (!verificationStatus.allowed) {
-        res.status(403).json({
-          success: false,
-          error: "Verification required to post a task",
-          missing: verificationStatus.missing,
         });
         return;
       }

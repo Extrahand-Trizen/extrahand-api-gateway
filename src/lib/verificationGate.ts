@@ -23,19 +23,15 @@ export interface VerificationGateResult {
 
 /**
  * Returns whether the user has completed required verifications for posting a task.
- * Currently only Aadhaar is required for task creation.
+ * Task posting does not require any verification.
  */
 export function getTaskPostingVerificationStatus(
   profile: VerificationGateProfile | null
 ): VerificationGateResult {
-  const missing: string[] = [];
-  if (!profile) {
-    return { allowed: false, missing: ["Aadhaar"] };
-  }
-  if (!profile.isAadhaarVerified) missing.push("Aadhaar");
+  // No verification required for task posting
   return {
-    allowed: missing.length === 0,
-    missing,
+    allowed: true,
+    missing: [],
   };
 }
 
