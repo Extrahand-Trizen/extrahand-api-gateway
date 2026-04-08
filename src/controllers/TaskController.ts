@@ -1083,12 +1083,23 @@ export class TaskController {
       // - data: Task[]
       // - data: { tasks: Task[], pagination?: any, location?: any }
       const taskServiceResponse = response.data;
-      const nearbyPayload = taskServiceResponse?.data;
-      const tasks = Array.isArray(nearbyPayload)
-        ? nearbyPayload
-        : nearbyPayload?.tasks || [];
-      const pagination = nearbyPayload?.pagination;
-      const locationMeta = nearbyPayload?.location;
+      const nearbyPayload: unknown = taskServiceResponse?.data;
+      const hasTasksObjectShape =
+        !!nearbyPayload &&
+        typeof nearbyPayload === "object" &&
+        !Array.isArray(nearbyPayload) &&
+        Array.isArray((nearbyPayload as any).tasks);
+      const tasks = hasTasksObjectShape
+        ? (nearbyPayload as any).tasks
+        : Array.isArray(nearbyPayload)
+          ? nearbyPayload
+          : [];
+      const pagination = hasTasksObjectShape
+        ? (nearbyPayload as any).pagination
+        : undefined;
+      const locationMeta = hasTasksObjectShape
+        ? (nearbyPayload as any).location
+        : undefined;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
       const enrichedTasks = await enrichTaskResponse(tasks, req.user);
