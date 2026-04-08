@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { taskService, TaskFilters } from "../services/taskService.js";
-import { userService } from "../services/userService.js";
 import { handleServiceError } from "../utils/errorHandler.js";
 import { Task } from "../types/api.js";
 import { enrichTaskResponse } from "../services/profileEnrichment.js";

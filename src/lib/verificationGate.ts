@@ -26,7 +26,7 @@ export interface VerificationGateResult {
  * Task posting does not require any verification.
  */
 export function getTaskPostingVerificationStatus(
-  profile: VerificationGateProfile | null
+  _profile: VerificationGateProfile | null
 ): VerificationGateResult {
   // No verification required for task posting
   return {
