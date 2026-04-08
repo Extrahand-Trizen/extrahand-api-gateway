@@ -1035,7 +1035,21 @@ export class TaskController {
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
-      const { lat, lng, radiusKm, status, limit } = req.query;
+      const {
+        lat,
+        lng,
+        radiusKm,
+        status,
+        limit,
+        page,
+        category,
+        city,
+        search,
+        minBudget,
+        maxBudget,
+        remotely,
+        sortBy,
+      } = req.query;
 
       if (!lat || !lng) {
         res.status(400).json({
@@ -1052,13 +1066,29 @@ export class TaskController {
           radiusKm: radiusKm ? parseFloat(radiusKm as string) : undefined,
           status: status as string,
           limit: limit ? parseInt(limit as string, 10) : undefined,
+          page: page ? parseInt(page as string, 10) : undefined,
+          category: category as string,
+          city: city as string,
+          search: search as string,
+          minBudget: minBudget ? parseFloat(minBudget as string) : undefined,
+          maxBudget: maxBudget ? parseFloat(maxBudget as string) : undefined,
+          remotely: remotely as string,
+          sortBy: sortBy as string,
         },
         req.user
       );
 
-      // ✅ Extract tasks from task-service response format: { success, code, message, data }
+      // ✅ Extract tasks from task-service response format.
+      // Supports both:
+      // - data: Task[]
+      // - data: { tasks: Task[], pagination?: any, location?: any }
       const taskServiceResponse = response.data;
-      const tasks = taskServiceResponse?.data || taskServiceResponse || [];
+      const nearbyPayload = taskServiceResponse?.data;
+      const tasks = Array.isArray(nearbyPayload)
+        ? nearbyPayload
+        : nearbyPayload?.tasks || [];
+      const pagination = nearbyPayload?.pagination;
+      const locationMeta = nearbyPayload?.location;
       
       // ✅ Enrich tasks with Profile data (requesterName, requesterPhotoURL, etc.)
       const enrichedTasks = await enrichTaskResponse(tasks, req.user);
@@ -1069,6 +1099,8 @@ export class TaskController {
         code: 200,
         message: taskServiceResponse?.message || 'Nearby tasks retrieved successfully',
         data: enrichedTasks,
+        ...(pagination && { meta: { pagination } }),
+        ...(locationMeta && { location: locationMeta }),
       });
     } catch (error) {
       handleServiceError(error, res, "TaskController.getNearbyTasks");
