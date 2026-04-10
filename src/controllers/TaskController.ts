@@ -982,7 +982,7 @@ export class TaskController {
     }
   }
 
-  async getTaskReports(
+    async getTaskReports(
     req: Request,
     res: Response,
     _next: NextFunction
