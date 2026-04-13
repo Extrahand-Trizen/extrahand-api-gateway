@@ -599,6 +599,14 @@ export class TaskService extends BaseService {
       radiusKm?: number;
       status?: string;
       limit?: number;
+      page?: number;
+      category?: string;
+      city?: string;
+      search?: string;
+      minBudget?: number;
+      maxBudget?: number;
+      remotely?: string;
+      sortBy?: string;
     },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task[]>>> {
