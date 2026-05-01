@@ -797,6 +797,161 @@ export class TaskController {
     }
   }
 
+  async createAdditionalQuoteRequest(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      const response = await taskService.createAdditionalQuoteRequest(
+        taskId,
+        req.body || {},
+        req.user
+      );
+      const enrichedData = await enrichTaskResponse(response.data, req.user);
+      res.status(response.status).json(enrichedData);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.createAdditionalQuoteRequest");
+    }
+  }
+
+  async getAdditionalQuoteRequests(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const response = await taskService.getAdditionalQuoteRequests(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getAdditionalQuoteRequests");
+    }
+  }
+
+  async getActiveAdditionalQuoteRequest(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const response = await taskService.getActiveAdditionalQuoteRequest(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getActiveAdditionalQuoteRequest");
+    }
+  }
+
+  async acceptAdditionalQuoteRequest(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, requestId } = req.params;
+      if (!taskId || !requestId) {
+        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const response = await taskService.acceptAdditionalQuoteRequest(
+        taskId,
+        requestId,
+        req.user
+      );
+      const enrichedData = await enrichTaskResponse(response.data, req.user);
+      res.status(response.status).json(enrichedData);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.acceptAdditionalQuoteRequest");
+    }
+  }
+
+  async rejectAdditionalQuoteRequest(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, requestId } = req.params;
+      const reason = String(req.body?.reason || "");
+      if (!taskId || !requestId) {
+        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const response = await taskService.rejectAdditionalQuoteRequest(
+        taskId,
+        requestId,
+        reason,
+        req.user
+      );
+      const enrichedData = await enrichTaskResponse(response.data, req.user);
+      res.status(response.status).json(enrichedData);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.rejectAdditionalQuoteRequest");
+    }
+  }
+
+  async withdrawAdditionalQuoteRequest(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, requestId } = req.params;
+      if (!taskId || !requestId) {
+        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const response = await taskService.withdrawAdditionalQuoteRequest(
+        taskId,
+        requestId,
+        req.user
+      );
+      const enrichedData = await enrichTaskResponse(response.data, req.user);
+      res.status(response.status).json(enrichedData);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.withdrawAdditionalQuoteRequest");
+    }
+  }
+
   async followTask(
     req: Request,
     res: Response,

@@ -497,6 +497,99 @@ export class TaskService extends BaseService {
     );
   }
 
+  async createAdditionalQuoteRequest(
+    taskId: string,
+    data: {
+      requestedAdditionalAmount: number;
+      reason: string;
+      selfieImageUrl: string;
+      workImageUrl: string;
+      extraImageUrls?: string[];
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request`,
+        data,
+        config
+      )
+    );
+  }
+
+  async getAdditionalQuoteRequests(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any[]>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any[]>>(
+        `/api/v1/tasks/${taskId}/additional-quote-requests`,
+        config
+      )
+    );
+  }
+
+  async getActiveAdditionalQuoteRequest(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/active`,
+        config
+      )
+    );
+  }
+
+  async acceptAdditionalQuoteRequest(
+    taskId: string,
+    requestId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/accept`,
+        {},
+        config
+      )
+    );
+  }
+
+  async rejectAdditionalQuoteRequest(
+    taskId: string,
+    requestId: string,
+    reason: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/reject`,
+        { reason },
+        config
+      )
+    );
+  }
+
+  async withdrawAdditionalQuoteRequest(
+    taskId: string,
+    requestId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/withdraw`,
+        {},
+        config
+      )
+    );
+  }
+
   async followTask(
     taskId: string,
     userToken: UserToken

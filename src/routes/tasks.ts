@@ -90,6 +90,36 @@ router.post(
   authMiddleware,
   taskController.requestChanges.bind(taskController)
 );
+router.post(
+  "/:taskId/additional-quote-request",
+  authMiddleware,
+  taskController.createAdditionalQuoteRequest.bind(taskController)
+);
+router.get(
+  "/:taskId/additional-quote-requests",
+  authMiddleware,
+  taskController.getAdditionalQuoteRequests.bind(taskController)
+);
+router.get(
+  "/:taskId/additional-quote-request/active",
+  authMiddleware,
+  taskController.getActiveAdditionalQuoteRequest.bind(taskController)
+);
+router.post(
+  "/:taskId/additional-quote-request/:requestId/accept",
+  authMiddleware,
+  taskController.acceptAdditionalQuoteRequest.bind(taskController)
+);
+router.post(
+  "/:taskId/additional-quote-request/:requestId/reject",
+  authMiddleware,
+  taskController.rejectAdditionalQuoteRequest.bind(taskController)
+);
+router.post(
+  "/:taskId/additional-quote-request/:requestId/withdraw",
+  authMiddleware,
+  taskController.withdrawAdditionalQuoteRequest.bind(taskController)
+);
 
 // Follow routes (must come before /:taskId route) - require authentication
 router.post(
