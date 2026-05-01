@@ -323,20 +323,6 @@ export class PaymentController {
     }
   }
 
-  async getExtraCoinsWallet(req: Request, res: Response, _next: NextFunction): Promise<void> {
-    try {
-      const { userId } = req.params;
-
-      res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'payment-service');
-
-      const response = await paymentService.getExtraCoinsWallet(userId, req.user || null);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, 'PaymentController.getExtraCoinsWallet');
-    }
-  }
-
   async upsertBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');

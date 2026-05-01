@@ -41,31 +41,12 @@ export function handleServiceError(
   }
 
   if (isServiceError(error)) {
-    // Surface the most useful upstream message, including nested gateway/service payloads.
+    // When Task Service returns 500, surface the actual error message from data if available
     const errorData = error.data as Record<string, unknown> | undefined;
-    const nestedData = errorData?.data as Record<string, unknown> | undefined;
-    const candidates = [
-      errorData?.error,
-      errorData?.message,
-      errorData?.details,
-      nestedData?.error,
-      nestedData?.message,
-      error.message,
-    ];
-    const displayError = candidates.find(
-      (value): value is string =>
-        typeof value === 'string' &&
-        value.trim() !== '' &&
-        value !== 'An unexpected error occurred' &&
-        value !== 'Request failed with status code 400' &&
-        value !== 'Request failed with status code 401' &&
-        value !== 'Request failed with status code 403' &&
-        value !== 'Request failed with status code 404' &&
-        value !== 'Request failed with status code 409' &&
-        value !== 'Request failed with status code 500' &&
-        value !== 'Request failed with status code 502' &&
-        value !== 'Request failed with status code 503'
-    ) || error.message;
+    const upstreamMessage = errorData?.message as string | undefined;
+    const displayError = upstreamMessage && typeof upstreamMessage === 'string' && upstreamMessage !== 'An unexpected error occurred'
+      ? upstreamMessage
+      : error.message;
 
     res.status(error.status).json({
       success: false,

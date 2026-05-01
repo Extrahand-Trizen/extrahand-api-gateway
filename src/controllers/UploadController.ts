@@ -44,42 +44,6 @@ export class UploadController {
     }
   }
 
-  async uploadCertificate(req: Request, res: Response, _next: NextFunction): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          error: 'Authentication required',
-        });
-        return;
-      }
-
-      const file = (req as any).file;
-      if (!file) {
-        res.status(400).json({
-          success: false,
-          error: 'No image file provided',
-        });
-        return;
-      }
-
-      res.setHeader('X-Served-By', 'api-gateway');
-      res.setHeader('X-Target-Service', 'user-service');
-      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
-
-      const formData = new FormData();
-      formData.append('image', file.buffer, {
-        filename: file.originalname || 'certificate.jpg',
-        contentType: file.mimetype,
-      });
-
-      const response = await userService.uploadCertificate(formData, req.user);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, 'UploadController.uploadCertificate');
-    }
-  }
-
   async deleteProfilePicture(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {

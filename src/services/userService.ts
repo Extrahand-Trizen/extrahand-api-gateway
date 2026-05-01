@@ -254,29 +254,6 @@ export class UserService extends BaseService {
     );
   }
 
-  async uploadCertificate(
-    formData: FormData,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<{ url: string; key: string }>>> {
-    const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      })
-    );
-
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<{ url: string; key: string }>>(
-        "/api/v1/uploads/certificate",
-        formData,
-        config
-      )
-    );
-  }
-
   async deleteProfilePicture(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<void>>> {

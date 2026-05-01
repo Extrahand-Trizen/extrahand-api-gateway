@@ -194,11 +194,9 @@ export class AuthController {
             (response.data as any)?.tokens
          );
 
-         const responsePayload =
-            normalizedClientType === "mobile"
-               ? response.data
-               : sanitizeSessionPayload(response.data);
-         res.status(response.status).json(responsePayload);
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data)
+         );
       } catch (error: any) {
          const status = error.response?.status ?? 500;
          const data = error.response?.data;
@@ -255,13 +253,9 @@ export class AuthController {
             upstreamCookies,
             (response.data as any)?.tokens
          );
-         const normalizedClientType: "web" | "mobile" =
-            clientType === "mobile" ? "mobile" : "web";
-         const responsePayload =
-            normalizedClientType === "mobile"
-               ? (response.data as any)
-               : sanitizeSessionPayload(response.data as any);
-         res.status(response.status).json(responsePayload);
+         res.status(response.status).json(
+            sanitizeSessionPayload(response.data as any)
+         );
       } catch (error: any) {
          logger.error("OTP complete-dev failed", {
             error: error.message,

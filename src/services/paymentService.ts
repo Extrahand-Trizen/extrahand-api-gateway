@@ -470,13 +470,6 @@ export class PaymentService extends BaseService {
     );
   }
 
-  async getExtraCoinsWallet(userId: string, userToken: UserToken | null): Promise<AxiosResponse> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
-    return this.handleRequest(() =>
-      this.client.get(`/api/v1/transactions/${userId}/wallet`, config)
-    );
-  }
-
   /**
    * Get fee structure (percentages only) - public endpoint
    * No authentication required

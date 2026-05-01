@@ -20,10 +20,6 @@ export interface EnrichedProfileData {
   assigneeTotalReviews?: number;
 }
 
-function isDeletedAccountLabel(name: unknown): boolean {
-  return typeof name === 'string' && name.toLowerCase().includes('account deleted');
-}
-
 /**
  * Get Profile data by ObjectId (via user-service)
  */
@@ -71,9 +67,7 @@ export async function enrichTask(task: any, userToken: UserToken): Promise<any> 
 
       const requesterProfile = await getProfileById(requesterId, userToken);
       if (requesterProfile) {
-        if (!isDeletedAccountLabel(task.requesterName)) {
-          enriched.requesterName = requesterProfile.name;
-        }
+        enriched.requesterName = requesterProfile.name;
         enriched.requesterPhotoURL = requesterProfile.photoURL || null;
         enriched.requesterRating = requesterProfile.rating || 0;
         enriched.requesterTotalReviews = requesterProfile.totalReviews || 0;
@@ -95,9 +89,7 @@ export async function enrichTask(task: any, userToken: UserToken): Promise<any> 
 
       const assigneeProfile = await getProfileById(assigneeId, userToken);
       if (assigneeProfile) {
-        if (!isDeletedAccountLabel(task.assigneeName)) {
-          enriched.assigneeName = assigneeProfile.name;
-        }
+        enriched.assigneeName = assigneeProfile.name;
         enriched.assigneePhotoURL = assigneeProfile.photoURL || null;
         enriched.assigneeRating = assigneeProfile.rating || 0;
         enriched.assigneeTotalReviews = assigneeProfile.totalReviews || 0;
@@ -179,9 +171,7 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
       
       const requesterProfile = profileMap.get(requesterIdStr);
       if (requesterProfile) {
-        if (!isDeletedAccountLabel(task.requesterName)) {
-          enriched.requesterName = requesterProfile.name;
-        }
+        enriched.requesterName = requesterProfile.name;
         enriched.requesterPhotoURL = requesterProfile.photoURL || null;
         enriched.requesterRating = requesterProfile.rating || 0;
         enriched.requesterTotalReviews = requesterProfile.totalReviews || 0;
@@ -196,9 +186,7 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
       
       const assigneeProfile = profileMap.get(assigneeIdStr);
       if (assigneeProfile) {
-        if (!isDeletedAccountLabel(task.assigneeName)) {
-          enriched.assigneeName = assigneeProfile.name;
-        }
+        enriched.assigneeName = assigneeProfile.name;
         enriched.assigneePhotoURL = assigneeProfile.photoURL || null;
         enriched.assigneeRating = assigneeProfile.rating || 0;
         enriched.assigneeTotalReviews = assigneeProfile.totalReviews || 0;
