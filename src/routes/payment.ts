@@ -37,6 +37,7 @@ router.get(
 // Transaction routes
 router.get('/transactions/user/:userId', authMiddleware, paymentController.getUserTransactions.bind(paymentController));
 router.get('/transactions/user/:userId/summary', authMiddleware, paymentController.getTransactionSummary.bind(paymentController));
+router.get('/transactions/user/:userId/wallet', authMiddleware, paymentController.getExtraCoinsWallet.bind(paymentController));
 
 // Bank account routes (tasker payouts)
 router.post('/bank-accounts', authMiddleware, paymentController.upsertBankAccount.bind(paymentController));

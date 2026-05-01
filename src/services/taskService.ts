@@ -185,6 +185,22 @@ export class TaskService extends BaseService {
     );
   }
 
+  async editApplication(
+    applicationId: string,
+    editData: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}`,
+        editData,
+        config
+      )
+    );
+  }
+
   async negotiateApplication(
     applicationId: string,
     negotiationData: any,

@@ -39,21 +39,21 @@
       "microservices"
    ],
    "envVars": {
-      "NODE_ENV": "production",
-      "PORT": "5000",
-      "LOG_LEVEL": "info",
-      "RATE_LIMIT_WINDOW_MS": "900000",
-      "RATE_LIMIT_MAX_REQUESTS": "100",
-      "CORS_ORIGIN": "https://extrahand.in,https://www.extrahand.in,https://extrahand-web-app.apps.extrahand.in,http://localhost:3000,http://localhost:4000,http://localhost:5000",
-      "USER_SERVICE_URL": "http://srv-captain--extrahand-user-service:4001",
-      "TASK_SERVICE_URL": "http://srv-captain--extrahand-task-service:4002",
-      "VERIFICATION_SERVICE_URL": "http://srv-captain--extrahand-user-verification:4004",
-      "OLD_BACKEND_URL": "http://srv-captain--task-connect-relay:4000",
-      "SERVICE_AUTH_TOKEN": "YOUR_SERVICE_AUTH_TOKEN_HERE",
-      "ACCESS_TOKEN_SECRET": "YOUR_ACCESS_TOKEN_SECRET",
-      "TOKEN_ISSUER": "extrahand-user-service",
-      "TOKEN_AUDIENCE": "extrahand-clients"
-   },
+       "NODE_ENV": "production",
+       "PORT": "5000",
+       "LOG_LEVEL": "info",
+       "RATE_LIMIT_WINDOW_MS": "900000",
+       "RATE_LIMIT_MAX_REQUESTS": "100",
+       "CORS_ORIGIN": "https://extrahand.in,https://www.extrahand.in,https://extrahand-web-app.apps.extrahand.in,http://localhost:3000,http://localhost:4000,http://localhost:5000",
+       "USER_SERVICE_URL": "http://srv-captain--extrahand-user-service:4001",
+       "TASK_SERVICE_URL": "http://srv-captain--extrahand-task-service:4002",
+       "VERIFICATION_SERVICE_URL": "http://srv-captain--extrahand-user-verification:4004",
+       "OLD_BACKEND_URL": "http://srv-captain--task-connect-relay:4000",
+       "SERVICE_AUTH_TOKEN": "ExtraHand_Secure_Token_2024_MinLength32Chars_ChangeInProduction",
+       "ACCESS_TOKEN_SECRET": "R9mA4ZQeP7y2XcT8FJd6sB3NwK5UHvLGV0D1fMCrxYqEJpS",
+       "TOKEN_ISSUER": "extrahand-user-service",
+       "TOKEN_AUDIENCE": "extrahand-clients"
+    },
    "volumes": [
       {
          "name": "app-logs",

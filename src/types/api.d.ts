@@ -87,8 +87,40 @@ export interface SessionTokens {
    sessionId: string;
    refreshToken?: string;
    refreshTokenExpiresAt?: string;
-}export interface SessionResponse {
+}
+
+export interface SessionResponse {
    success: boolean;
    tokens: SessionTokens;
    message?: string;
 }
+
+export type InquiryPriority = "low" | "medium" | "high" | "urgent";
+
+export interface Inquiry {
+  _id?: string;
+  fullName: string;
+  email: string;
+  subject: string;
+  priority: InquiryPriority;
+  message: string;
+  source?: string;
+  userUid?: string;
+  profileId?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface CreateInquiryRequest {
+  fullName: string;
+  email: string;
+  subject: string;
+  priority: InquiryPriority;
+  message: string;
+  source?: string;
+}
+
+export interface CreateInquiryResponse extends ApiResponse<{
+  id: string;
+  createdAt: Date | string;
+}> {}
