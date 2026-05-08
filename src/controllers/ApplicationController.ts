@@ -278,6 +278,49 @@ export class ApplicationController {
       );
     }
   }
+
+  // ── Global Budget Revision ─────────────────────────────────────────────────
+
+  async respondToRevision(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ success: false, error: "Application ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      const { action, newAmount } = req.body;
+      const VALID_ACTIONS = ["keep", "revise", "withdraw"];
+      if (!action || !VALID_ACTIONS.includes(action)) {
+        res.status(400).json({
+          success: false,
+          error: `action must be one of: ${VALID_ACTIONS.join(", ")}`,
+        });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.respondToRevision(
+        id,
+        { action, newAmount },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "ApplicationController.respondToRevision");
+    }
+  }
 }
 
 export const applicationController = new ApplicationController();

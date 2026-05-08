@@ -117,6 +117,18 @@ export class NotificationService extends BaseService {
     );
   }
 
+  async clearAllInAppNotifications(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse>('/api/v1/notifications/in-app', config)
+    );
+  }
+
   async removeToken(
     token: string,
     userToken: UserToken

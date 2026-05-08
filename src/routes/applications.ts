@@ -61,4 +61,12 @@ router.delete(
   applicationController.withdrawPendingApplication.bind(applicationController)
 );
 
+// ── Global Budget Revision ───────────────────────────────────────────────────
+// POST /api/v1/applications/:id/respond-to-revision — Tasker responds to active revision round
+router.post(
+  "/:id/respond-to-revision",
+  authMiddleware,
+  applicationController.respondToRevision.bind(applicationController)
+);
+
 export default router;

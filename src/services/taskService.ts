@@ -497,98 +497,13 @@ export class TaskService extends BaseService {
     );
   }
 
-  async createAdditionalQuoteRequest(
-    taskId: string,
-    data: {
-      requestedAdditionalAmount: number;
-      reason: string;
-      selfieImageUrl: string;
-      workImageUrl: string;
-      extraImageUrls?: string[];
-    },
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(
-        `/api/v1/tasks/${taskId}/additional-quote-request`,
-        data,
-        config
-      )
-    );
-  }
-
-  async getAdditionalQuoteRequests(
-    taskId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any[]>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any[]>>(
-        `/api/v1/tasks/${taskId}/additional-quote-requests`,
-        config
-      )
-    );
-  }
-
-  async getActiveAdditionalQuoteRequest(
-    taskId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.get<ApiResponse<any>>(
-        `/api/v1/tasks/${taskId}/additional-quote-request/active`,
-        config
-      )
-    );
-  }
-
-  async acceptAdditionalQuoteRequest(
-    taskId: string,
-    requestId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(
-        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/accept`,
-        {},
-        config
-      )
-    );
-  }
-
-  async rejectAdditionalQuoteRequest(
-    taskId: string,
-    requestId: string,
-    reason: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(
-        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/reject`,
-        { reason },
-        config
-      )
-    );
-  }
-
-  async withdrawAdditionalQuoteRequest(
-    taskId: string,
-    requestId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<Task>>(
-        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/withdraw`,
-        {},
-        config
-      )
-    );
-  }
+  // Reverted: additional quote / selfie-work-evidence tracking flow disabled in gateway.
+  // async createAdditionalQuoteRequest(...) {}
+  // async getAdditionalQuoteRequests(...) {}
+  // async getActiveAdditionalQuoteRequest(...) {}
+  // async acceptAdditionalQuoteRequest(...) {}
+  // async rejectAdditionalQuoteRequest(...) {}
+  // async withdrawAdditionalQuoteRequest(...) {}
 
   async followTask(
     taskId: string,
@@ -711,6 +626,40 @@ export class TaskService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Task[]>>("/api/v1/tasks/nearby", config)
+    );
+  }
+
+  // ── Global Budget Revision ─────────────────────────────────────────────────
+
+  async reviseBudget(
+    taskId: string,
+    body: { newAmount: number; reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/revise-budget`,
+        body,
+        config
+      )
+    );
+  }
+
+  async respondToRevision(
+    applicationId: string,
+    body: { action: "keep" | "revise" | "withdraw"; newAmount?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}/respond-to-revision`,
+        body,
+        config
+      )
     );
   }
 }

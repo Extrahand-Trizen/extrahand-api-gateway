@@ -797,160 +797,13 @@ export class TaskController {
     }
   }
 
-  async createAdditionalQuoteRequest(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId } = req.params;
-      if (!taskId) {
-        res.status(400).json({ success: false, error: "Task ID is required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-
-      const response = await taskService.createAdditionalQuoteRequest(
-        taskId,
-        req.body || {},
-        req.user
-      );
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      res.status(response.status).json(enrichedData);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.createAdditionalQuoteRequest");
-    }
-  }
-
-  async getAdditionalQuoteRequests(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId } = req.params;
-      if (!taskId) {
-        res.status(400).json({ success: false, error: "Task ID is required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-      const response = await taskService.getAdditionalQuoteRequests(taskId, req.user);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.getAdditionalQuoteRequests");
-    }
-  }
-
-  async getActiveAdditionalQuoteRequest(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId } = req.params;
-      if (!taskId) {
-        res.status(400).json({ success: false, error: "Task ID is required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-      const response = await taskService.getActiveAdditionalQuoteRequest(taskId, req.user);
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.getActiveAdditionalQuoteRequest");
-    }
-  }
-
-  async acceptAdditionalQuoteRequest(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId, requestId } = req.params;
-      if (!taskId || !requestId) {
-        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-      const response = await taskService.acceptAdditionalQuoteRequest(
-        taskId,
-        requestId,
-        req.user
-      );
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      res.status(response.status).json(enrichedData);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.acceptAdditionalQuoteRequest");
-    }
-  }
-
-  async rejectAdditionalQuoteRequest(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId, requestId } = req.params;
-      const reason = String(req.body?.reason || "");
-      if (!taskId || !requestId) {
-        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-      const response = await taskService.rejectAdditionalQuoteRequest(
-        taskId,
-        requestId,
-        reason,
-        req.user
-      );
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      res.status(response.status).json(enrichedData);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.rejectAdditionalQuoteRequest");
-    }
-  }
-
-  async withdrawAdditionalQuoteRequest(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId, requestId } = req.params;
-      if (!taskId || !requestId) {
-        res.status(400).json({ success: false, error: "Task ID and request ID are required" });
-        return;
-      }
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-      const response = await taskService.withdrawAdditionalQuoteRequest(
-        taskId,
-        requestId,
-        req.user
-      );
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      res.status(response.status).json(enrichedData);
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.withdrawAdditionalQuoteRequest");
-    }
-  }
+  // Reverted: additional quote / selfie-work-evidence tracking flow disabled in gateway.
+  // async createAdditionalQuoteRequest(...) {}
+  // async getAdditionalQuoteRequests(...) {}
+  // async getActiveAdditionalQuoteRequest(...) {}
+  // async acceptAdditionalQuoteRequest(...) {}
+  // async rejectAdditionalQuoteRequest(...) {}
+  // async withdrawAdditionalQuoteRequest(...) {}
 
   async followTask(
     req: Request,
@@ -1270,6 +1123,45 @@ export class TaskController {
       });
     } catch (error) {
       handleServiceError(error, res, "TaskController.getNearbyTasks");
+    }
+  }
+
+  // ── Global Budget Revision ─────────────────────────────────────────────────
+
+  async reviseBudget(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      const { newAmount, reason } = req.body;
+      if (newAmount === undefined || newAmount === null) {
+        res.status(400).json({ success: false, error: "newAmount is required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.reviseBudget(
+        taskId,
+        { newAmount: Number(newAmount), reason },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.reviseBudget");
     }
   }
 }

@@ -35,6 +35,12 @@ router.patch(
 );
 
 router.delete(
+  '/in-app',
+  authMiddleware,
+  notificationController.clearAllInAppNotifications.bind(notificationController)
+);
+
+router.delete(
   '/in-app/:notificationId',
   authMiddleware,
   notificationController.deleteInAppNotification.bind(notificationController)

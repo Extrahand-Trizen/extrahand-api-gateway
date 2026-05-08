@@ -90,36 +90,37 @@ router.post(
   authMiddleware,
   taskController.requestChanges.bind(taskController)
 );
-router.post(
-  "/:taskId/additional-quote-request",
-  authMiddleware,
-  taskController.createAdditionalQuoteRequest.bind(taskController)
-);
-router.get(
-  "/:taskId/additional-quote-requests",
-  authMiddleware,
-  taskController.getAdditionalQuoteRequests.bind(taskController)
-);
-router.get(
-  "/:taskId/additional-quote-request/active",
-  authMiddleware,
-  taskController.getActiveAdditionalQuoteRequest.bind(taskController)
-);
-router.post(
-  "/:taskId/additional-quote-request/:requestId/accept",
-  authMiddleware,
-  taskController.acceptAdditionalQuoteRequest.bind(taskController)
-);
-router.post(
-  "/:taskId/additional-quote-request/:requestId/reject",
-  authMiddleware,
-  taskController.rejectAdditionalQuoteRequest.bind(taskController)
-);
-router.post(
-  "/:taskId/additional-quote-request/:requestId/withdraw",
-  authMiddleware,
-  taskController.withdrawAdditionalQuoteRequest.bind(taskController)
-);
+// Reverted: additional quote / selfie-work-evidence tracking flow disabled in gateway.
+// router.post(
+//   "/:taskId/additional-quote-request",
+//   authMiddleware,
+//   taskController.createAdditionalQuoteRequest.bind(taskController)
+// );
+// router.get(
+//   "/:taskId/additional-quote-requests",
+//   authMiddleware,
+//   taskController.getAdditionalQuoteRequests.bind(taskController)
+// );
+// router.get(
+//   "/:taskId/additional-quote-request/active",
+//   authMiddleware,
+//   taskController.getActiveAdditionalQuoteRequest.bind(taskController)
+// );
+// router.post(
+//   "/:taskId/additional-quote-request/:requestId/accept",
+//   authMiddleware,
+//   taskController.acceptAdditionalQuoteRequest.bind(taskController)
+// );
+// router.post(
+//   "/:taskId/additional-quote-request/:requestId/reject",
+//   authMiddleware,
+//   taskController.rejectAdditionalQuoteRequest.bind(taskController)
+// );
+// router.post(
+//   "/:taskId/additional-quote-request/:requestId/withdraw",
+//   authMiddleware,
+//   taskController.withdrawAdditionalQuoteRequest.bind(taskController)
+// );
 
 // Follow routes (must come before /:taskId route) - require authentication
 router.post(
@@ -214,6 +215,14 @@ router.delete(
   "/:taskId/questions/:questionId",
   authMiddleware,
   taskController.deleteQuestion.bind(taskController)
+);
+
+// ── Global Budget Revision ───────────────────────────────────────────────────
+// POST /api/v1/tasks/:taskId/revise-budget — Poster revises task budget (max 2 rounds)
+router.post(
+  "/:taskId/revise-budget",
+  authMiddleware,
+  taskController.reviseBudget.bind(taskController)
 );
 
 export default router;

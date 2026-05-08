@@ -214,6 +214,25 @@ export class NotificationController {
       handleServiceError(error, res, 'NotificationController.deleteInAppNotification');
     }
   }
+
+  async clearAllInAppNotifications(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+      }
+
+      const userToken = { uid: req.user.uid, token: req.user.token };
+
+      const response = await notificationService.clearAllInAppNotifications(userToken);
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'notification-service');
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'NotificationController.clearAllInAppNotifications');
+    }
+  }
 }
 
 export const notificationController = new NotificationController();
