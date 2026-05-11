@@ -33,6 +33,21 @@ export function verifyAccessToken(token: string): {
 
       return { uid: payload.sub, sessionId: payload.sid };
    } catch (error) {
+      // Local/dev resiliency: accept validly signed backend tokens even when
+      // issuer/audience env values are mismatched between services.
+      if (env.NODE_ENV !== "production") {
+         try {
+            const payload = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as AccessTokenClaims;
+            if (payload?.sub && payload?.sid) {
+               logger.warn("Gateway access token verified with relaxed dev mode checks", {
+                  reason: (error as Error).message,
+               });
+               return { uid: payload.sub, sessionId: payload.sid };
+            }
+         } catch {
+            // Fall through to original error handling.
+         }
+      }
       logger.warn("Gateway access token verification failed", {
          error: (error as Error).message,
       });

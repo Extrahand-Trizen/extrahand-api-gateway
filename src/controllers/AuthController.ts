@@ -219,14 +219,13 @@ export class AuthController {
 
    /**
     * POST /api/v1/auth/otp/complete-dev
-    * Dev-only: dummy signin/signup with +91 9876543210, OTP 123456. Forwards cookies.
-    * Enabled when LOCAL_TEST=true or NODE_ENV=development.
+    * Dev-only: dummy signin/signup with whitelisted test credentials. Forwards cookies.
+    * Enabled only when LOCAL_TEST=true or LOCAL_TEST=1.
     */
    static async completeOTPDev(req: Request, res: Response): Promise<void> {
       const allowDev =
          process.env.LOCAL_TEST === "true" ||
-         process.env.LOCAL_TEST === "1" ||
-         process.env.NODE_ENV === "development";
+         process.env.LOCAL_TEST === "1";
       if (!allowDev) {
          res.status(404).json({ success: false, error: "Not found" });
          return;
