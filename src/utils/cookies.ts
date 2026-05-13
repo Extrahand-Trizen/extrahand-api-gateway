@@ -123,8 +123,24 @@ export function forwardOrSetAuthCookies(
    }
 }
 
-export function sanitizeSessionPayload<T extends Record<string, any>>(data: T): T {
+export type SanitizeSessionPayloadOptions = {
+   /**
+    * React Native does not reliably use HttpOnly cookies for API calls.
+    * When true, keep `tokens` in the JSON body so the mobile app can persist
+    * the access token (e.g. AsyncStorage). Web clients still omit tokens from JSON
+    * when this is false (cookies carry the session).
+    */
+   keepTokensInBody?: boolean;
+};
+
+export function sanitizeSessionPayload<T extends Record<string, any>>(
+   data: T,
+   options?: SanitizeSessionPayloadOptions
+): T {
    if (!data || typeof data !== "object") return data;
+   if (options?.keepTokensInBody) {
+      return { ...data };
+   }
    const clone: any = { ...data };
    if (clone.tokens) {
       delete clone.tokens;

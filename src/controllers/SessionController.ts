@@ -38,7 +38,9 @@ export class SessionController {
          forwardOrSetAuthCookies(res, upstreamCookies, response.data?.tokens);
 
          res.status(response.status).json(
-            sanitizeSessionPayload(response.data)
+            sanitizeSessionPayload(response.data, {
+               keepTokensInBody: clientType === "mobile",
+            })
          );
       } catch (error: any) {
          const status = error?.status || error?.response?.status || 500;

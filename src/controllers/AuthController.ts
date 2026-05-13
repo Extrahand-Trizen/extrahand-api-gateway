@@ -195,7 +195,9 @@ export class AuthController {
          );
 
          res.status(response.status).json(
-            sanitizeSessionPayload(response.data)
+            sanitizeSessionPayload(response.data, {
+               keepTokensInBody: normalizedClientType === "mobile",
+            })
          );
       } catch (error: any) {
          const status = error.response?.status ?? 500;
@@ -239,12 +241,14 @@ export class AuthController {
             });
             return;
          }
+         const normalizedClientType: "web" | "mobile" =
+            clientType === "mobile" ? "mobile" : "web";
          const response = await userService.completeOTPDev(
             phone,
             otp,
             mode,
             name,
-            { clientType: clientType === "mobile" ? "mobile" : "web", deviceId }
+            { clientType: normalizedClientType, deviceId }
          );
          const upstreamCookies = response.headers["set-cookie"];
          forwardOrSetAuthCookies(
@@ -253,7 +257,9 @@ export class AuthController {
             (response.data as any)?.tokens
          );
          res.status(response.status).json(
-            sanitizeSessionPayload(response.data as any)
+            sanitizeSessionPayload(response.data as any, {
+               keepTokensInBody: normalizedClientType === "mobile",
+            })
          );
       } catch (error: any) {
          logger.error("OTP complete-dev failed", {
