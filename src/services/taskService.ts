@@ -499,11 +499,124 @@ export class TaskService extends BaseService {
 
   // Reverted: additional quote / selfie-work-evidence tracking flow disabled in gateway.
   // async createAdditionalQuoteRequest(...) {}
-  // async getAdditionalQuoteRequests(...) {}
-  // async getActiveAdditionalQuoteRequest(...) {}
-  // async acceptAdditionalQuoteRequest(...) {}
-  // async rejectAdditionalQuoteRequest(...) {}
-  // async withdrawAdditionalQuoteRequest(...) {}
+
+  async markReached(
+    taskId: string,
+    data: { selfieUrl: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/mark-reached`,
+        data,
+        config
+      )
+    );
+  }
+
+  async markStarted(
+    taskId: string,
+    data: { workPhotoUrl: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/mark-started`,
+        data,
+        config
+      )
+    );
+  }
+
+  async createAdditionalQuoteRequest(
+    taskId: string,
+    data: { amount: number; reason: string; proofImages?: string[]; workImage?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request`,
+        data,
+        config
+      )
+    );
+  }
+
+  async getAdditionalQuoteRequests(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/additional-quote-requests`,
+        config
+      )
+    );
+  }
+
+  async getActiveAdditionalQuoteRequest(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/active`,
+        config
+      )
+    );
+  }
+
+  async decideAdditionalQuoteRequest(
+    taskId: string,
+    requestId: string,
+    decision: 'accept' | 'reject' | 'withdraw',
+    data: { reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/${decision}`,
+        data,
+        config
+      )
+    );
+  }
+
+  async createAdditionalPaymentOrder(
+    taskId: string,
+    requestId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/create-payment-order`,
+        {},
+        config
+      )
+    );
+  }
+
+  async markAdditionalPaymentPaid(
+    taskId: string,
+    requestId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/additional-quote-request/${requestId}/mark-paid`,
+        {},
+        config
+      )
+    );
+  }
 
   async followTask(
     taskId: string,

@@ -90,37 +90,22 @@ router.post(
   authMiddleware,
   taskController.requestChanges.bind(taskController)
 );
-// Reverted: additional quote / selfie-work-evidence tracking flow disabled in gateway.
-// router.post(
-//   "/:taskId/additional-quote-request",
-//   authMiddleware,
-//   taskController.createAdditionalQuoteRequest.bind(taskController)
-// );
-// router.get(
-//   "/:taskId/additional-quote-requests",
-//   authMiddleware,
-//   taskController.getAdditionalQuoteRequests.bind(taskController)
-// );
-// router.get(
-//   "/:taskId/additional-quote-request/active",
-//   authMiddleware,
-//   taskController.getActiveAdditionalQuoteRequest.bind(taskController)
-// );
-// router.post(
-//   "/:taskId/additional-quote-request/:requestId/accept",
-//   authMiddleware,
-//   taskController.acceptAdditionalQuoteRequest.bind(taskController)
-// );
-// router.post(
-//   "/:taskId/additional-quote-request/:requestId/reject",
-//   authMiddleware,
-//   taskController.rejectAdditionalQuoteRequest.bind(taskController)
-// );
-// router.post(
-//   "/:taskId/additional-quote-request/:requestId/withdraw",
-//   authMiddleware,
-//   taskController.withdrawAdditionalQuoteRequest.bind(taskController)
-// );
+
+// ── Reached / Started step routes ────────────────────────────────────────────
+router.post("/:taskId/mark-reached", authMiddleware, taskController.markReached.bind(taskController));
+router.post("/:taskId/mark-started", authMiddleware, taskController.markStarted.bind(taskController));
+
+// ── Additional Quote Requests ─────────────────────────────────────────────────
+router.post("/:taskId/additional-quote-request", authMiddleware, taskController.createAdditionalQuoteRequest.bind(taskController));
+router.get("/:taskId/additional-quote-requests", authMiddleware, taskController.getAdditionalQuoteRequests.bind(taskController));
+router.get("/:taskId/additional-quote-request/active", authMiddleware, taskController.getActiveAdditionalQuoteRequest.bind(taskController));
+// ⚠️ Specific sub-routes MUST come before the wildcard /:decision route
+router.post("/:taskId/additional-quote-request/:requestId/create-payment-order", authMiddleware, taskController.createAdditionalPaymentOrder.bind(taskController));
+router.post("/:taskId/additional-quote-request/:requestId/mark-paid", authMiddleware, taskController.markAdditionalPaymentPaid.bind(taskController));
+// Dedicated payment-complete route — avoids wildcard /:decision conflict entirely
+router.post("/:taskId/additional-payment-complete/:requestId", authMiddleware, taskController.markAdditionalPaymentPaid.bind(taskController));
+// Wildcard decision route (accept/reject/withdraw) — must be LAST
+router.post("/:taskId/additional-quote-request/:requestId/:decision", authMiddleware, taskController.decideAdditionalQuoteRequest.bind(taskController));
 
 // Follow routes (must come before /:taskId route) - require authentication
 router.post(

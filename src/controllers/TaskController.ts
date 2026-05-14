@@ -805,6 +805,104 @@ export class TaskController {
   // async rejectAdditionalQuoteRequest(...) {}
   // async withdrawAdditionalQuoteRequest(...) {}
 
+  async markReached(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) { res.status(400).json({ success: false, error: 'Task ID is required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.markReached(taskId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.markReached'); }
+  }
+
+  async markStarted(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) { res.status(400).json({ success: false, error: 'Task ID is required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.markStarted(taskId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.markStarted'); }
+  }
+
+  async createAdditionalQuoteRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) { res.status(400).json({ success: false, error: 'Task ID is required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.createAdditionalQuoteRequest(taskId, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.createAdditionalQuoteRequest'); }
+  }
+
+  async getAdditionalQuoteRequests(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) { res.status(400).json({ success: false, error: 'Task ID is required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.getAdditionalQuoteRequests(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.getAdditionalQuoteRequests'); }
+  }
+
+  async getActiveAdditionalQuoteRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) { res.status(400).json({ success: false, error: 'Task ID is required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.getActiveAdditionalQuoteRequest(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.getActiveAdditionalQuoteRequest'); }
+  }
+
+  async decideAdditionalQuoteRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId, requestId, decision } = req.params;
+      if (!taskId || !requestId || !decision) { res.status(400).json({ success: false, error: 'Task ID, request ID and decision are required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      // Normalize: 'accept' → 'accept', 'reject' → 'reject', 'withdraw' → 'withdraw'
+      // Task service routes use dedicated endpoints (accept/reject/withdraw) so pass through as-is
+      const response = await taskService.decideAdditionalQuoteRequest(taskId, requestId, decision as any, req.body, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.decideAdditionalQuoteRequest'); }
+  }
+
+  async createAdditionalPaymentOrder(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId, requestId } = req.params;
+      if (!taskId || !requestId) { res.status(400).json({ success: false, error: 'Task ID and request ID are required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.createAdditionalPaymentOrder(taskId, requestId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.createAdditionalPaymentOrder'); }
+  }
+
+  async markAdditionalPaymentPaid(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId, requestId } = req.params;
+      if (!taskId || !requestId) { res.status(400).json({ success: false, error: 'Task ID and request ID are required' }); return; }
+      if (!req.user) { res.status(401).json({ success: false, error: 'Authentication required' }); return; }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.markAdditionalPaymentPaid(taskId, requestId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) { handleServiceError(error, res, 'TaskController.markAdditionalPaymentPaid'); }
+  }
+
   async followTask(
     req: Request,
     res: Response,
