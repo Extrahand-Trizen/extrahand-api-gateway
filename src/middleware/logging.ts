@@ -23,7 +23,8 @@ export function loggingMiddleware(
   console.log(`📍 Method: ${req.method}`);
   console.log(`📍 Path: ${req.path}`);
   console.log(`📍 Request ID: ${req.requestId}`);
-  console.log(`📍 User ID: ${req.user?.uid || 'Not authenticated'}`);
+  // req.user is set only after route-level auth middleware runs — never at entry.
+  console.log(`📍 Authenticated UID: (see Request Completed below; entry runs before auth)`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   // Log request
@@ -48,6 +49,9 @@ export function loggingMiddleware(
     console.log(`📍 Status: ${res.statusCode}`);
     console.log(`📍 Duration: ${duration}ms`);
     console.log(`📍 Request ID: ${req.requestId}`);
+    console.log(
+      `📍 Authenticated UID: ${req.user?.uid ?? '(none — public route or no Bearer token)'}`,
+    );
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     logger.info('Request completed', {

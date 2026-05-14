@@ -1,5 +1,5 @@
 import { BaseService } from "./baseService.js";
-import { AxiosResponse } from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { UserToken } from "../types/service.js";
 import { Task, ApiResponse } from "../types/api.js";
 import FormData from "form-data";
@@ -17,6 +17,20 @@ export interface TaskFilters {
   excludeRequesterId?: string;
   limit?: number;
   page?: number;
+}
+
+/** When LOCAL_TEST is on, task-service may skip SMS / use fixed OTP for start-work (opt-in upstream). */
+function withLocalTestHeader(config: AxiosRequestConfig): AxiosRequestConfig {
+  const allow =
+    process.env.LOCAL_TEST === "true" || process.env.LOCAL_TEST === "1";
+  if (!allow) return config;
+  return {
+    ...config,
+    headers: {
+      ...config.headers,
+      "X-Extrahand-Local-Test": "1",
+    },
+  };
 }
 
 export class TaskService extends BaseService {
@@ -408,7 +422,9 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = withLocalTestHeader(
+      this.addServiceAuth(this.forwardUserAuth(userToken)),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
@@ -423,7 +439,9 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = withLocalTestHeader(
+      this.addServiceAuth(this.forwardUserAuth(userToken)),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
@@ -439,7 +457,9 @@ export class TaskService extends BaseService {
     otp: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = withLocalTestHeader(
+      this.addServiceAuth(this.forwardUserAuth(userToken)),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<Task>>(

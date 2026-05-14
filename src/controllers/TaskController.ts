@@ -7,6 +7,33 @@ import { enrichTaskResponse } from "../services/profileEnrichment.js";
 import { UserToken } from "../types/service.js";
 import logger from "../config/logger.js";
 
+/**
+ * Task-service responses are usually `{ success, message, data: <task or payload> }`.
+ * Some mutations nest the document as `data.task`. Match getTaskById-style unwrapping before enrichment.
+ */
+function extractTaskPayloadFromServiceBody(body: any): any {
+  if (body == null || typeof body !== "object") {
+    return body;
+  }
+  const nested = body.data;
+  if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+    const innerTask = (nested as any).task;
+    if (innerTask && typeof innerTask === "object") {
+      return innerTask;
+    }
+    if ((nested as any)._id || (nested as any).id) {
+      return nested;
+    }
+  }
+  if (body.task && typeof body.task === "object") {
+    return body.task;
+  }
+  if (body._id || body.id) {
+    return body;
+  }
+  return nested ?? body;
+}
+
 export class TaskController {
   async getTasks(
     req: Request,
@@ -533,11 +560,17 @@ export class TaskController {
         req.user,
         cancellationReason
       );
-      
-      // ✅ Enrich task with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      
-      res.status(response.status).json(enrichedData);
+
+      const taskServiceResponse = response.data as any;
+      const taskPayload = extractTaskPayloadFromServiceBody(taskServiceResponse);
+      const enrichedTask = await enrichTaskResponse(taskPayload, req.user);
+
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Work status updated successfully",
+        data: enrichedTask,
+      });
     } catch (error) {
       handleServiceError(error, res, "TaskController.updateTaskStatus");
     }
@@ -606,7 +639,19 @@ export class TaskController {
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const response = await taskService.sendStartOtp(taskId, req.user);
-      res.status(response.status).json(response.data);
+      const taskServiceResponse = response.data as any;
+      const payload =
+        taskServiceResponse?.data ??
+        (taskServiceResponse?.expiresAt != null || taskServiceResponse?.sentTo != null
+          ? taskServiceResponse
+          : null) ??
+        taskServiceResponse;
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Start OTP sent",
+        data: payload,
+      });
     } catch (error) {
       handleServiceError(error, res, "TaskController.sendStartOtp");
     }
@@ -635,7 +680,19 @@ export class TaskController {
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const response = await taskService.resendStartOtp(taskId, req.user);
-      res.status(response.status).json(response.data);
+      const taskServiceResponse = response.data as any;
+      const payload =
+        taskServiceResponse?.data ??
+        (taskServiceResponse?.expiresAt != null || taskServiceResponse?.sentTo != null
+          ? taskServiceResponse
+          : null) ??
+        taskServiceResponse;
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Start OTP resent",
+        data: payload,
+      });
     } catch (error) {
       handleServiceError(error, res, "TaskController.resendStartOtp");
     }
@@ -670,8 +727,16 @@ export class TaskController {
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const response = await taskService.verifyStartOtp(taskId, String(otp), req.user);
-      const enrichedData = await enrichTaskResponse(response.data, req.user);
-      res.status(response.status).json(enrichedData);
+      const taskServiceResponse = response.data as any;
+      const taskPayload = extractTaskPayloadFromServiceBody(taskServiceResponse);
+      const enrichedTask = await enrichTaskResponse(taskPayload, req.user);
+
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Task started successfully",
+        data: enrichedTask,
+      });
     } catch (error) {
       handleServiceError(error, res, "TaskController.verifyStartOtp");
     }
