@@ -33,6 +33,13 @@ router.put(
   applicationController.updateApplication.bind(applicationController)
 );
 
+// PATCH /api/v1/applications/:id - Tasker edits own pending offer (price / cover letter)
+router.patch(
+  "/:id",
+  authMiddleware,
+  applicationController.editApplication.bind(applicationController)
+);
+
 // POST /api/v1/applications/:id/negotiate - Counter/accept/reject negotiation
 router.post(
   "/:id/negotiate",

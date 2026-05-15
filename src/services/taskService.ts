@@ -199,6 +199,23 @@ export class TaskService extends BaseService {
     );
   }
 
+  /** Tasker edits own pending application (PATCH — distinct from PUT status updates). */
+  async editApplication(
+    applicationId: string,
+    body: any,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<any>>(
+        `/api/v1/applications/${applicationId}`,
+        body,
+        config
+      )
+    );
+  }
+
   async negotiateApplication(
     applicationId: string,
     negotiationData: any,

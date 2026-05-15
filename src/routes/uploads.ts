@@ -28,6 +28,9 @@ router.use(authMiddleware);
 // POST /api/v1/uploads/profile-picture - Routes to User Service
 router.post('/profile-picture', upload.single('image'), uploadController.uploadProfilePicture.bind(uploadController));
 
+// POST /api/v1/uploads/certificate - Routes to User Service (verification certificates)
+router.post('/certificate', upload.single('image'), uploadController.uploadCertificate.bind(uploadController));
+
 // DELETE /api/v1/uploads/profile-picture - Routes to User Service
 router.delete('/profile-picture', uploadController.deleteProfilePicture.bind(uploadController));
 
