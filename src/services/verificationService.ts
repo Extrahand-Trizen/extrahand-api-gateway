@@ -1,5 +1,6 @@
 import { BaseService } from './baseService.js';
 import { AxiosResponse } from 'axios';
+import FormData from 'form-data';
 import { UserToken } from '../types/service.js';
 import { ApiResponse } from '../types/api.js';
 
@@ -29,14 +30,30 @@ export interface VerificationStatus {
   maskedAadhaar?: string;
 }
 
+function parseTimeoutMs(value: string | undefined, fallback: number): number {
+  const parsed = parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export class VerificationService extends BaseService {
+  private readonly ocrUploadTimeoutMs: number;
+
   constructor() {
     const serviceURL = process.env.VERIFICATION_SERVICE_URL || 'http://localhost:4004';
+    const defaultTimeoutMs = parseTimeoutMs(
+      process.env.VERIFICATION_SERVICE_TIMEOUT_MS,
+      30_000,
+    );
+    const ocrUploadTimeoutMs = parseTimeoutMs(
+      process.env.VERIFICATION_SERVICE_OCR_UPLOAD_TIMEOUT_MS,
+      120_000,
+    );
     super({
       serviceName: 'VerificationService',
       baseURL: serviceURL,
-      timeout: 30000, // Longer timeout for verification
+      timeout: defaultTimeoutMs,
     });
+    this.ocrUploadTimeoutMs = ocrUploadTimeoutMs;
   }
 
   async initiateDigilockerVerification(
@@ -76,6 +93,76 @@ export class VerificationService extends BaseService {
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/verification/aadhaar/digilocker/status?verification_id=${encodeURIComponent(verificationId)}`,
+        config
+      )
+    );
+  }
+
+  // ============ Aadhaar Smart OCR (proxy only) ============
+
+  async initiateAadhaarOcr(
+    params: { consentGiven?: boolean },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/ocr/initiate',
+        { consentGiven: params.consentGiven ?? true },
+        config
+      )
+    );
+  }
+
+  async uploadAadhaarOcrSide(
+    side: 'front' | 'back',
+    formData: FormData,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        headers: { ...formData.getHeaders() },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
+    const path =
+      side === 'back'
+        ? '/api/v1/verification/aadhaar/ocr/back'
+        : '/api/v1/verification/aadhaar/ocr/front';
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(path, formData, {
+        ...config,
+        timeout: this.ocrUploadTimeoutMs,
+      })
+    );
+  }
+
+  async getAadhaarOcrStatus(
+    verificationId: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const qs = verificationId
+      ? `?verification_id=${encodeURIComponent(verificationId)}`
+      : '';
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/verification/aadhaar/ocr/status${qs}`,
+        config
+      )
+    );
+  }
+
+  async cancelAadhaarOcr(
+    verificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/ocr/cancel',
+        { verification_id: verificationId },
         config
       )
     );
