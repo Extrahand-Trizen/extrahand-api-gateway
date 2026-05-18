@@ -23,6 +23,10 @@ export interface Profile {
   name: string;
   email?: string;
   phone?: string;
+  /** Alias returned by some user-service payloads */
+  phoneNumber?: string;
+  /** Demo / play-review account flag from user-service */
+  reviewBypassActive?: boolean;
   roles: string[];
   userType: "individual" | "business";
   skills?: string[];

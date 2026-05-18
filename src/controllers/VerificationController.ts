@@ -34,7 +34,7 @@ export class VerificationController {
       let profilePhone: string | undefined;
       try {
         const profileRes = await userService.getCurrentProfile(req.user);
-        const profile = profileRes.data?.data ?? profileRes.data;
+        const profile = profileRes.data?.data ?? null;
         profilePhone =
           (profile?.phone && String(profile.phone)) ||
           (profile?.phoneNumber && String(profile.phoneNumber)) ||
