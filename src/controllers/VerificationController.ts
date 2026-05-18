@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verificationService } from '../services/verificationService.js';
+import { userService } from '../services/userService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
+import { isReviewBypassUser } from '../utils/reviewBypass.js';
 import logger from '../config/logger.js';
 
 export class VerificationController {
@@ -27,6 +29,43 @@ export class VerificationController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      let profilePhone: string | undefined;
+      try {
+        const profileRes = await userService.getCurrentProfile(req.user);
+        const profile = profileRes.data?.data ?? profileRes.data;
+        profilePhone =
+          (profile?.phone && String(profile.phone)) ||
+          (profile?.phoneNumber && String(profile.phoneNumber)) ||
+          undefined;
+        if (
+          profile?.reviewBypassActive === true ||
+          isReviewBypassUser(req.user.uid, profilePhone)
+        ) {
+          logger.info('DigiLocker initiate skipped for review/demo account', {
+            uid: req.user.uid,
+          });
+          res.status(200).json({
+            success: true,
+            alreadyVerified: true,
+            message: 'Aadhaar verification is not required for this demo account.',
+          });
+          return;
+        }
+      } catch (profileErr) {
+        if (isReviewBypassUser(req.user.uid, undefined)) {
+          res.status(200).json({
+            success: true,
+            alreadyVerified: true,
+            message: 'Aadhaar verification is not required for this demo account.',
+          });
+          return;
+        }
+        logger.warn('Could not load profile for DigiLocker bypass check; continuing', {
+          uid: req.user.uid,
+          error: profileErr instanceof Error ? profileErr.message : String(profileErr),
+        });
+      }
 
       const response = await verificationService.initiateDigilockerVerification(
         { mobileNumber, aadhaarNumber, consentGiven, redirectUrl },
