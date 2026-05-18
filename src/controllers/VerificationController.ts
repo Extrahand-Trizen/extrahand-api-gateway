@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import FormData from 'form-data';
 import { verificationService } from '../services/verificationService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 import logger from '../config/logger.js';
@@ -65,6 +66,102 @@ export class VerificationController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.getDigilockerStatus');
+    }
+  }
+
+  async initiateAadhaarOcr(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { consentGiven } = req.body;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      const response = await verificationService.initiateAadhaarOcr({ consentGiven }, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.initiateAadhaarOcr');
+    }
+  }
+
+  async uploadAadhaarOcrFront(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    await this.proxyAadhaarOcrUpload(req, res, 'front');
+  }
+
+  async uploadAadhaarOcrBack(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    await this.proxyAadhaarOcrUpload(req, res, 'back');
+  }
+
+  private async proxyAadhaarOcrUpload(
+    req: Request,
+    res: Response,
+    side: 'front' | 'back'
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const file = (req as Request & { file?: Express.Multer.File }).file;
+      const verificationId =
+        (req.body.verification_id as string) || (req.body.verificationId as string);
+      if (!file || !verificationId) {
+        res.status(400).json({
+          success: false,
+          error: 'file and verification_id are required',
+        });
+        return;
+      }
+      const formData = new FormData();
+      formData.append('verification_id', verificationId);
+      formData.append('file', file.buffer, {
+        filename: file.originalname || `aadhaar-${side}.jpg`,
+        contentType: file.mimetype,
+      });
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      const response = await verificationService.uploadAadhaarOcrSide(side, formData, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, `VerificationController.uploadAadhaarOcr${side}`);
+    }
+  }
+
+  async getAadhaarOcrStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const verificationId = req.query.verification_id as string | undefined;
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      const response = await verificationService.getAadhaarOcrStatus(verificationId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.getAadhaarOcrStatus');
+    }
+  }
+
+  async cancelAadhaarOcr(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const verificationId =
+        (req.body.verification_id as string) || (req.body.verificationId as string);
+      if (!verificationId) {
+        res.status(400).json({ success: false, error: 'verification_id is required' });
+        return;
+      }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      const response = await verificationService.cancelAadhaarOcr(verificationId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.cancelAadhaarOcr');
     }
   }
 

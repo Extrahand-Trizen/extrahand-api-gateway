@@ -25,6 +25,10 @@ const envSchema = z.object({
    CORS_ORIGIN: z.string(),
    RATE_LIMIT_WINDOW_MS: z.string().default("900000"),
    RATE_LIMIT_MAX_REQUESTS: z.string().default("100"),
+   /** Default axios timeout for verification service (ms) */
+   VERIFICATION_SERVICE_TIMEOUT_MS: z.string().default("30000"),
+   /** OCR multipart front/back proxy timeout (ms) */
+   VERIFICATION_SERVICE_OCR_UPLOAD_TIMEOUT_MS: z.string().default("120000"),
    FIREBASE_PROJECT_ID: z.string(),
   FIREBASE_PRIVATE_KEY: z.string(),
   FIREBASE_CLIENT_EMAIL: z.string().email(),
