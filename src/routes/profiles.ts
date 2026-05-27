@@ -75,6 +75,12 @@ router.delete('/me/addresses/:addressId', authMiddleware, profileController.dele
 router.get('/me/stats', authMiddleware, profileController.getMyStats.bind(profileController));
 router.post('/me/stats/recalculate', authMiddleware, profileController.recalculateStats.bind(profileController));
 
+// Check phone availability (must come before /:userId)
+router.post('/check-phone', authMiddleware, profileController.checkPhoneAvailability.bind(profileController));
+
+// Change phone number after OTP verification (must come before /:userId)
+router.put('/change-phone', authMiddleware, profileController.changePhone.bind(profileController));
+
 // Upsert profile (create or update)
 router.post('/', authMiddleware, profileController.upsertProfile.bind(profileController));
 

@@ -493,6 +493,34 @@ export class UserService extends BaseService {
     );
   }
 
+  async checkPhoneAvailability(
+    phone: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ available: boolean; message?: string }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ available: boolean; message?: string }>>(
+        '/api/v1/profiles/check-phone',
+        { phone },
+        config
+      )
+    );
+  }
+
+  async changePhone(
+    phone: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.put<ApiResponse<any>>(
+        '/api/v1/profiles/change-phone',
+        { phone },
+        config
+      )
+    );
+  }
+
   /**
    * GET /api/v1/profiles/by-id/:profileId
    * Get profile by ObjectId (for enrichment - minimal fields)
