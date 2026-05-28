@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import { UserToken } from "../types/service.js";
 import { Profile, ApiResponse, SessionResponse } from "../types/api.js";
 import FormData from "form-data";
+import { parseReferralChannel } from "../utils/rewardsContext.js";
 
 interface SessionRequestOptions {
   cookies?: string;
@@ -344,7 +345,13 @@ export class UserService extends BaseService {
     mode: "login" | "signup",
     phone: string,
     name?: string,
-    options?: { clientType?: "web" | "mobile"; deviceId?: string; otp?: string }
+    options?: {
+      clientType?: "web" | "mobile";
+      deviceId?: string;
+      otp?: string;
+      referralCode?: string;
+      referralChannel?: "poster" | "tasker" | "customer";
+    }
   ): Promise<
     AxiosResponse<
       ApiResponse<{
@@ -355,7 +362,7 @@ export class UserService extends BaseService {
       }>
     >
   > {
-    const payload = {
+    const payload: Record<string, unknown> = {
       idToken,
       mode,
       phone,
@@ -364,6 +371,12 @@ export class UserService extends BaseService {
       clientType: options?.clientType ?? "web",
       deviceId: options?.deviceId,
     };
+    if (options?.referralCode?.trim()) {
+      payload.referralCode = options.referralCode.trim();
+    }
+    if (options?.referralChannel) {
+      payload.referralChannel = parseReferralChannel(options.referralChannel);
+    }
 
     // Service auth is required by User Service's gatewayAuthMiddleware
     const config = this.addServiceAuth({});
@@ -389,7 +402,12 @@ export class UserService extends BaseService {
     otp: string,
     mode: "login" | "signup",
     name?: string,
-    options?: { clientType?: "web" | "mobile"; deviceId?: string }
+    options?: {
+      clientType?: "web" | "mobile";
+      deviceId?: string;
+      referralCode?: string;
+      referralChannel?: "poster" | "tasker" | "customer";
+    }
   ): Promise<
     AxiosResponse<
       ApiResponse<{
@@ -402,7 +420,7 @@ export class UserService extends BaseService {
       }>
     >
   > {
-    const payload = {
+    const payload: Record<string, unknown> = {
       phone,
       otp,
       mode,
@@ -410,6 +428,12 @@ export class UserService extends BaseService {
       clientType: options?.clientType ?? "web",
       deviceId: options?.deviceId,
     };
+    if (options?.referralCode?.trim()) {
+      payload.referralCode = options.referralCode.trim();
+    }
+    if (options?.referralChannel) {
+      payload.referralChannel = parseReferralChannel(options.referralChannel);
+    }
     const config = this.addServiceAuth({});
     return this.handleRequest(() =>
       this.client.post<

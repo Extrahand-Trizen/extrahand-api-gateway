@@ -437,6 +437,8 @@ export class PaymentService extends BaseService {
       amount: number;
       taskTitle?: string;
       userId?: string;
+      useExtraCoins?: boolean;
+      requestedCoinRedeemRupees?: number;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -464,6 +466,28 @@ export class PaymentService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}/summary`, {
+        ...config,
+        params
+      })
+    );
+  }
+
+  async getExtraCoinsWallet(
+    userId: string,
+    userToken: UserToken | null,
+    linkedUserIds?: string,
+    walletRole?: 'poster' | 'tasker'
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) params.linkedUserIds = linkedUserIds.trim();
+    if (walletRole) params.walletRole = walletRole;
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/transactions/${userId}/wallet`, {
         ...config,
         params
       })

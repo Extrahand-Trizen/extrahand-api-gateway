@@ -216,7 +216,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -241,7 +240,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -306,7 +304,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -320,6 +317,38 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getTransactionSummary');
+    }
+  }
+
+  async getExtraCoinsWallet(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+      const { parseWalletRole } = await import('../utils/rewardsContext.js');
+      const walletRole = parseWalletRole(req.query.walletRole, 'tasker');
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getExtraCoinsWallet(
+        userId,
+        req.user || null,
+        linkedUserIdsMerged,
+        walletRole
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getExtraCoinsWallet');
     }
   }
 

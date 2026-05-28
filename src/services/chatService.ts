@@ -5,7 +5,7 @@ import { ApiResponse } from '../types/api.js';
 
 export class ChatService extends BaseService {
   constructor() {
-    const serviceURL = process.env.CHAT_SERVICE_URL || 'http://localhost:4003';
+    const serviceURL = process.env.CHAT_SERVICE_URL || 'http://localhost:4006';
     console.log(`🔧 [ChatService] Initializing with URL: ${serviceURL}`);
     super({
       serviceName: 'ChatService',

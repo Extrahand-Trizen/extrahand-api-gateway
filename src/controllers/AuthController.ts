@@ -5,6 +5,7 @@ import {
    sanitizeSessionPayload,
 } from "../utils/cookies.js";
 import logger from "../config/logger.js";
+import { parseReferralChannel } from "../utils/rewardsContext.js";
 
 export class AuthController {
    /**
@@ -49,7 +50,7 @@ export class AuthController {
     */
    static async completeOTP(req: Request, res: Response): Promise<void> {
       try {
-         const { idToken, mode, phone, name, clientType, deviceId } = req.body;
+         const { idToken, mode, phone, name, clientType, deviceId, referralCode, referralChannel } = req.body;
 
          if (!idToken || !mode || !phone) {
             res.status(400).json({
@@ -62,10 +63,33 @@ export class AuthController {
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
 
+         const referralCodeNormalized =
+            typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
+         const normalizedReferralChannel =
+            referralChannel != null && String(referralChannel).trim() !== ""
+               ? parseReferralChannel(referralChannel)
+               : undefined;
+
          logger.info("Processing OTP completion request", {
             mode,
             phone: phone.replace(/\d(?=\d{4})/g, "*"),
+            hasReferralCode: Boolean(referralCodeNormalized),
          });
+
+         if (mode === "signup" && referralCodeNormalized) {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_forward ${JSON.stringify({
+                  referralCode: referralCodeNormalized,
+                  clientType: normalizedClientType,
+               })}`
+            );
+         } else if (mode === "signup") {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_no_referral ${JSON.stringify({
+                  note: "signup without referralCode in body — no coins will be scheduled",
+               })}`
+            );
+         }
 
          // Forward to User Service
          const response = await userService.completeOTP(
@@ -76,6 +100,8 @@ export class AuthController {
             {
                clientType: normalizedClientType,
                deviceId,
+               referralCode: referralCodeNormalized || undefined,
+               referralChannel: normalizedReferralChannel,
             }
          );
 
@@ -125,7 +151,7 @@ export class AuthController {
          return;
       }
       try {
-         const { phone, otp, mode, name, clientType, deviceId } = req.body;
+         const { phone, otp, mode, name, clientType, deviceId, referralCode, referralChannel } = req.body;
          if (!phone || !otp || !mode) {
             res.status(400).json({
                success: false,
@@ -135,12 +161,32 @@ export class AuthController {
          }
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
+         const referralCodeNormalized =
+            typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
+         const normalizedReferralChannel =
+            referralChannel != null && String(referralChannel).trim() !== ""
+               ? parseReferralChannel(referralChannel)
+               : undefined;
+
+         if (mode === "signup" && referralCodeNormalized) {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_dev_forward ${JSON.stringify({
+                  referralCode: referralCodeNormalized,
+               })}`
+            );
+         }
+
          const response = await userService.completeOTPDev(
             phone,
             otp,
             mode,
             name,
-            { clientType: normalizedClientType, deviceId }
+            {
+               clientType: normalizedClientType,
+               deviceId,
+               referralCode: referralCodeNormalized || undefined,
+               referralChannel: normalizedReferralChannel,
+            }
          );
          const upstreamCookies = response.headers["set-cookie"];
          forwardOrSetAuthCookies(
