@@ -532,6 +532,42 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.getPublicProfileByObjectId');
     }
   }
+
+  async checkPhoneAvailability(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.checkPhoneAvailability(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.checkPhoneAvailability');
+    }
+  }
+
+  async changePhone(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.changePhone(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.changePhone');
+    }
+  }
 }
 
 export const profileController = new ProfileController();
