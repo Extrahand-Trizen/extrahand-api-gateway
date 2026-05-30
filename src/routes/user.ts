@@ -287,6 +287,29 @@ router.post('/referral/retry-grants', authMiddleware, async (req: Request, res: 
 });
 
 /**
+ * GET /api/v1/user/referral/referee-welcome-eligibility
+ */
+router.get(
+  '/referral/referee-welcome-eligibility',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction) => {
+    try {
+      const data = await proxyToUserService(
+        req,
+        res,
+        '/v1/user/referral/referee-welcome-eligibility',
+        'GET',
+      );
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      sendSuccess(res, data.data || data, 'Referee welcome eligibility');
+    } catch (error) {
+      logger.error('Error checking referee welcome eligibility:', error);
+      sendError(res, error, 500);
+    }
+  },
+);
+
+/**
  * GET /api/v1/user/credits/withdrawals
  * Get withdrawal history
  */
