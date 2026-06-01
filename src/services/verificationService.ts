@@ -4,6 +4,11 @@ import FormData from 'form-data';
 import { UserToken } from '../types/service.js';
 import { ApiResponse } from '../types/api.js';
 
+function parseTimeoutMs(value: string | undefined, fallback: number): number {
+  const parsed = parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export interface AadhaarVerificationRequest {
   aadhaarNumber: string;
   consent: {

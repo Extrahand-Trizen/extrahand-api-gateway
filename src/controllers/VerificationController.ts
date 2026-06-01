@@ -117,6 +117,7 @@ export class VerificationController {
       const { consentGiven } = req.body;
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
       const response = await verificationService.initiateAadhaarOcr({ consentGiven }, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -160,6 +161,7 @@ export class VerificationController {
       });
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
       const response = await verificationService.uploadAadhaarOcrSide(side, formData, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -176,6 +178,7 @@ export class VerificationController {
       const verificationId = req.query.verification_id as string | undefined;
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
       const response = await verificationService.getAadhaarOcrStatus(verificationId, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -197,6 +200,7 @@ export class VerificationController {
       }
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
       const response = await verificationService.cancelAadhaarOcr(verificationId, req.user);
       res.status(response.status).json(response.data);
     } catch (error) {
