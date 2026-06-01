@@ -718,6 +718,58 @@ export class UserService extends BaseService {
     );
   }
 
+  /**
+   * GET /api/v1/profiles/nearby-helpers
+   * Returns helpers (taskers) near the given coordinates or location text tokens.
+   */
+  async getNearbyHelpers(
+    params: {
+      lat?: number;
+      lng?: number;
+      radiusKm?: number;
+      city?: string;
+      area?: string;
+      pinCode?: string;
+      fullAddress?: string;
+      limit?: number;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    helpers: Array<{
+      _id: string;
+      uid: string;
+      name: string;
+      photoURL: string | null;
+      rating: number;
+      totalReviews: number;
+      skills: any;
+      location: { city?: string; state?: string; area?: string } | null;
+      isAadhaarVerified: boolean;
+      verificationBadge?: string;
+    }>;
+    count: number;
+    hasHelpers: boolean;
+  }>>> {
+    const query = new URLSearchParams();
+    if (params.lat !== undefined) query.set('lat', String(params.lat));
+    if (params.lng !== undefined) query.set('lng', String(params.lng));
+    if (params.radiusKm !== undefined) query.set('radiusKm', String(params.radiusKm));
+    if (params.city?.trim()) query.set('city', params.city.trim());
+    if (params.area?.trim()) query.set('area', params.area.trim());
+    if (params.pinCode?.trim()) query.set('pinCode', params.pinCode.trim());
+    if (params.fullAddress?.trim()) query.set('fullAddress', params.fullAddress.trim());
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/profiles/nearby-helpers?${query.toString()}`,
+        config
+      )
+    );
+  }
+
   // Profile Stats Methods
   async getMyStats(
     userToken: UserToken

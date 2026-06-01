@@ -568,6 +568,39 @@ export class ProfileController {
       handleServiceError(error, res, 'ProfileController.changePhone');
     }
   }
+
+  /**
+   * GET /api/v1/profiles/nearby-helpers
+   * Proxies to user-service to find helpers near the caller's location.
+   * Query params: lat, lng, radiusKm, city, area, state, pinCode, fullAddress, limit
+   */
+  async getNearbyHelpers(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+
+      const lat = req.query.lat !== undefined ? parseFloat(String(req.query.lat)) : undefined;
+      const lng = req.query.lng !== undefined ? parseFloat(String(req.query.lng)) : undefined;
+      const radiusKm = req.query.radiusKm !== undefined ? parseFloat(String(req.query.radiusKm)) : undefined;
+      const city = typeof req.query.city === 'string' ? req.query.city.trim() : undefined;
+      const pinCode = typeof req.query.pinCode === 'string' ? req.query.pinCode.trim() : undefined;
+      const fullAddress = typeof req.query.fullAddress === 'string' ? req.query.fullAddress.trim() : undefined;
+      const limit = req.query.limit !== undefined ? parseInt(String(req.query.limit), 10) : undefined;
+
+      const response = await userService.getNearbyHelpers(
+        { lat, lng, radiusKm, city, pinCode, fullAddress, limit },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getNearbyHelpers');
+    }
+  }
 }
 
 export const profileController = new ProfileController();

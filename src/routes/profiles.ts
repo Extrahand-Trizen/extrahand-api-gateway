@@ -25,6 +25,9 @@ logger.info('📋 [Profiles Router] Registering routes:', {
 // Search profiles (must come before /:userId)
 router.get('/search', authMiddleware, profileController.searchProfiles.bind(profileController));
 
+// Nearby helpers — find taskers near the caller's location (must come before /:userId)
+router.get('/nearby-helpers', authMiddleware, profileController.getNearbyHelpers.bind(profileController));
+
 // Get current user profile (must come before /:userId)
 router.get('/me', authMiddleware, profileController.getCurrentProfile.bind(profileController));
 
