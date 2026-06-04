@@ -28,6 +28,28 @@ router.get('/search', authMiddleware, profileController.searchProfiles.bind(prof
 // Nearby helpers — find taskers near the caller's location (must come before /:userId)
 router.get('/nearby-helpers', authMiddleware, profileController.getNearbyHelpers.bind(profileController));
 
+router.post(
+  '/location-notify',
+  authMiddleware,
+  profileController.createLocationNotifyRequest.bind(profileController),
+);
+router.get(
+  '/location-notify/me',
+  authMiddleware,
+  profileController.getLocationNotifyRequestStatus.bind(profileController),
+);
+
+router.post(
+  '/instant-services-notify',
+  authMiddleware,
+  profileController.createInstantServicesNotifyRequest.bind(profileController),
+);
+router.get(
+  '/instant-services-notify/me',
+  authMiddleware,
+  profileController.getInstantServicesNotifyRequestStatus.bind(profileController),
+);
+
 // Get current user profile (must come before /:userId)
 router.get('/me', authMiddleware, profileController.getCurrentProfile.bind(profileController));
 
@@ -83,6 +105,11 @@ router.post('/check-phone', authMiddleware, profileController.checkPhoneAvailabi
 
 // Change phone number after OTP verification (must come before /:userId)
 router.put('/change-phone', authMiddleware, profileController.changePhone.bind(profileController));
+
+router.post('/alternate-phone/send-otp', authMiddleware, profileController.sendAlternatePhoneOtp.bind(profileController));
+router.post('/alternate-phone/verify', authMiddleware, profileController.verifyAlternatePhoneOtp.bind(profileController));
+router.post('/alternate-phone/verify-firebase', profileController.verifyAlternatePhoneFirebase.bind(profileController));
+router.delete('/alternate-phone', authMiddleware, profileController.removeAlternatePhone.bind(profileController));
 
 // Upsert profile (create or update)
 router.post('/', authMiddleware, profileController.upsertProfile.bind(profileController));
