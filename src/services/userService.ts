@@ -545,6 +545,114 @@ export class UserService extends BaseService {
     );
   }
 
+  async sendAlternatePhoneOtp(
+    phone: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/send-otp',
+        { phone },
+        config
+      )
+    );
+  }
+
+  async verifyAlternatePhoneOtp(
+    phone: string,
+    otp: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/verify',
+        { phone, otp },
+        config
+      )
+    );
+  }
+
+  async verifyAlternatePhoneFirebase(
+    phone: string,
+    originalIdToken: string,
+    alternateIdToken: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/verify-firebase',
+        { phone, originalIdToken, alternateIdToken },
+        config
+      )
+    );
+  }
+
+  async removeAlternatePhone(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone',
+        config
+      )
+    );
+  }
+
+  async sendAlternateLoginOtp(
+    phone: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/send-otp',
+        { phone },
+        config
+      )
+    );
+  }
+
+  async verifyAlternateLoginOtp(
+    phone: string,
+    otp: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/verify',
+        { phone, otp },
+        config
+      )
+    );
+  }
+
+  async completeAlternateLoginFirebase(
+    phone: string,
+    alternateIdToken: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/verify-firebase',
+        { phone, alternateIdToken },
+        config
+      )
+    );
+  }
+
+  async restoreFirebaseSession(idToken: string): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/session/restore-firebase',
+        { idToken },
+        config
+      )
+    );
+  }
+
   /**
    * GET /api/v1/profiles/by-id/:profileId
    * Get profile by ObjectId (for enrichment - minimal fields)
@@ -767,6 +875,42 @@ export class UserService extends BaseService {
         `/api/v1/profiles/nearby-helpers?${query.toString()}`,
         config
       )
+    );
+  }
+
+  async createLocationNotifyRequest(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/profiles/location-notify', {}, config)
+    );
+  }
+
+  async getLocationNotifyRequestStatus(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/profiles/location-notify/me', config)
+    );
+  }
+
+  async createInstantServicesNotifyRequest(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/profiles/instant-services-notify', {}, config)
+    );
+  }
+
+  async getInstantServicesNotifyRequestStatus(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/profiles/instant-services-notify/me', config)
     );
   }
 

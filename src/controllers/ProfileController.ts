@@ -569,6 +569,76 @@ export class ProfileController {
     }
   }
 
+  async sendAlternatePhoneOtp(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.sendAlternatePhoneOtp(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.sendAlternatePhoneOtp');
+    }
+  }
+
+  async verifyAlternatePhoneOtp(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone, otp } = req.body;
+      if (!phone || !otp) {
+        res.status(400).json({ success: false, error: 'Phone number and OTP are required' });
+        return;
+      }
+      const response = await userService.verifyAlternatePhoneOtp(phone, otp, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.verifyAlternatePhoneOtp');
+    }
+  }
+
+  async verifyAlternatePhoneFirebase(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { phone, originalIdToken, alternateIdToken } = req.body;
+      if (!phone || !originalIdToken || !alternateIdToken) {
+        res.status(400).json({
+          success: false,
+          error: 'Phone number and verification tokens are required',
+        });
+        return;
+      }
+      const response = await userService.verifyAlternatePhoneFirebase(
+        phone,
+        originalIdToken,
+        alternateIdToken
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.verifyAlternatePhoneFirebase');
+    }
+  }
+
+  async removeAlternatePhone(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.removeAlternatePhone(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.removeAlternatePhone');
+    }
+  }
+
   /**
    * GET /api/v1/profiles/nearby-helpers
    * Proxies to user-service to find helpers near the caller's location.
@@ -599,6 +669,58 @@ export class ProfileController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'ProfileController.getNearbyHelpers');
+    }
+  }
+
+  async createLocationNotifyRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.createLocationNotifyRequest(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.createLocationNotifyRequest');
+    }
+  }
+
+  async getLocationNotifyRequestStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.getLocationNotifyRequestStatus(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getLocationNotifyRequestStatus');
+    }
+  }
+
+  async createInstantServicesNotifyRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.createInstantServicesNotifyRequest(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.createInstantServicesNotifyRequest');
+    }
+  }
+
+  async getInstantServicesNotifyRequestStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.getInstantServicesNotifyRequestStatus(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getInstantServicesNotifyRequestStatus');
     }
   }
 }
