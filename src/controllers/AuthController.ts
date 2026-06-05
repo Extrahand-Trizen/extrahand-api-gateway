@@ -70,9 +70,11 @@ export class AuthController {
                ? parseReferralChannel(referralChannel)
                : undefined;
 
-         logger.info("Processing OTP completion request", {
+         const phoneLast4 = String(phone).replace(/\D/g, "").slice(-4);
+         logger.info("[Signup][WA] gateway otp/complete", {
             mode,
-            phone: phone.replace(/\d(?=\d{4})/g, "*"),
+            phoneLast4,
+            clientType: normalizedClientType,
             hasReferralCode: Boolean(referralCodeNormalized),
          });
 
