@@ -146,6 +146,81 @@ export class UserService extends BaseService {
     );
   }
 
+  async getBookNowCart(userToken: UserToken): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        items: Array<Record<string, unknown>>;
+      }>
+    >
+  > {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart",
+        config
+      )
+    );
+  }
+
+  async addBookNowCartItem(
+    item: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart/items",
+        item,
+        config
+      )
+    );
+  }
+
+  async updateBookNowCartItemQuantity(
+    payload: { catalogId: string; packageId: string; quantity: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart/items",
+        payload,
+        config
+      )
+    );
+  }
+
+  async removeBookNowCartItem(
+    catalogId: string,
+    packageId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        `/api/v1/profiles/me/book-now-cart/items/${encodeURIComponent(catalogId)}/${encodeURIComponent(packageId)}`,
+        config
+      )
+    );
+  }
+
+  async clearBookNowCart(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart",
+        config
+      )
+    );
+  }
+
   async getKeywordAlerts(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ keywords: string[] }>>> {
