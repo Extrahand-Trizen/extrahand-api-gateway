@@ -34,6 +34,9 @@ import notificationPreferencesRouter from './routes/notificationPreferences.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 import inquiriesRouter from './routes/inquiries.js';
+import catalogRouter from './routes/catalog.js';
+import bookingsRouter from './routes/bookings.js';
+import assignmentsRouter from './routes/assignments.js';
 
 const env = validateEnv();
 const app: Express = express();
@@ -156,6 +159,9 @@ app.use('/api/v1/privacy', asyncAuthMiddleware, privacyRouter);
 app.use('/api/v1/notification-preferences', notificationPreferencesRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/inquiries', inquiriesRouter);
+app.use('/api/v1/catalog', catalogRouter);
+app.use('/api/v1/bookings', bookingsRouter);
+app.use('/api/v1/admin/assignments', assignmentsRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));

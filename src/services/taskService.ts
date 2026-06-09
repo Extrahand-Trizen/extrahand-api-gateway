@@ -699,6 +699,101 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  // ── Book Now catalog ────────────────────────────────────────────────────────
+
+  async listCatalogCategories(): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/categories', config)
+    );
+  }
+
+  async getCatalogCategory(slug: string): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/catalog/categories/${slug}`, config)
+    );
+  }
+
+  async getCatalogSku(
+    skuSlug: string,
+    categorySlug?: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({ params: categorySlug ? { categorySlug } : {} });
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(`/api/v1/catalog/skus/${skuSlug}`, config)
+    );
+  }
+
+  async listServiceAreas(city?: string): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({ params: city ? { city } : {} });
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/areas', config)
+    );
+  }
+
+  async checkServicePinCode(
+    pinCode: string,
+    city?: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({ params: { pinCode, ...(city ? { city } : {}) } });
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/areas/check', config)
+    );
+  }
+
+  // ── Book Now bookings ───────────────────────────────────────────────────────
+
+  async createBooking(body: Record<string, unknown>, userToken: UserToken) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/bookings', body, config)
+    );
+  }
+
+  async getBooking(orderId: string, userToken: UserToken) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/bookings/${orderId}`, config)
+    );
+  }
+
+  async listMyBookings(
+    userToken: UserToken,
+    params?: { limit?: number; page?: number }
+  ) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params }));
+    return this.handleRequest(() =>
+      this.client.get('/api/v1/bookings/mine', config)
+    );
+  }
+
+  async cancelBooking(orderId: string, body: { reason?: string }, userToken: UserToken) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post(`/api/v1/bookings/${orderId}/cancel`, body, config)
+    );
+  }
+
+  // ── Ops assignment (admin) ──────────────────────────────────────────────────
+
+  async listPendingAssignments(
+    userToken: UserToken,
+    params?: { limit?: number; page?: number }
+  ) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params }));
+    return this.handleRequest(() =>
+      this.client.get('/api/v1/admin/assignments/pending', config)
+    );
+  }
+
+  async assignBookingHelper(body: Record<string, unknown>, userToken: UserToken) {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/admin/assignments/assign', body, config)
+    );
+  }
 }
 
 export const taskService = new TaskService();
