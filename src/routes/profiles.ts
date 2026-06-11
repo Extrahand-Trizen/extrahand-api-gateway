@@ -63,6 +63,21 @@ router.put('/me', authMiddleware, profileController.updateProfile.bind(profileCo
 router.get('/me/category-alerts', authMiddleware, profileController.getCategoryAlerts.bind(profileController));
 router.put('/me/category-alerts', authMiddleware, profileController.updateCategoryAlerts.bind(profileController));
 
+// Book Now cart (must come before /:userId)
+router.get('/me/book-now-cart', authMiddleware, profileController.getBookNowCart.bind(profileController));
+router.post('/me/book-now-cart/items', authMiddleware, profileController.addBookNowCartItem.bind(profileController));
+router.patch(
+  '/me/book-now-cart/items',
+  authMiddleware,
+  profileController.updateBookNowCartItemQuantity.bind(profileController),
+);
+router.delete(
+  '/me/book-now-cart/items/:catalogId/:packageId',
+  authMiddleware,
+  profileController.removeBookNowCartItem.bind(profileController),
+);
+router.delete('/me/book-now-cart', authMiddleware, profileController.clearBookNowCart.bind(profileController));
+
 // Keyword alerts (must come before /:userId)
 router.get('/me/keyword-alerts', authMiddleware, profileController.getKeywordAlerts.bind(profileController));
 router.put('/me/keyword-alerts', authMiddleware, profileController.updateKeywordAlerts.bind(profileController));

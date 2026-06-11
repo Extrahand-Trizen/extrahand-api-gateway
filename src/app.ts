@@ -34,6 +34,8 @@ import notificationPreferencesRouter from './routes/notificationPreferences.js';
 import logger from './config/logger.js';
 import { validateEnv, getCorsConfig } from './config/env.js';
 import inquiriesRouter from './routes/inquiries.js';
+import catalogRouter from './routes/catalog.js';
+import bookingsRouter from './routes/bookings.js';
 
 const env = validateEnv();
 const app: Express = express();
@@ -156,6 +158,8 @@ app.use('/api/v1/privacy', asyncAuthMiddleware, privacyRouter);
 app.use('/api/v1/notification-preferences', notificationPreferencesRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/inquiries', inquiriesRouter);
+app.use('/api/v1/catalog', catalogRouter);
+app.use('/api/v1/bookings', bookingsRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
@@ -223,6 +227,8 @@ if (!window._mapsLoadedCallback) {
     privacy: '/api/v1/privacy (with auth)',
     user: '/api/v1/user (badge, referral, credits, batch-jobs)',
     inquiries: '/api/v1/inquiries (with auth)',
+    catalog: '/api/v1/catalog (optional auth)',
+    bookings: '/api/v1/bookings (with auth)',
     auth: '/api/v1/auth (public)'
   });
 

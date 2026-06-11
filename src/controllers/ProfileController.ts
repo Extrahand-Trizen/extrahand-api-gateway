@@ -452,6 +452,126 @@ export class ProfileController {
     }
   }
 
+  async getBookNowCart(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getBookNowCart(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getBookNowCart');
+    }
+  }
+
+  async addBookNowCartItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.addBookNowCartItem(req.body || {}, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.addBookNowCartItem');
+    }
+  }
+
+  async updateBookNowCartItemQuantity(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.updateBookNowCartItemQuantity(
+        {
+          catalogId: String(req.body?.catalogId || ''),
+          packageId: String(req.body?.packageId || ''),
+          quantity: Number(req.body?.quantity),
+        },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.updateBookNowCartItemQuantity');
+    }
+  }
+
+  async removeBookNowCartItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.removeBookNowCartItem(
+        String(req.params.catalogId || ''),
+        String(req.params.packageId || ''),
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.removeBookNowCartItem');
+    }
+  }
+
+  async clearBookNowCart(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.clearBookNowCart(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.clearBookNowCart');
+    }
+  }
+
   async getKeywordAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
