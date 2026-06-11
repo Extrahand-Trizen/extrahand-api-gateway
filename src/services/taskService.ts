@@ -699,6 +699,141 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  // Book Now — catalog (task-service)
+  async listCatalogCategories(
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/catalog/categories", config)
+    );
+  }
+
+  async getCatalogCategory(
+    slug: string,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/categories/${encodeURIComponent(slug)}`,
+        config
+      )
+    );
+  }
+
+  async getCatalogSku(
+    skuSlug: string,
+    categorySlug: string | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: categorySlug ? { categorySlug } : undefined,
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/skus/${encodeURIComponent(skuSlug)}`,
+        config
+      )
+    );
+  }
+
+  async checkCatalogPinCode(
+    pinCode: string,
+    city: string | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: { pinCode, ...(city ? { city } : {}) },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/catalog/areas/check", config)
+    );
+  }
+
+  // Book Now — bookings (task-service)
+  async createBooking(
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>("/api/v1/bookings", body, config)
+    );
+  }
+
+  async getBookingOrderIdForTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/by-task/${encodeURIComponent(taskId)}`,
+        config
+      )
+    );
+  }
+
+  async getBookingOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}`,
+        config
+      )
+    );
+  }
+
+  async listMyBookings(
+    params: { limit?: number; page?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/bookings/mine", config)
+    );
+  }
+
+  async cancelBookingOrderItem(
+    orderId: string,
+    body: { taskId: string; reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/cancel-item`,
+        body,
+        config
+      )
+    );
+  }
+
+  async cancelBookingOrder(
+    orderId: string,
+    body: { reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/cancel`,
+        body,
+        config
+      )
+    );
+  }
 }
 
 export const taskService = new TaskService();
