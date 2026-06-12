@@ -746,9 +746,18 @@ export class TaskService extends BaseService {
     city: string | undefined,
     userToken?: UserToken | null
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const uid =
+      userToken?.uid != null && String(userToken.uid).trim() !== ''
+        ? String(userToken.uid).trim()
+        : undefined;
+
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
-        params: { pinCode, ...(city ? { city } : {}) },
+        params: {
+          pinCode,
+          ...(city ? { city } : {}),
+          ...(uid ? { firebaseUid: uid } : {}),
+        },
       })
     );
     return this.handleRequest(() =>
