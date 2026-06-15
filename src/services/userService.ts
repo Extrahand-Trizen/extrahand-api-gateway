@@ -1033,6 +1033,21 @@ export class UserService extends BaseService {
       }>>("/api/v1/profiles/me/stats/recalculate", {}, config)
     );
   }
+
+  async proxySupply(
+    method: 'get' | 'post' | 'patch',
+    path: string,
+    userToken: UserToken,
+    body?: unknown,
+  ): Promise<AxiosResponse<ApiResponse<unknown>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const url = `/api/v1/profiles${path}`;
+    return this.handleRequest(() => {
+      if (method === 'get') return this.client.get(url, config);
+      if (method === 'post') return this.client.post(url, body, config);
+      return this.client.patch(url, body, config);
+    });
+  }
 }
 
 export const userService = new UserService();

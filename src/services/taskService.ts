@@ -843,6 +843,33 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  async proxyPartnerJobs(
+    method: string,
+    url: string,
+    userToken: UserToken,
+    body?: unknown,
+  ): Promise<AxiosResponse<ApiResponse<unknown>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() => {
+      if (method === 'get') return this.client.get(url, config);
+      if (method === 'post') return this.client.post(url, body, config);
+      return this.client.patch(url, body, config);
+    });
+  }
+
+  async proxyAdminAssignments(
+    method: string,
+    url: string,
+    userToken: UserToken,
+    body?: unknown,
+  ): Promise<AxiosResponse<ApiResponse<unknown>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() => {
+      if (method === 'get') return this.client.get(url, config);
+      return this.client.post(url, body, config);
+    });
+  }
 }
 
 export const taskService = new TaskService();

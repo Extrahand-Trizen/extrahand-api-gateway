@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { profileController } from '../controllers/ProfileController.js';
+import { userService } from '../services/userService.js';
+import { handleServiceError } from '../utils/errorHandler.js';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import logger from '../config/logger.js';
 // Note: authMiddleware is applied both at app level AND on individual routes for extra security
@@ -62,6 +64,28 @@ router.put('/me', authMiddleware, profileController.updateProfile.bind(profileCo
 // Category alerts (must come before /:userId)
 router.get('/me/category-alerts', authMiddleware, profileController.getCategoryAlerts.bind(profileController));
 router.put('/me/category-alerts', authMiddleware, profileController.updateCategoryAlerts.bind(profileController));
+
+// Supply layer (must come before /:userId)
+async function proxySupply(req: any, res: any, path: string, method: 'get' | 'post' | 'patch') {
+  try {
+    const response = await userService.proxySupply(method, path, req.user, req.body);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    handleServiceError(error, res, 'profiles.supply');
+  }
+}
+router.get('/me/supply', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply', 'get'));
+router.patch('/me/supply/profile', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/profile', 'patch'));
+router.get('/me/partner', authMiddleware, (req, res) => proxySupply(req, res, '/me/partner', 'get'));
+router.post('/me/supply/capabilities', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/capabilities', 'post'));
+router.patch('/me/supply/capabilities/:id', authMiddleware, (req, res) => proxySupply(req, res, `/me/supply/capabilities/${req.params.id}`, 'patch'));
+router.get('/me/supply/applications', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/applications', 'get'));
+router.post('/me/supply/applications', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/applications', 'post'));
+router.post('/me/supply/service-areas', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/service-areas', 'post'));
+router.get('/me/supply/service-areas', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/service-areas', 'get'));
+router.patch('/me/supply/availability', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/availability', 'patch'));
+router.post('/me/supply/documents', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/documents', 'post'));
+router.get('/me/supply/documents', authMiddleware, (req, res) => proxySupply(req, res, '/me/supply/documents', 'get'));
 
 // Book Now cart (must come before /:userId)
 router.get('/me/book-now-cart', authMiddleware, profileController.getBookNowCart.bind(profileController));
