@@ -34,6 +34,11 @@ function withLocalTestHeader(config: AxiosRequestConfig): AxiosRequestConfig {
 }
 
 export class TaskService extends BaseService {
+  /** Image uploads (compress + storage) need longer than default API calls. */
+  private readonly uploadTimeoutMs = 120_000;
+  /** Recurring visit reads may merge schedule + payment state. */
+  private readonly recurringReadTimeoutMs = 45_000;
+
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || "http://localhost:4002";
     console.log(`🔧 [TaskService] Initializing with URL: ${serviceURL}`);
@@ -81,7 +86,9 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken?: UserToken | null
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Task>>(`/api/v1/tasks/${taskId}`, config)
@@ -286,7 +293,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ url: string; key: string }>>(
         `/api/v1/uploads/task-image`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -310,7 +317,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ url: string; key: string }>>(
         `/api/v1/uploads/completion-proof/${taskId}`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -334,7 +341,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ urls: string[] }>>(
         `/api/v1/uploads/completion-proof/${taskId}/multiple`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -679,6 +686,248 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<Task>>(
         `/api/v1/tasks/${taskId}/revise-budget`,
         body,
+        config
+      )
+    );
+  }
+
+  async getRecurringVisits(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits`,
+        config
+      )
+    );
+  }
+
+  async confirmRecurringVisitPayment(
+    taskId: string,
+    visitId: string,
+    escrowId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/confirm-payment`,
+        { escrowId },
+        config
+      )
+    );
+  }
+
+  async skipRecurringVisit(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/skip`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async cancelRecurringVisit(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async endRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/end`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async resumeRecurringPlan(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/resume`,
+        {},
+        config
+      )
+    );
+  }
+
+  async openNextRecurringVisitPayment(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/open-next-payment`,
+        {},
+        config
+      )
+    );
+  }
+
+  async rescheduleRecurringVisit(
+    taskId: string,
+    visitId: string,
+    body: {
+      newDate: string;
+      scheduledTimeStart?: string;
+      scheduledTimeEnd?: string;
+      reason?: string;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule`,
+        body,
+        config
+      )
+    );
+  }
+
+  async requestRecurringVisitReschedule(
+    taskId: string,
+    visitId: string,
+    body: {
+      newDate: string;
+      scheduledTimeStart?: string;
+      scheduledTimeEnd?: string;
+      reason?: string;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule/request`,
+        body,
+        config
+      )
+    );
+  }
+
+  async respondRecurringVisitReschedule(
+    taskId: string,
+    visitId: string,
+    approved: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule/respond`,
+        { approved },
+        config
+      )
+    );
+  }
+
+  async requestRecurringVisitCancel(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel/request`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async respondRecurringVisitCancel(
+    taskId: string,
+    visitId: string,
+    approved: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel/respond`,
+        { approved },
+        config
+      )
+    );
+  }
+
+  async pauseRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/pause`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async leaveRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/leave`,
+        reason ? { reason } : {},
         config
       )
     );

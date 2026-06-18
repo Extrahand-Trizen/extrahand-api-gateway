@@ -1229,6 +1229,473 @@ export class TaskController {
       handleServiceError(error, res, "TaskController.reviseBudget");
     }
   }
+
+  async getRecurringVisits(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.getRecurringVisits(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getRecurringVisits");
+    }
+  }
+
+  async confirmRecurringVisitPayment(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      const { escrowId } = req.body;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      if (!escrowId || typeof escrowId !== "string") {
+        res.status(400).json({ success: false, error: "escrowId is required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.confirmRecurringVisitPayment(
+        taskId,
+        visitId,
+        escrowId,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.confirmRecurringVisitPayment");
+    }
+  }
+
+  async skipRecurringVisit(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.skipRecurringVisit(
+        taskId,
+        visitId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.skipRecurringVisit");
+    }
+  }
+
+  async cancelRecurringVisit(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.cancelRecurringVisit(
+        taskId,
+        visitId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.cancelRecurringVisit");
+    }
+  }
+
+  async endRecurringPlan(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.endRecurringPlan(
+        taskId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.endRecurringPlan");
+    }
+  }
+
+  async resumeRecurringPlan(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.resumeRecurringPlan(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.resumeRecurringPlan");
+    }
+  }
+
+  async openNextRecurringVisitPayment(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.openNextRecurringVisitPayment(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.openNextRecurringVisitPayment");
+    }
+  }
+
+  async rescheduleRecurringVisit(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const newDate = req.body?.newDate;
+      if (!newDate) {
+        res.status(400).json({ success: false, error: "newDate is required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.rescheduleRecurringVisit(
+        taskId,
+        visitId,
+        {
+          newDate: String(newDate),
+          scheduledTimeStart:
+            typeof req.body?.scheduledTimeStart === "string"
+              ? req.body.scheduledTimeStart
+              : undefined,
+          scheduledTimeEnd:
+            typeof req.body?.scheduledTimeEnd === "string"
+              ? req.body.scheduledTimeEnd
+              : undefined,
+          reason: typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.rescheduleRecurringVisit");
+    }
+  }
+
+  async requestRecurringVisitReschedule(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+      const newDate = req.body?.newDate;
+      if (!newDate) {
+        res.status(400).json({ success: false, error: "newDate is required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.requestRecurringVisitReschedule(
+        taskId,
+        visitId,
+        {
+          newDate: String(newDate),
+          scheduledTimeStart:
+            typeof req.body?.scheduledTimeStart === "string"
+              ? req.body.scheduledTimeStart
+              : undefined,
+          scheduledTimeEnd:
+            typeof req.body?.scheduledTimeEnd === "string"
+              ? req.body.scheduledTimeEnd
+              : undefined,
+          reason: typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.requestRecurringVisitReschedule");
+    }
+  }
+
+  async respondRecurringVisitReschedule(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.respondRecurringVisitReschedule(
+        taskId,
+        visitId,
+        req.body?.approved === true,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.respondRecurringVisitReschedule");
+    }
+  }
+
+  async requestRecurringVisitCancel(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.requestRecurringVisitCancel(
+        taskId,
+        visitId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.requestRecurringVisitCancel");
+    }
+  }
+
+  async respondRecurringVisitCancel(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, visitId } = req.params;
+      if (!taskId || !visitId) {
+        res.status(400).json({ success: false, error: "Task ID and visit ID are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.respondRecurringVisitCancel(
+        taskId,
+        visitId,
+        req.body?.approved === true,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.respondRecurringVisitCancel");
+    }
+  }
+
+  async pauseRecurringPlan(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.pauseRecurringPlan(
+        taskId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.pauseRecurringPlan");
+    }
+  }
+
+  async leaveRecurringPlan(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.leaveRecurringPlan(
+        taskId,
+        typeof req.body?.reason === "string" ? req.body.reason : undefined,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.leaveRecurringPlan");
+    }
+  }
 }
 
 export const taskController = new TaskController();
