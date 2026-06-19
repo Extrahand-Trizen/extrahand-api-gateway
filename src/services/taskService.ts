@@ -38,6 +38,7 @@ export class TaskService extends BaseService {
   private readonly uploadTimeoutMs = 120_000;
   /** Recurring visit reads may merge schedule + payment state. */
   private readonly recurringReadTimeoutMs = 45_000;
+  private readonly createTaskTimeoutMs = 60_000;
 
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || "http://localhost:4002";
@@ -99,7 +100,9 @@ export class TaskService extends BaseService {
     taskData: Partial<Task>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.createTaskTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<Task>>("/api/v1/tasks", taskData, config)
