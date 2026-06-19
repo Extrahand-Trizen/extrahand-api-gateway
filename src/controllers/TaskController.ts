@@ -226,16 +226,14 @@ export class TaskController {
       // ✅ Extract task from task-service response format: { success, code, message, data }
       const taskServiceResponse = response.data;
       const task = taskServiceResponse?.data || taskServiceResponse;
-      
-      // ✅ Enrich task with Profile data (requesterName, requesterPhotoURL, etc.)
-      const enrichedTask = await enrichTaskResponse(task, req.user);
-      
-      // ✅ Return in same format as task-service
+
+      // Return immediately after task-service persists the work. Profile enrichment and
+      // tasker notifications are non-critical for the poster confirmation path.
       res.status(response.status).json({
         success: true,
         code: response.status,
         message: taskServiceResponse?.message || 'Task created successfully',
-        data: enrichedTask,
+        data: task,
       });
     } catch (error) {
       handleServiceError(error, res, "TaskController.createTask");
