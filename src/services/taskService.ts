@@ -696,15 +696,18 @@ export class TaskService extends BaseService {
 
   async getRecurringVisits(
     taskId: string,
-    userToken: UserToken
+    userToken: UserToken,
+    options?: { syncPayments?: boolean },
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
     );
 
+    const syncQuery = options?.syncPayments ? '?sync=true' : '';
+
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
-        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits`,
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits${syncQuery}`,
         config
       )
     );

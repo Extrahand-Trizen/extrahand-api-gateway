@@ -1250,7 +1250,11 @@ export class TaskController {
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
-      const response = await taskService.getRecurringVisits(taskId, req.user);
+      const syncPayments = String(req.query.sync || '').toLowerCase() === 'true';
+
+      const response = await taskService.getRecurringVisits(taskId, req.user, {
+        syncPayments,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, "TaskController.getRecurringVisits");
