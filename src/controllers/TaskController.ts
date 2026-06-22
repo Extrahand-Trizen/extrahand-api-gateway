@@ -1249,9 +1249,12 @@ export class TaskController {
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const syncPayments = String(req.query.sync || '').toLowerCase() === 'true';
+      const scopeRaw = String(req.query.scope || '').toLowerCase();
+      const scope = scopeRaw === 'work_details' ? 'work_details' : undefined;
 
       const response = await taskService.getRecurringVisits(taskId, req.user, {
         syncPayments,
+        scope,
       });
       res.status(response.status).json(response.data);
     } catch (error) {

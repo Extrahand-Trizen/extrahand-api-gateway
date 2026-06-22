@@ -697,17 +697,20 @@ export class TaskService extends BaseService {
   async getRecurringVisits(
     taskId: string,
     userToken: UserToken,
-    options?: { syncPayments?: boolean },
+    options?: { syncPayments?: boolean; scope?: 'work_details' | 'full' },
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
     );
 
-    const syncQuery = options?.syncPayments ? '?sync=true' : '';
+    const params = new URLSearchParams();
+    if (options?.syncPayments) params.set('sync', 'true');
+    if (options?.scope === 'work_details') params.set('scope', 'work_details');
+    const query = params.toString() ? `?${params.toString()}` : '';
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
-        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits${syncQuery}`,
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits${query}`,
         config
       )
     );
