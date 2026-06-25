@@ -55,6 +55,37 @@ export class BookingController {
     }
   }
 
+  async getSlotAvailability(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const date = String(req.query.date || '').trim();
+      const city = String(req.query.city || '').trim();
+      if (!date || !city) {
+        res.status(400).json({ success: false, error: 'date and city are required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookNowSlotAvailability(
+        { date, city },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.getSlotAvailability');
+    }
+  }
+
   async getBookingOrderIdForTask(
     req: Request,
     res: Response,
@@ -156,6 +187,54 @@ export class BookingController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'BookingController.cancelBooking');
+    }
+  }
+
+  async abandonUnpaidBooking(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.abandonUnpaidBookingOrder(
+        req.params.orderId,
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.abandonUnpaidBooking');
+    }
+  }
+
+  async confirmBookingPayment(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.confirmBookingPayment(
+        req.params.orderId,
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.confirmBookingPayment');
     }
   }
 }

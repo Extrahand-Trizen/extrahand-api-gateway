@@ -1034,6 +1034,23 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getBookNowSlotAvailability(
+    params: { date: string; city: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          date: params.date,
+          city: params.city,
+        },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/bookings/slot-availability", config)
+    );
+  }
+
   async getBookingOrderIdForTask(
     taskId: string,
     userToken: UserToken
@@ -1097,6 +1114,34 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<any>>(
         `/api/v1/bookings/${encodeURIComponent(orderId)}/cancel`,
         body,
+        config
+      )
+    );
+  }
+
+  async abandonUnpaidBookingOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/abandon`,
+        {},
+        config
+      )
+    );
+  }
+
+  async confirmBookingPayment(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/confirm-payment`,
+        {},
         config
       )
     );
