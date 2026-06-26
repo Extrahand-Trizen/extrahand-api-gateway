@@ -537,6 +537,18 @@ export class PaymentService extends BaseService {
       this.client.post('/api/v1/fees/book-now/calculate', { items })
     );
   }
+
+  async estimatePerformerPayout(
+    amount: number,
+    options?: { taskCategory?: string; categorySlug?: string },
+  ): Promise<AxiosResponse> {
+    const params = new URLSearchParams({ amount: String(amount) });
+    if (options?.categorySlug?.trim()) params.set('categorySlug', options.categorySlug.trim());
+    else if (options?.taskCategory?.trim()) params.set('taskCategory', options.taskCategory.trim());
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/fees/performer-payout-estimate?${params.toString()}`)
+    );
+  }
 }
 
 export const paymentService = new PaymentService();

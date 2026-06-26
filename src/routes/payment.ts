@@ -26,6 +26,7 @@ router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowBy
 router.get('/fees/calculate', paymentController.calculateFees.bind(paymentController)); // Public endpoint
 router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentController)); // Public endpoint
 router.post('/fees/book-now/calculate', paymentController.calculateBookNowTotals.bind(paymentController)); // Public endpoint
+router.get('/fees/performer-payout-estimate', paymentController.estimatePerformerPayout.bind(paymentController)); // Public endpoint
 
 // Earnings routes
 router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));

@@ -164,6 +164,22 @@ export class PaymentController {
     }
   }
 
+  async estimatePerformerPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const { amount, taskCategory, categorySlug } = req.query;
+      const response = await paymentService.estimatePerformerPayout(Number(amount), {
+        taskCategory: typeof taskCategory === 'string' ? taskCategory : undefined,
+        categorySlug: typeof categorySlug === 'string' ? categorySlug : undefined,
+      });
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.estimatePerformerPayout');
+    }
+  }
+
   async createEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
