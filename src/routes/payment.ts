@@ -15,7 +15,14 @@ router.post('/refund', authMiddleware, paymentController.processRefund.bind(paym
 router.post('/refunds/process', authMiddleware, paymentController.processRefundWithCancellation.bind(paymentController));
 router.get('/refunds/status/:refundId', authMiddleware, paymentController.getRefundStatus.bind(paymentController));
 router.get('/refunds/escrow/:escrowId', authMiddleware, paymentController.getRefundsByEscrow.bind(paymentController));
+router.post('/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
+// Legacy alias — was incorrectly registered as /api/v1/payment/payment/cancel
 router.post('/payment/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
+router.post(
+  '/book-now/cancel-line-item',
+  authMiddleware,
+  paymentController.cancelBookNowLineItem.bind(paymentController),
+);
 
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));

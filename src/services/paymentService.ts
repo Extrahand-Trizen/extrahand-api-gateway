@@ -85,6 +85,7 @@ export class PaymentService extends BaseService {
       razorpayOrderId?: string;
       escrowId?: string;
       taskId?: string;
+      bookingOrderId?: string;
       reason?: string;
       userId?: string;
       cancelledBy?: 'poster' | 'performer';
@@ -92,6 +93,8 @@ export class PaymentService extends BaseService {
       assignedAt?: string;
       feeBaseAmount?: number;
       taskTitle?: string;
+      catalogId?: string | null;
+      partnerReachedLocation?: boolean;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -101,6 +104,30 @@ export class PaymentService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.post('/api/v1/payment/cancel', data, config)
+    );
+  }
+
+  async cancelBookNowLineItem(
+    data: {
+      bookingOrderId: string;
+      taskId: string;
+      lineAmountRupees: number;
+      taskStartDate: string;
+      reason?: string;
+      userId?: string;
+      taskTitle?: string;
+      isLastActiveItem?: boolean;
+      catalogId?: string | null;
+      partnerReachedLocation?: boolean;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/book-now/cancel-line-item', data, config)
     );
   }
 

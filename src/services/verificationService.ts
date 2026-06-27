@@ -35,11 +35,6 @@ export interface VerificationStatus {
   maskedAadhaar?: string;
 }
 
-function parseTimeoutMs(value: string | undefined, fallback: number): number {
-  const parsed = parseInt(String(value ?? ''), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 export class VerificationService extends BaseService {
   private readonly ocrUploadTimeoutMs: number;
 

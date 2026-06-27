@@ -491,6 +491,18 @@ export class PaymentController {
       handleServiceError(error, res, 'PaymentController.cancelPayment');
     }
   }
+
+  async cancelBookNowLineItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.cancelBookNowLineItem(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.cancelBookNowLineItem');
+    }
+  }
 }
 
 export const paymentController = new PaymentController();
