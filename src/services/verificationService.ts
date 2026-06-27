@@ -173,6 +173,20 @@ export class VerificationService extends BaseService {
     );
   }
 
+  async reportAadhaarOcrUploadFailure(
+    verificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/ocr/report-upload-failure',
+        { verification_id: verificationId },
+        config
+      )
+    );
+  }
+
   async completeDigilockerVerification(
     verificationId: string,
     userToken: UserToken

@@ -64,9 +64,14 @@ export class EscrowController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
+      const visitId =
+        typeof req.query.visitId === 'string' && req.query.visitId.trim()
+          ? req.query.visitId.trim()
+          : undefined;
       const response = await paymentService.getEscrowByTaskId(
         taskId,
-        req.user || null
+        req.user || null,
+        visitId,
       );
       res.status(response.status).json(response.data);
     } catch (error) {

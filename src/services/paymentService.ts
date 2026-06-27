@@ -156,10 +156,13 @@ export class PaymentService extends BaseService {
 
   async getEscrowByTaskId(
     taskId: string,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    visitId?: string
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken || undefined)
+      this.forwardUserAuth(userToken || undefined, {
+        params: visitId?.trim() ? { visitId: visitId.trim() } : undefined,
+      })
     );
 
     return this.handleRequest(() =>
@@ -524,6 +527,26 @@ export class PaymentService extends BaseService {
     if (taskCategory?.trim()) params.set('taskCategory', taskCategory.trim());
     return this.handleRequest(() =>
       this.client.get(`/api/v1/fees/calculate?${params.toString()}`)
+    );
+  }
+
+  async calculateBookNowTotals(
+    items: Array<{ categorySlug: string; lineTotal: number }>,
+  ): Promise<AxiosResponse> {
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/fees/book-now/calculate', { items })
+    );
+  }
+
+  async estimatePerformerPayout(
+    amount: number,
+    options?: { taskCategory?: string; categorySlug?: string },
+  ): Promise<AxiosResponse> {
+    const params = new URLSearchParams({ amount: String(amount) });
+    if (options?.categorySlug?.trim()) params.set('categorySlug', options.categorySlug.trim());
+    else if (options?.taskCategory?.trim()) params.set('taskCategory', options.taskCategory.trim());
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/fees/performer-payout-estimate?${params.toString()}`)
     );
   }
 }

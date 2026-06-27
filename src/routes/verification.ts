@@ -28,6 +28,11 @@ router.post('/aadhaar/ocr/front', authMiddleware, ocrUpload.single('file'), veri
 router.post('/aadhaar/ocr/back', authMiddleware, ocrUpload.single('file'), verificationController.uploadAadhaarOcrBack.bind(verificationController));
 router.get('/aadhaar/ocr/status', authMiddleware, verificationController.getAadhaarOcrStatus.bind(verificationController));
 router.post('/aadhaar/ocr/cancel', authMiddleware, verificationController.cancelAadhaarOcr.bind(verificationController));
+router.post(
+  '/aadhaar/ocr/report-upload-failure',
+  authMiddleware,
+  verificationController.reportAadhaarOcrUploadFailure.bind(verificationController)
+);
 
 // Verify PAN
 router.post('/pan/verify', authMiddleware, verificationController.verifyPAN.bind(verificationController));

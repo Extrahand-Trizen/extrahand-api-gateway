@@ -34,6 +34,12 @@ function withLocalTestHeader(config: AxiosRequestConfig): AxiosRequestConfig {
 }
 
 export class TaskService extends BaseService {
+  /** Image uploads (compress + storage) need longer than default API calls. */
+  private readonly uploadTimeoutMs = 120_000;
+  /** Recurring visit reads may merge schedule + payment state. */
+  private readonly recurringReadTimeoutMs = 45_000;
+  private readonly createTaskTimeoutMs = 60_000;
+
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || "http://localhost:4002";
     console.log(`🔧 [TaskService] Initializing with URL: ${serviceURL}`);
@@ -81,7 +87,9 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken?: UserToken | null
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.get<ApiResponse<Task>>(`/api/v1/tasks/${taskId}`, config)
@@ -92,7 +100,9 @@ export class TaskService extends BaseService {
     taskData: Partial<Task>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.createTaskTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<Task>>("/api/v1/tasks", taskData, config)
@@ -286,7 +296,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ url: string; key: string }>>(
         `/api/v1/uploads/task-image`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -310,7 +320,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ url: string; key: string }>>(
         `/api/v1/uploads/completion-proof/${taskId}`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -334,7 +344,7 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<{ urls: string[] }>>(
         `/api/v1/uploads/completion-proof/${taskId}/multiple`,
         formData,
-        config
+        { ...config, timeout: this.uploadTimeoutMs },
       )
     );
   }
@@ -684,6 +694,254 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getRecurringVisits(
+    taskId: string,
+    userToken: UserToken,
+    options?: { syncPayments?: boolean; scope?: 'work_details' | 'full' },
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
+
+    const params = new URLSearchParams();
+    if (options?.syncPayments) params.set('sync', 'true');
+    if (options?.scope === 'work_details') params.set('scope', 'work_details');
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits${query}`,
+        config
+      )
+    );
+  }
+
+  async confirmRecurringVisitPayment(
+    taskId: string,
+    visitId: string,
+    escrowId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/confirm-payment`,
+        { escrowId },
+        config
+      )
+    );
+  }
+
+  async skipRecurringVisit(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/skip`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async cancelRecurringVisit(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async endRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/end`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async resumeRecurringPlan(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/resume`,
+        {},
+        config
+      )
+    );
+  }
+
+  async openNextRecurringVisitPayment(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/open-next-payment`,
+        {},
+        config
+      )
+    );
+  }
+
+  async rescheduleRecurringVisit(
+    taskId: string,
+    visitId: string,
+    body: {
+      newDate: string;
+      scheduledTimeStart?: string;
+      scheduledTimeEnd?: string;
+      reason?: string;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule`,
+        body,
+        config
+      )
+    );
+  }
+
+  async requestRecurringVisitReschedule(
+    taskId: string,
+    visitId: string,
+    body: {
+      newDate: string;
+      scheduledTimeStart?: string;
+      scheduledTimeEnd?: string;
+      reason?: string;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule/request`,
+        body,
+        config
+      )
+    );
+  }
+
+  async respondRecurringVisitReschedule(
+    taskId: string,
+    visitId: string,
+    approved: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/reschedule/respond`,
+        { approved },
+        config
+      )
+    );
+  }
+
+  async requestRecurringVisitCancel(
+    taskId: string,
+    visitId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel/request`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async respondRecurringVisitCancel(
+    taskId: string,
+    visitId: string,
+    approved: boolean,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/visits/${encodeURIComponent(visitId)}/cancel/respond`,
+        { approved },
+        config
+      )
+    );
+  }
+
+  async pauseRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/pause`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
+  async leaveRecurringPlan(
+    taskId: string,
+    reason: string | undefined,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/recurring/plan/leave`,
+        reason ? { reason } : {},
+        config
+      )
+    );
+  }
+
   async respondToRevision(
     applicationId: string,
     body: { action: "keep" | "revise" | "withdraw"; newAmount?: number },
@@ -695,6 +953,195 @@ export class TaskService extends BaseService {
       this.client.post<ApiResponse<any>>(
         `/api/v1/applications/${applicationId}/respond-to-revision`,
         body,
+        config
+      )
+    );
+  }
+
+  // Book Now — catalog (task-service)
+  async listCatalogCategories(
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/catalog/categories", config)
+    );
+  }
+
+  async getCatalogCategory(
+    slug: string,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/categories/${encodeURIComponent(slug)}`,
+        config
+      )
+    );
+  }
+
+  async getCatalogSku(
+    skuSlug: string,
+    categorySlug: string | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: categorySlug ? { categorySlug } : undefined,
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/skus/${encodeURIComponent(skuSlug)}`,
+        config
+      )
+    );
+  }
+
+  async checkCatalogPinCode(
+    pinCode: string,
+    city: string | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const uid =
+      userToken?.uid != null && String(userToken.uid).trim() !== ''
+        ? String(userToken.uid).trim()
+        : undefined;
+
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          pinCode,
+          ...(city ? { city } : {}),
+          ...(uid ? { firebaseUid: uid } : {}),
+        },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/catalog/areas/check", config)
+    );
+  }
+
+  // Book Now — bookings (task-service)
+  async createBooking(
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>("/api/v1/bookings", body, config)
+    );
+  }
+
+  async getBookNowSlotAvailability(
+    params: { date: string; city: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          date: params.date,
+          city: params.city,
+        },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/bookings/slot-availability", config)
+    );
+  }
+
+  async getBookingOrderIdForTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/by-task/${encodeURIComponent(taskId)}`,
+        config
+      )
+    );
+  }
+
+  async getBookingOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}`,
+        config
+      )
+    );
+  }
+
+  async listMyBookings(
+    params: { limit?: number; page?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/bookings/mine", config)
+    );
+  }
+
+  async cancelBookingOrderItem(
+    orderId: string,
+    body: { taskId: string; reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/cancel-item`,
+        body,
+        config
+      )
+    );
+  }
+
+  async cancelBookingOrder(
+    orderId: string,
+    body: { reason?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/cancel`,
+        body,
+        config
+      )
+    );
+  }
+
+  async abandonUnpaidBookingOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/abandon`,
+        {},
+        config
+      )
+    );
+  }
+
+  async confirmBookingPayment(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/confirm-payment`,
+        {},
         config
       )
     );

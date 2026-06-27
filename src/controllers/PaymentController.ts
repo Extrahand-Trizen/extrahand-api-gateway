@@ -150,6 +150,36 @@ export class PaymentController {
     }
   }
 
+  async calculateBookNowTotals(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.calculateBookNowTotals(
+        Array.isArray(req.body?.items) ? req.body.items : [],
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.calculateBookNowTotals');
+    }
+  }
+
+  async estimatePerformerPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const { amount, taskCategory, categorySlug } = req.query;
+      const response = await paymentService.estimatePerformerPayout(Number(amount), {
+        taskCategory: typeof taskCategory === 'string' ? taskCategory : undefined,
+        categorySlug: typeof categorySlug === 'string' ? categorySlug : undefined,
+      });
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.estimatePerformerPayout');
+    }
+  }
+
   async createEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
@@ -195,7 +225,15 @@ export class PaymentController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getEscrowByTaskId(taskId, req.user || null);
+      const visitId =
+        typeof req.query.visitId === 'string' && req.query.visitId.trim()
+          ? req.query.visitId.trim()
+          : undefined;
+      const response = await paymentService.getEscrowByTaskId(
+        taskId,
+        req.user || null,
+        visitId,
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getEscrowByTaskId');

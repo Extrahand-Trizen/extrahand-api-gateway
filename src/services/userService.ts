@@ -146,6 +146,81 @@ export class UserService extends BaseService {
     );
   }
 
+  async getBookNowCart(userToken: UserToken): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        items: Array<Record<string, unknown>>;
+      }>
+    >
+  > {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart",
+        config
+      )
+    );
+  }
+
+  async addBookNowCartItem(
+    item: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart/items",
+        item,
+        config
+      )
+    );
+  }
+
+  async updateBookNowCartItemQuantity(
+    payload: { catalogId: string; packageId: string; quantity: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart/items",
+        payload,
+        config
+      )
+    );
+  }
+
+  async removeBookNowCartItem(
+    catalogId: string,
+    packageId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        `/api/v1/profiles/me/book-now-cart/items/${encodeURIComponent(catalogId)}/${encodeURIComponent(packageId)}`,
+        config
+      )
+    );
+  }
+
+  async clearBookNowCart(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ items: Array<Record<string, unknown>> }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<{ items: Array<Record<string, unknown>> }>>(
+        "/api/v1/profiles/me/book-now-cart",
+        config
+      )
+    );
+  }
+
   async getKeywordAlerts(
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ keywords: string[] }>>> {
@@ -545,6 +620,114 @@ export class UserService extends BaseService {
     );
   }
 
+  async sendAlternatePhoneOtp(
+    phone: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/send-otp',
+        { phone },
+        config
+      )
+    );
+  }
+
+  async verifyAlternatePhoneOtp(
+    phone: string,
+    otp: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/verify',
+        { phone, otp },
+        config
+      )
+    );
+  }
+
+  async verifyAlternatePhoneFirebase(
+    phone: string,
+    originalIdToken: string,
+    alternateIdToken: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone/verify-firebase',
+        { phone, originalIdToken, alternateIdToken },
+        config
+      )
+    );
+  }
+
+  async removeAlternatePhone(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.delete<ApiResponse<any>>(
+        '/api/v1/profiles/alternate-phone',
+        config
+      )
+    );
+  }
+
+  async sendAlternateLoginOtp(
+    phone: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/send-otp',
+        { phone },
+        config
+      )
+    );
+  }
+
+  async verifyAlternateLoginOtp(
+    phone: string,
+    otp: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/verify',
+        { phone, otp },
+        config
+      )
+    );
+  }
+
+  async completeAlternateLoginFirebase(
+    phone: string,
+    alternateIdToken: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/alternate-login/verify-firebase',
+        { phone, alternateIdToken },
+        config
+      )
+    );
+  }
+
+  async restoreFirebaseSession(idToken: string): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({});
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/auth/session/restore-firebase',
+        { idToken },
+        config
+      )
+    );
+  }
+
   /**
    * GET /api/v1/profiles/by-id/:profileId
    * Get profile by ObjectId (for enrichment - minimal fields)
@@ -715,6 +898,94 @@ export class UserService extends BaseService {
         {},
         config
       )
+    );
+  }
+
+  /**
+   * GET /api/v1/profiles/nearby-helpers
+   * Returns helpers (taskers) near the given coordinates or location text tokens.
+   */
+  async getNearbyHelpers(
+    params: {
+      lat?: number;
+      lng?: number;
+      radiusKm?: number;
+      city?: string;
+      area?: string;
+      pinCode?: string;
+      fullAddress?: string;
+      limit?: number;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{
+    helpers: Array<{
+      _id: string;
+      uid: string;
+      name: string;
+      photoURL: string | null;
+      rating: number;
+      totalReviews: number;
+      skills: any;
+      location: { city?: string; state?: string; area?: string } | null;
+      isAadhaarVerified: boolean;
+      verificationBadge?: string;
+    }>;
+    count: number;
+    hasHelpers: boolean;
+  }>>> {
+    const query = new URLSearchParams();
+    if (params.lat !== undefined) query.set('lat', String(params.lat));
+    if (params.lng !== undefined) query.set('lng', String(params.lng));
+    if (params.radiusKm !== undefined) query.set('radiusKm', String(params.radiusKm));
+    if (params.city?.trim()) query.set('city', params.city.trim());
+    if (params.area?.trim()) query.set('area', params.area.trim());
+    if (params.pinCode?.trim()) query.set('pinCode', params.pinCode.trim());
+    if (params.fullAddress?.trim()) query.set('fullAddress', params.fullAddress.trim());
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/profiles/nearby-helpers?${query.toString()}`,
+        config
+      )
+    );
+  }
+
+  async createLocationNotifyRequest(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/profiles/location-notify', {}, config)
+    );
+  }
+
+  async getLocationNotifyRequestStatus(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/profiles/location-notify/me', config)
+    );
+  }
+
+  async createInstantServicesNotifyRequest(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>('/api/v1/profiles/instant-services-notify', {}, config)
+    );
+  }
+
+  async getInstantServicesNotifyRequestStatus(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/profiles/instant-services-notify/me', config)
     );
   }
 

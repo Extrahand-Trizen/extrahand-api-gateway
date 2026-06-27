@@ -208,6 +208,30 @@ export class VerificationController {
     }
   }
 
+  async reportAadhaarOcrUploadFailure(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const verificationId =
+        (req.body.verification_id as string) || (req.body.verificationId as string);
+      if (!verificationId) {
+        res.status(400).json({ success: false, error: 'verification_id is required' });
+        return;
+      }
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      const response = await verificationService.reportAadhaarOcrUploadFailure(
+        verificationId,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.reportAadhaarOcrUploadFailure');
+    }
+  }
+
   async completeDigilockerVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
