@@ -27,6 +27,11 @@ router.post(
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
 router.get('/escrow/status/:escrowId', authMiddleware, paymentController.getEscrowStatus.bind(paymentController));
+router.get(
+  '/escrow/booking-order/:bookingOrderId',
+  authMiddleware,
+  paymentController.getEscrowByBookingOrderId.bind(paymentController),
+);
 router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowByTaskId.bind(paymentController));
 
 // Fee routes

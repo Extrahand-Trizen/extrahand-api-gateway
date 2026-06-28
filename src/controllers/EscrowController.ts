@@ -79,6 +79,23 @@ export class EscrowController {
     }
   }
 
+  async getEscrowByBookingOrderId(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bookingOrderId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getEscrowByBookingOrderId(
+        bookingOrderId,
+        req.user || null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'EscrowController.getEscrowByBookingOrderId');
+    }
+  }
+
   async releaseEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { escrowId } = req.params;
