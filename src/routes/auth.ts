@@ -29,6 +29,11 @@ router.post("/otp/complete", AuthController.completeOTP.bind(AuthController));
 // POST /api/v1/auth/otp/complete-dev (DEV only - test phone + OTP)
 router.post("/otp/complete-dev", AuthController.completeOTPDev.bind(AuthController));
 
+router.post("/alternate-login/send-otp", AuthController.sendAlternateLoginOtp.bind(AuthController));
+router.post("/alternate-login/verify", AuthController.verifyAlternateLoginOtp.bind(AuthController));
+router.post("/alternate-login/verify-firebase", AuthController.completeAlternateLoginFirebase.bind(AuthController));
+router.post("/session/restore-firebase", AuthController.restoreFirebaseSession.bind(AuthController));
+
 // POST /api/v1/auth/sync (AUTHENTICATED)
 router.post("/sync", authMiddleware, AuthController.sync.bind(AuthController));
 

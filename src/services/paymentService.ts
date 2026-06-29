@@ -85,6 +85,7 @@ export class PaymentService extends BaseService {
       razorpayOrderId?: string;
       escrowId?: string;
       taskId?: string;
+      bookingOrderId?: string;
       reason?: string;
       userId?: string;
       cancelledBy?: 'poster' | 'performer';
@@ -92,6 +93,8 @@ export class PaymentService extends BaseService {
       assignedAt?: string;
       feeBaseAmount?: number;
       taskTitle?: string;
+      catalogId?: string | null;
+      partnerReachedLocation?: boolean;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -101,6 +104,30 @@ export class PaymentService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.post('/api/v1/payment/cancel', data, config)
+    );
+  }
+
+  async cancelBookNowLineItem(
+    data: {
+      bookingOrderId: string;
+      taskId: string;
+      lineAmountRupees: number;
+      taskStartDate: string;
+      reason?: string;
+      userId?: string;
+      taskTitle?: string;
+      isLastActiveItem?: boolean;
+      catalogId?: string | null;
+      partnerReachedLocation?: boolean;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/book-now/cancel-line-item', data, config)
     );
   }
 
@@ -156,14 +183,30 @@ export class PaymentService extends BaseService {
 
   async getEscrowByTaskId(
     taskId: string,
-    userToken: UserToken | null
+    userToken: UserToken | null,
+    visitId?: string
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined, {
+        params: visitId?.trim() ? { visitId: visitId.trim() } : undefined,
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/escrow/task/${taskId}`, config)
+    );
+  }
+
+  async getEscrowByBookingOrderId(
+    bookingOrderId: string,
+    userToken: UserToken | null,
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken || undefined)
     );
 
     return this.handleRequest(() =>
-      this.client.get(`/api/v1/escrow/task/${taskId}`, config)
+      this.client.get(`/api/v1/escrow/booking-order/${bookingOrderId}`, config)
     );
   }
 
@@ -437,6 +480,8 @@ export class PaymentService extends BaseService {
       amount: number;
       taskTitle?: string;
       userId?: string;
+      useExtraCoins?: boolean;
+      requestedCoinRedeemRupees?: number;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
@@ -464,6 +509,28 @@ export class PaymentService extends BaseService {
 
     return this.handleRequest(() =>
       this.client.get(`/api/v1/transactions/${userId}/summary`, {
+        ...config,
+        params
+      })
+    );
+  }
+
+  async getExtraCoinsWallet(
+    userId: string,
+    userToken: UserToken | null,
+    linkedUserIds?: string,
+    walletRole?: 'poster' | 'tasker'
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    const params: Record<string, string> = {};
+    if (linkedUserIds?.trim()) params.linkedUserIds = linkedUserIds.trim();
+    if (walletRole) params.walletRole = walletRole;
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/transactions/${userId}/wallet`, {
         ...config,
         params
       })
@@ -500,6 +567,26 @@ export class PaymentService extends BaseService {
     if (taskCategory?.trim()) params.set('taskCategory', taskCategory.trim());
     return this.handleRequest(() =>
       this.client.get(`/api/v1/fees/calculate?${params.toString()}`)
+    );
+  }
+
+  async calculateBookNowTotals(
+    items: Array<{ categorySlug: string; lineTotal: number }>,
+  ): Promise<AxiosResponse> {
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/fees/book-now/calculate', { items })
+    );
+  }
+
+  async estimatePerformerPayout(
+    amount: number,
+    options?: { taskCategory?: string; categorySlug?: string },
+  ): Promise<AxiosResponse> {
+    const params = new URLSearchParams({ amount: String(amount) });
+    if (options?.categorySlug?.trim()) params.set('categorySlug', options.categorySlug.trim());
+    else if (options?.taskCategory?.trim()) params.set('taskCategory', options.taskCategory.trim());
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/fees/performer-payout-estimate?${params.toString()}`)
     );
   }
 }

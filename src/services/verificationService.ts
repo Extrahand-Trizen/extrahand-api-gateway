@@ -4,6 +4,11 @@ import FormData from 'form-data';
 import { UserToken } from '../types/service.js';
 import { ApiResponse } from '../types/api.js';
 
+function parseTimeoutMs(value: string | undefined, fallback: number): number {
+  const parsed = parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export interface AadhaarVerificationRequest {
   aadhaarNumber: string;
   consent: {
@@ -28,11 +33,6 @@ export interface VerificationStatus {
   isAadhaarVerified: boolean;
   verifiedAt?: string;
   maskedAadhaar?: string;
-}
-
-function parseTimeoutMs(value: string | undefined, fallback: number): number {
-  const parsed = parseInt(String(value ?? ''), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 export class VerificationService extends BaseService {
@@ -162,6 +162,20 @@ export class VerificationService extends BaseService {
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
         '/api/v1/verification/aadhaar/ocr/cancel',
+        { verification_id: verificationId },
+        config
+      )
+    );
+  }
+
+  async reportAadhaarOcrUploadFailure(
+    verificationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/ocr/report-upload-failure',
         { verification_id: verificationId },
         config
       )

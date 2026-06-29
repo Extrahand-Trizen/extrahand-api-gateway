@@ -150,6 +150,36 @@ export class PaymentController {
     }
   }
 
+  async calculateBookNowTotals(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.calculateBookNowTotals(
+        Array.isArray(req.body?.items) ? req.body.items : [],
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.calculateBookNowTotals');
+    }
+  }
+
+  async estimatePerformerPayout(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const { amount, taskCategory, categorySlug } = req.query;
+      const response = await paymentService.estimatePerformerPayout(Number(amount), {
+        taskCategory: typeof taskCategory === 'string' ? taskCategory : undefined,
+        categorySlug: typeof categorySlug === 'string' ? categorySlug : undefined,
+      });
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.estimatePerformerPayout');
+    }
+  }
+
   async createEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
@@ -195,10 +225,35 @@ export class PaymentController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getEscrowByTaskId(taskId, req.user || null);
+      const visitId =
+        typeof req.query.visitId === 'string' && req.query.visitId.trim()
+          ? req.query.visitId.trim()
+          : undefined;
+      const response = await paymentService.getEscrowByTaskId(
+        taskId,
+        req.user || null,
+        visitId,
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getEscrowByTaskId');
+    }
+  }
+
+  async getEscrowByBookingOrderId(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bookingOrderId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getEscrowByBookingOrderId(
+        bookingOrderId,
+        req.user || null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getEscrowByBookingOrderId');
     }
   }
 
@@ -216,7 +271,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -241,7 +295,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -306,7 +359,6 @@ export class PaymentController {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map((x) => x.trim());
       const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
@@ -320,6 +372,38 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getTransactionSummary');
+    }
+  }
+
+  async getExtraCoinsWallet(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const requestLinked =
+        typeof req.query.linkedUserIds === 'string'
+          ? req.query.linkedUserIds
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      const autoLinked = [req.user?.uid, req.user?.profileId]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map((x) => x.trim());
+      const linkedUserIdsMerged = Array.from(new Set([...requestLinked, ...autoLinked])).join(',') || undefined;
+      const { parseWalletRole } = await import('../utils/rewardsContext.js');
+      const walletRole = parseWalletRole(req.query.walletRole, 'tasker');
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getExtraCoinsWallet(
+        userId,
+        req.user || null,
+        linkedUserIdsMerged,
+        walletRole
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getExtraCoinsWallet');
     }
   }
 
@@ -422,6 +506,18 @@ export class PaymentController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.cancelPayment');
+    }
+  }
+
+  async cancelBookNowLineItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.cancelBookNowLineItem(req.body, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.cancelBookNowLineItem');
     }
   }
 }

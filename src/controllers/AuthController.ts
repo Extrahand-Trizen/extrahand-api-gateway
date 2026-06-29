@@ -5,6 +5,7 @@ import {
    sanitizeSessionPayload,
 } from "../utils/cookies.js";
 import logger from "../config/logger.js";
+import { parseReferralChannel } from "../utils/rewardsContext.js";
 
 export class AuthController {
    /**
@@ -49,7 +50,7 @@ export class AuthController {
     */
    static async completeOTP(req: Request, res: Response): Promise<void> {
       try {
-         const { idToken, mode, phone, name, clientType, deviceId } = req.body;
+         const { idToken, mode, phone, name, clientType, deviceId, referralCode, referralChannel } = req.body;
 
          if (!idToken || !mode || !phone) {
             res.status(400).json({
@@ -62,10 +63,35 @@ export class AuthController {
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
 
-         logger.info("Processing OTP completion request", {
+         const referralCodeNormalized =
+            typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
+         const normalizedReferralChannel =
+            referralChannel != null && String(referralChannel).trim() !== ""
+               ? parseReferralChannel(referralChannel)
+               : undefined;
+
+         const phoneLast4 = String(phone).replace(/\D/g, "").slice(-4);
+         logger.info("[Signup][WA] gateway otp/complete", {
             mode,
-            phone: phone.replace(/\d(?=\d{4})/g, "*"),
+            phoneLast4,
+            clientType: normalizedClientType,
+            hasReferralCode: Boolean(referralCodeNormalized),
          });
+
+         if (mode === "signup" && referralCodeNormalized) {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_forward ${JSON.stringify({
+                  referralCode: referralCodeNormalized,
+                  clientType: normalizedClientType,
+               })}`
+            );
+         } else if (mode === "signup") {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_no_referral ${JSON.stringify({
+                  note: "signup without referralCode in body — no coins will be scheduled",
+               })}`
+            );
+         }
 
          // Forward to User Service
          const response = await userService.completeOTP(
@@ -76,6 +102,8 @@ export class AuthController {
             {
                clientType: normalizedClientType,
                deviceId,
+               referralCode: referralCodeNormalized || undefined,
+               referralChannel: normalizedReferralChannel,
             }
          );
 
@@ -125,7 +153,7 @@ export class AuthController {
          return;
       }
       try {
-         const { phone, otp, mode, name, clientType, deviceId } = req.body;
+         const { phone, otp, mode, name, clientType, deviceId, referralCode, referralChannel } = req.body;
          if (!phone || !otp || !mode) {
             res.status(400).json({
                success: false,
@@ -135,12 +163,32 @@ export class AuthController {
          }
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
+         const referralCodeNormalized =
+            typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
+         const normalizedReferralChannel =
+            referralChannel != null && String(referralChannel).trim() !== ""
+               ? parseReferralChannel(referralChannel)
+               : undefined;
+
+         if (mode === "signup" && referralCodeNormalized) {
+            logger.info(
+               `[REFERRAL_COINS] step=gateway_otp_complete_dev_forward ${JSON.stringify({
+                  referralCode: referralCodeNormalized,
+               })}`
+            );
+         }
+
          const response = await userService.completeOTPDev(
             phone,
             otp,
             mode,
             name,
-            { clientType: normalizedClientType, deviceId }
+            {
+               clientType: normalizedClientType,
+               deviceId,
+               referralCode: referralCodeNormalized || undefined,
+               referralChannel: normalizedReferralChannel,
+            }
          );
          const upstreamCookies = response.headers["set-cookie"];
          forwardOrSetAuthCookies(
@@ -160,6 +208,81 @@ export class AuthController {
          res.status(error.response?.status || 500).json({
             success: false,
             error: error.response?.data?.error || error.message || "OTP complete-dev failed",
+         });
+      }
+   }
+
+   static async sendAlternateLoginOtp(req: Request, res: Response): Promise<void> {
+      try {
+         const { phone } = req.body;
+         if (!phone || typeof phone !== 'string') {
+            res.status(400).json({ success: false, error: 'Phone number is required' });
+            return;
+         }
+         const response = await userService.sendAlternateLoginOtp(phone);
+         res.status(response.status).json(response.data);
+      } catch (error: any) {
+         logger.error('Alternate login send OTP failed', { error: error.message });
+         res.status(error.response?.status || 500).json({
+            success: false,
+            error: error.response?.data?.error || error.message || 'Failed to send verification code',
+         });
+      }
+   }
+
+   static async verifyAlternateLoginOtp(req: Request, res: Response): Promise<void> {
+      try {
+         const { phone, otp } = req.body;
+         if (!phone || typeof phone !== 'string' || !otp) {
+            res.status(400).json({ success: false, error: 'Phone number and OTP are required' });
+            return;
+         }
+         const response = await userService.verifyAlternateLoginOtp(phone, otp);
+         res.status(response.status).json(response.data);
+      } catch (error: any) {
+         logger.error('Alternate login verify OTP failed', { error: error.message });
+         res.status(error.response?.status || 500).json({
+            success: false,
+            error: error.response?.data?.error || error.message || 'Failed to verify code',
+         });
+      }
+   }
+
+   static async completeAlternateLoginFirebase(req: Request, res: Response): Promise<void> {
+      try {
+         const { phone, alternateIdToken } = req.body;
+         if (!phone || typeof phone !== 'string' || !alternateIdToken) {
+            res.status(400).json({
+               success: false,
+               error: 'Phone number and verification token are required',
+            });
+            return;
+         }
+         const response = await userService.completeAlternateLoginFirebase(phone, alternateIdToken);
+         res.status(response.status).json(response.data);
+      } catch (error: any) {
+         logger.error('Alternate login Firebase verify failed', { error: error.message });
+         res.status(error.response?.status || 500).json({
+            success: false,
+            error: error.response?.data?.error || error.message || 'Failed to verify code',
+         });
+      }
+   }
+
+   static async restoreFirebaseSession(req: Request, res: Response): Promise<void> {
+      try {
+         const { idToken } = req.body;
+         if (!idToken || typeof idToken !== 'string') {
+            res.status(400).json({ success: false, error: 'Session token is required' });
+            return;
+         }
+         const response = await userService.restoreFirebaseSession(idToken);
+         res.status(response.status).json(response.data);
+      } catch (error: any) {
+         logger.error('Restore Firebase session failed', { error: error.message });
+         res.status(error.response?.status || 500).json({
+            success: false,
+            error: error.response?.data?.error || error.message || 'Failed to restore session',
          });
       }
    }

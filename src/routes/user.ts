@@ -175,6 +175,20 @@ router.get('/badge/public/:uid', async (req: Request, res: Response, _next: Next
 });
 
 /**
+ * GET /api/v1/user/referral-code/preview?code=XXXX
+ * Public preview of referral code channel (no PII)
+ */
+router.get('/referral-code/preview', async (req: Request, res: Response, _next: NextFunction) => {
+  try {
+    const data = await proxyToUserService(req, res, '/v1/user/referral-code/preview', 'GET');
+    sendSuccess(res, data.data || data, 'Referral code preview retrieved');
+  } catch (error) {
+    logger.error('Error previewing referral code:', error);
+    sendError(res, error, 500);
+  }
+});
+
+/**
  * GET /api/v1/user/referral-code
  * Get user's referral code
  */
@@ -184,6 +198,20 @@ router.get('/referral-code', authMiddleware, async (req: Request, res: Response,
     sendSuccess(res, data.data || data, 'Referral code retrieved successfully');
   } catch (error) {
     logger.error('Error fetching referral code:', error);
+    sendError(res, error, 500);
+  }
+});
+
+/**
+ * GET /api/v1/user/referral-program
+ * Active referral program marketing numbers (coin amounts)
+ */
+router.get('/referral-program', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
+  try {
+    const data = await proxyToUserService(req, res, '/v1/user/referral-program', 'GET');
+    sendSuccess(res, data.data || data, 'Referral program retrieved successfully');
+  } catch (error) {
+    logger.error('Error fetching referral program:', error);
     sendError(res, error, 500);
   }
 });
@@ -243,6 +271,43 @@ router.post('/referral/apply', authMiddleware, async (req: Request, res: Respons
     sendError(res, error, 500);
   }
 });
+
+/**
+ * POST /api/v1/user/referral/retry-grants
+ * Re-attempt referral ExtraCoin grants for the signed-in user
+ */
+router.post('/referral/retry-grants', authMiddleware, async (req: Request, res: Response, _next: NextFunction) => {
+  try {
+    const data = await proxyToUserService(req, res, '/v1/user/referral/retry-grants', 'POST');
+    sendSuccess(res, data.data || data, data.message || 'Referral grants retried');
+  } catch (error) {
+    logger.error('Error retrying referral grants:', error);
+    sendError(res, error, 500);
+  }
+});
+
+/**
+ * GET /api/v1/user/referral/referee-welcome-eligibility
+ */
+router.get(
+  '/referral/referee-welcome-eligibility',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction) => {
+    try {
+      const data = await proxyToUserService(
+        req,
+        res,
+        '/v1/user/referral/referee-welcome-eligibility',
+        'GET',
+      );
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      sendSuccess(res, data.data || data, 'Referee welcome eligibility');
+    } catch (error) {
+      logger.error('Error checking referee welcome eligibility:', error);
+      sendError(res, error, 500);
+    }
+  },
+);
 
 /**
  * GET /api/v1/user/credits/withdrawals

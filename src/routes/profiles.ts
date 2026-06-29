@@ -25,6 +25,31 @@ logger.info('📋 [Profiles Router] Registering routes:', {
 // Search profiles (must come before /:userId)
 router.get('/search', authMiddleware, profileController.searchProfiles.bind(profileController));
 
+// Nearby helpers — find taskers near the caller's location (must come before /:userId)
+router.get('/nearby-helpers', authMiddleware, profileController.getNearbyHelpers.bind(profileController));
+
+router.post(
+  '/location-notify',
+  authMiddleware,
+  profileController.createLocationNotifyRequest.bind(profileController),
+);
+router.get(
+  '/location-notify/me',
+  authMiddleware,
+  profileController.getLocationNotifyRequestStatus.bind(profileController),
+);
+
+router.post(
+  '/instant-services-notify',
+  authMiddleware,
+  profileController.createInstantServicesNotifyRequest.bind(profileController),
+);
+router.get(
+  '/instant-services-notify/me',
+  authMiddleware,
+  profileController.getInstantServicesNotifyRequestStatus.bind(profileController),
+);
+
 // Get current user profile (must come before /:userId)
 router.get('/me', authMiddleware, profileController.getCurrentProfile.bind(profileController));
 
@@ -37,6 +62,21 @@ router.put('/me', authMiddleware, profileController.updateProfile.bind(profileCo
 // Category alerts (must come before /:userId)
 router.get('/me/category-alerts', authMiddleware, profileController.getCategoryAlerts.bind(profileController));
 router.put('/me/category-alerts', authMiddleware, profileController.updateCategoryAlerts.bind(profileController));
+
+// Book Now cart (must come before /:userId)
+router.get('/me/book-now-cart', authMiddleware, profileController.getBookNowCart.bind(profileController));
+router.post('/me/book-now-cart/items', authMiddleware, profileController.addBookNowCartItem.bind(profileController));
+router.patch(
+  '/me/book-now-cart/items',
+  authMiddleware,
+  profileController.updateBookNowCartItemQuantity.bind(profileController),
+);
+router.delete(
+  '/me/book-now-cart/items/:catalogId/:packageId',
+  authMiddleware,
+  profileController.removeBookNowCartItem.bind(profileController),
+);
+router.delete('/me/book-now-cart', authMiddleware, profileController.clearBookNowCart.bind(profileController));
 
 // Keyword alerts (must come before /:userId)
 router.get('/me/keyword-alerts', authMiddleware, profileController.getKeywordAlerts.bind(profileController));
@@ -74,6 +114,17 @@ router.delete('/me/addresses/:addressId', authMiddleware, profileController.dele
 // Profile Stats Routes (must come after /me routes)
 router.get('/me/stats', authMiddleware, profileController.getMyStats.bind(profileController));
 router.post('/me/stats/recalculate', authMiddleware, profileController.recalculateStats.bind(profileController));
+
+// Check phone availability (must come before /:userId)
+router.post('/check-phone', authMiddleware, profileController.checkPhoneAvailability.bind(profileController));
+
+// Change phone number after OTP verification (must come before /:userId)
+router.put('/change-phone', authMiddleware, profileController.changePhone.bind(profileController));
+
+router.post('/alternate-phone/send-otp', authMiddleware, profileController.sendAlternatePhoneOtp.bind(profileController));
+router.post('/alternate-phone/verify', authMiddleware, profileController.verifyAlternatePhoneOtp.bind(profileController));
+router.post('/alternate-phone/verify-firebase', profileController.verifyAlternatePhoneFirebase.bind(profileController));
+router.delete('/alternate-phone', authMiddleware, profileController.removeAlternatePhone.bind(profileController));
 
 // Upsert profile (create or update)
 router.post('/', authMiddleware, profileController.upsertProfile.bind(profileController));

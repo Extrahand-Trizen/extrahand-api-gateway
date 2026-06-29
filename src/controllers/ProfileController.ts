@@ -452,6 +452,126 @@ export class ProfileController {
     }
   }
 
+  async getBookNowCart(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.getBookNowCart(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getBookNowCart');
+    }
+  }
+
+  async addBookNowCartItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.addBookNowCartItem(req.body || {}, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.addBookNowCartItem');
+    }
+  }
+
+  async updateBookNowCartItemQuantity(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.updateBookNowCartItemQuantity(
+        {
+          catalogId: String(req.body?.catalogId || ''),
+          packageId: String(req.body?.packageId || ''),
+          quantity: Number(req.body?.quantity),
+        },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.updateBookNowCartItemQuantity');
+    }
+  }
+
+  async removeBookNowCartItem(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.removeBookNowCartItem(
+        String(req.params.catalogId || ''),
+        String(req.params.packageId || ''),
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.removeBookNowCartItem');
+    }
+  }
+
+  async clearBookNowCart(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await userService.clearBookNowCart(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.clearBookNowCart');
+    }
+  }
+
   async getKeywordAlerts(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
@@ -530,6 +650,197 @@ export class ProfileController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'ProfileController.getPublicProfileByObjectId');
+    }
+  }
+
+  async checkPhoneAvailability(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.checkPhoneAvailability(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.checkPhoneAvailability');
+    }
+  }
+
+  async changePhone(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.changePhone(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.changePhone');
+    }
+  }
+
+  async sendAlternatePhoneOtp(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone } = req.body;
+      if (!phone) {
+        res.status(400).json({ success: false, error: 'Phone number is required' });
+        return;
+      }
+      const response = await userService.sendAlternatePhoneOtp(phone, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.sendAlternatePhoneOtp');
+    }
+  }
+
+  async verifyAlternatePhoneOtp(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { phone, otp } = req.body;
+      if (!phone || !otp) {
+        res.status(400).json({ success: false, error: 'Phone number and OTP are required' });
+        return;
+      }
+      const response = await userService.verifyAlternatePhoneOtp(phone, otp, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.verifyAlternatePhoneOtp');
+    }
+  }
+
+  async verifyAlternatePhoneFirebase(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { phone, originalIdToken, alternateIdToken } = req.body;
+      if (!phone || !originalIdToken || !alternateIdToken) {
+        res.status(400).json({
+          success: false,
+          error: 'Phone number and verification tokens are required',
+        });
+        return;
+      }
+      const response = await userService.verifyAlternatePhoneFirebase(
+        phone,
+        originalIdToken,
+        alternateIdToken
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.verifyAlternatePhoneFirebase');
+    }
+  }
+
+  async removeAlternatePhone(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.removeAlternatePhone(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.removeAlternatePhone');
+    }
+  }
+
+  /**
+   * GET /api/v1/profiles/nearby-helpers
+   * Proxies to user-service to find helpers near the caller's location.
+   * Query params: lat, lng, radiusKm, city, area, state, pinCode, fullAddress, limit
+   */
+  async getNearbyHelpers(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'user-service');
+
+      const lat = req.query.lat !== undefined ? parseFloat(String(req.query.lat)) : undefined;
+      const lng = req.query.lng !== undefined ? parseFloat(String(req.query.lng)) : undefined;
+      const radiusKm = req.query.radiusKm !== undefined ? parseFloat(String(req.query.radiusKm)) : undefined;
+      const city = typeof req.query.city === 'string' ? req.query.city.trim() : undefined;
+      const pinCode = typeof req.query.pinCode === 'string' ? req.query.pinCode.trim() : undefined;
+      const fullAddress = typeof req.query.fullAddress === 'string' ? req.query.fullAddress.trim() : undefined;
+      const limit = req.query.limit !== undefined ? parseInt(String(req.query.limit), 10) : undefined;
+
+      const response = await userService.getNearbyHelpers(
+        { lat, lng, radiusKm, city, pinCode, fullAddress, limit },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getNearbyHelpers');
+    }
+  }
+
+  async createLocationNotifyRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.createLocationNotifyRequest(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.createLocationNotifyRequest');
+    }
+  }
+
+  async getLocationNotifyRequestStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.getLocationNotifyRequestStatus(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getLocationNotifyRequestStatus');
+    }
+  }
+
+  async createInstantServicesNotifyRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.createInstantServicesNotifyRequest(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.createInstantServicesNotifyRequest');
+    }
+  }
+
+  async getInstantServicesNotifyRequestStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.getInstantServicesNotifyRequestStatus(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getInstantServicesNotifyRequestStatus');
     }
   }
 }

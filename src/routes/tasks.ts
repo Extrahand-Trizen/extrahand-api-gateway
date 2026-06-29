@@ -225,4 +225,76 @@ router.post(
   taskController.reviseBudget.bind(taskController)
 );
 
+// ── Recurring visit plan (must come before /:taskId GET) ─────────────────────
+router.get(
+  "/:taskId/recurring/visits",
+  authMiddleware,
+  taskController.getRecurringVisits.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/confirm-payment",
+  authMiddleware,
+  taskController.confirmRecurringVisitPayment.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/skip",
+  authMiddleware,
+  taskController.skipRecurringVisit.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/cancel",
+  authMiddleware,
+  taskController.cancelRecurringVisit.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/plan/end",
+  authMiddleware,
+  taskController.endRecurringPlan.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/plan/resume",
+  authMiddleware,
+  taskController.resumeRecurringPlan.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/plan/open-next-payment",
+  authMiddleware,
+  taskController.openNextRecurringVisitPayment.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/reschedule",
+  authMiddleware,
+  taskController.rescheduleRecurringVisit.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/reschedule/request",
+  authMiddleware,
+  taskController.requestRecurringVisitReschedule.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/reschedule/respond",
+  authMiddleware,
+  taskController.respondRecurringVisitReschedule.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/cancel/request",
+  authMiddleware,
+  taskController.requestRecurringVisitCancel.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/visits/:visitId/cancel/respond",
+  authMiddleware,
+  taskController.respondRecurringVisitCancel.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/plan/pause",
+  authMiddleware,
+  taskController.pauseRecurringPlan.bind(taskController)
+);
+router.post(
+  "/:taskId/recurring/plan/leave",
+  authMiddleware,
+  taskController.leaveRecurringPlan.bind(taskController)
+);
+
 export default router;

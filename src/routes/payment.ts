@@ -15,16 +15,30 @@ router.post('/refund', authMiddleware, paymentController.processRefund.bind(paym
 router.post('/refunds/process', authMiddleware, paymentController.processRefundWithCancellation.bind(paymentController));
 router.get('/refunds/status/:refundId', authMiddleware, paymentController.getRefundStatus.bind(paymentController));
 router.get('/refunds/escrow/:escrowId', authMiddleware, paymentController.getRefundsByEscrow.bind(paymentController));
+router.post('/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
+// Legacy alias — was incorrectly registered as /api/v1/payment/payment/cancel
 router.post('/payment/cancel', authMiddleware, paymentController.cancelPayment.bind(paymentController));
+router.post(
+  '/book-now/cancel-line-item',
+  authMiddleware,
+  paymentController.cancelBookNowLineItem.bind(paymentController),
+);
 
 // Escrow routes
 router.post('/escrow/create', authMiddleware, paymentController.createEscrow.bind(paymentController));
 router.get('/escrow/status/:escrowId', authMiddleware, paymentController.getEscrowStatus.bind(paymentController));
+router.get(
+  '/escrow/booking-order/:bookingOrderId',
+  authMiddleware,
+  paymentController.getEscrowByBookingOrderId.bind(paymentController),
+);
 router.get('/escrow/task/:taskId', authMiddleware, paymentController.getEscrowByTaskId.bind(paymentController));
 
 // Fee routes
 router.get('/fees/calculate', paymentController.calculateFees.bind(paymentController)); // Public endpoint
 router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentController)); // Public endpoint
+router.post('/fees/book-now/calculate', paymentController.calculateBookNowTotals.bind(paymentController)); // Public endpoint
+router.get('/fees/performer-payout-estimate', paymentController.estimatePerformerPayout.bind(paymentController)); // Public endpoint
 
 // Earnings routes
 router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));
@@ -37,6 +51,7 @@ router.get(
 // Transaction routes
 router.get('/transactions/user/:userId', authMiddleware, paymentController.getUserTransactions.bind(paymentController));
 router.get('/transactions/user/:userId/summary', authMiddleware, paymentController.getTransactionSummary.bind(paymentController));
+router.get('/transactions/user/:userId/wallet', authMiddleware, paymentController.getExtraCoinsWallet.bind(paymentController));
 
 // Bank account routes (tasker payouts)
 router.post('/bank-accounts', authMiddleware, paymentController.upsertBankAccount.bind(paymentController));

@@ -64,13 +64,35 @@ export class EscrowController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
+      const visitId =
+        typeof req.query.visitId === 'string' && req.query.visitId.trim()
+          ? req.query.visitId.trim()
+          : undefined;
       const response = await paymentService.getEscrowByTaskId(
         taskId,
-        req.user || null
+        req.user || null,
+        visitId,
       );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'EscrowController.getEscrowByTaskId');
+    }
+  }
+
+  async getEscrowByBookingOrderId(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { bookingOrderId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getEscrowByBookingOrderId(
+        bookingOrderId,
+        req.user || null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'EscrowController.getEscrowByBookingOrderId');
     }
   }
 
