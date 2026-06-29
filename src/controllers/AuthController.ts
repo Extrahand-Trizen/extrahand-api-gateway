@@ -92,8 +92,8 @@ export class AuthController {
             })
          );
       } catch (error: any) {
-         const status = error.response?.status ?? 500;
-         const data = error.response?.data;
+         const status = error.response?.status ?? error.status ?? 500;
+         const data = error.response?.data ?? error.data;
          const upstreamError =
             data?.error ?? data?.message ?? error.message ?? "OTP completion failed";
          logger.error("Error during OTP completion", {
@@ -105,7 +105,7 @@ export class AuthController {
          res.status(status).json({
             success: false,
             error: upstreamError,
-            message: error.message,
+            message: upstreamError,
          });
       }
    }

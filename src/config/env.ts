@@ -30,8 +30,12 @@ const envSchema = z.object({
    /** OCR multipart front/back proxy timeout (ms) */
    VERIFICATION_SERVICE_OCR_UPLOAD_TIMEOUT_MS: z.string().default("120000"),
    FIREBASE_PROJECT_ID: z.string(),
-  FIREBASE_PRIVATE_KEY: z.string(),
-  FIREBASE_CLIENT_EMAIL: z.string().email(),
+   FIREBASE_PRIVATE_KEY: z.string(),
+   FIREBASE_CLIENT_EMAIL: z.string().email(),
+   FIREBASE_MOBILE_PROJECT_ID: z.string().optional(),
+   FIREBASE_MOBILE_CLIENT_EMAIL: z.string().email().optional(),
+   FIREBASE_MOBILE_PRIVATE_KEY: z.string().optional(),
+   FIREBASE_MOBILE_SERVICE_ACCOUNT_PATH: z.string().optional(),
 });
 
 export function validateEnv() {

@@ -1,77 +1,159 @@
 import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
 import logger from './logger.js';
 
-let auth: admin.auth.Auth | null = null;
+const MOBILE_FIREBASE_APP_NAME = 'extrahand-mobile-firebase';
 
-/**
- * Initialize Firebase Admin SDK
- * Supports both explicit credentials and default credentials (for production)
- */
-export function initializeFirebase(): void {
-  if (auth) {
-    return; // Already initialized
+let primaryAuth: admin.auth.Auth | null = null;
+let mobileAuthInstance: admin.auth.Auth | null = null;
+
+function loadCredentialFromEnv(projectId?: string, clientEmail?: string, privateKey?: string) {
+  if (!projectId || !clientEmail || !privateKey) return undefined;
+  return admin.credential.cert({
+    projectId,
+    clientEmail,
+    privateKey: privateKey.replace(/\\n/g, '\n'),
+  });
+}
+
+function loadCredentialFromFile(candidatePath?: string) {
+  if (!candidatePath || !fs.existsSync(candidatePath)) return undefined;
+  const serviceAccount = JSON.parse(fs.readFileSync(candidatePath, 'utf8'));
+  return admin.credential.cert(serviceAccount);
+}
+
+function initPrimaryFirebase(): admin.auth.Auth | null {
+  let credential: admin.credential.Credential | undefined;
+
+  const {
+    FIREBASE_PROJECT_ID,
+    FIREBASE_CLIENT_EMAIL,
+    FIREBASE_PRIVATE_KEY,
+    FIREBASE_SERVICE_ACCOUNT_PATH,
+  } = process.env;
+
+  try {
+    credential =
+      loadCredentialFromEnv(FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) ??
+      loadCredentialFromFile(
+        FIREBASE_SERVICE_ACCOUNT_PATH || path.join(__dirname, '..', '..', 'serviceAccountKey.json'),
+      );
+    if (credential) {
+      logger.info('Firebase primary project initialized from env/file');
+    }
+  } catch (e) {
+    logger.warn('Failed to load primary Firebase credentials from env/file, falling back to ADC');
+  }
+
+  if (credential) {
+    admin.initializeApp({ credential });
+    return admin.auth();
   }
 
   try {
-    // Check if Firebase credentials are provided via environment variables
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    admin.initializeApp();
+    logger.info('Firebase primary project initialized with Application Default Credentials');
+    return admin.auth();
+  } catch (error) {
+    logger.error('Failed to initialize primary Firebase:', error);
+    return null;
+  }
+}
 
-    if (projectId && privateKey && clientEmail) {
-      // Initialize with explicit credentials
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          privateKey,
-          clientEmail,
-        }),
-      });
-      logger.info('Firebase Admin SDK initialized with explicit credentials');
-    } else {
-      // Try to initialize with default credentials (for production environments)
-      // This works if running on GCP or if GOOGLE_APPLICATION_CREDENTIALS is set
-      try {
-        admin.initializeApp();
-        logger.info('Firebase Admin SDK initialized with default credentials');
-      } catch (defaultError) {
-        logger.warn('Firebase Admin SDK not initialized - Firebase token verification will be disabled', {
-          error: (defaultError as Error).message,
-          hint: 'Set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to enable Firebase token verification',
-        });
-        return;
-      }
+function initMobileFirebase(): admin.auth.Auth | null {
+  const {
+    FIREBASE_MOBILE_PROJECT_ID,
+    FIREBASE_MOBILE_CLIENT_EMAIL,
+    FIREBASE_MOBILE_PRIVATE_KEY,
+    FIREBASE_MOBILE_SERVICE_ACCOUNT_PATH,
+  } = process.env;
+
+  try {
+    const credential =
+      loadCredentialFromEnv(
+        FIREBASE_MOBILE_PROJECT_ID,
+        FIREBASE_MOBILE_CLIENT_EMAIL,
+        FIREBASE_MOBILE_PRIVATE_KEY,
+      ) ??
+      loadCredentialFromFile(
+        FIREBASE_MOBILE_SERVICE_ACCOUNT_PATH ||
+          path.join(__dirname, '..', '..', 'serviceAccountKey-mobile.json'),
+      );
+
+    if (!credential) {
+      logger.info(
+        'Mobile Firebase project not configured (optional). ' +
+          'Set FIREBASE_MOBILE_* or serviceAccountKey-mobile.json for extrahand-ca02c mobile apps.',
+      );
+      return null;
     }
 
-    auth = admin.auth();
-  } catch (error) {
-    logger.error('Failed to initialize Firebase Admin SDK', {
-      error: (error as Error).message,
+    admin.initializeApp({ credential }, MOBILE_FIREBASE_APP_NAME);
+    logger.info('Firebase mobile project initialized', {
+      projectId: FIREBASE_MOBILE_PROJECT_ID || 'from service account file',
     });
-    // Don't throw - allow the app to continue without Firebase (backend tokens will still work)
+    const app = admin.apps.find(
+      (app): app is admin.app.App => app != null && app.name === MOBILE_FIREBASE_APP_NAME,
+    );
+    return app ? admin.auth(app) : null;
+  } catch (error) {
+    logger.warn('Failed to initialize mobile Firebase project:', error);
+    return null;
   }
 }
 
-/**
- * Get Firebase Auth instance
- * Returns null if Firebase is not initialized
- */
+export function initializeFirebase(): void {
+  if (primaryAuth) return;
+
+  if (!admin.apps.length) {
+    primaryAuth = initPrimaryFirebase();
+    mobileAuthInstance = initMobileFirebase();
+  } else {
+    const existingApp = admin.apps[0];
+    if (existingApp) {
+      primaryAuth = admin.auth(existingApp);
+    }
+    mobileAuthInstance = initMobileFirebase();
+  }
+}
+
 export function getFirebaseAuth(): admin.auth.Auth | null {
-  if (!auth) {
+  if (!primaryAuth && !mobileAuthInstance) {
     initializeFirebase();
   }
-  return auth;
+  return primaryAuth || mobileAuthInstance;
 }
 
-/**
- * Verify Firebase ID token
- */
+export function getMobileFirebaseAuth(): admin.auth.Auth | null {
+  if (!mobileAuthInstance) {
+    initializeFirebase();
+  }
+  return mobileAuthInstance;
+}
+
 export async function verifyFirebaseToken(idToken: string): Promise<{ uid: string }> {
-  const firebaseAuth = getFirebaseAuth();
-  if (!firebaseAuth) {
-    throw new Error('Firebase Admin SDK not initialized');
+  if (!primaryAuth && !mobileAuthInstance) {
+    initializeFirebase();
   }
 
-  const decodedToken = await firebaseAuth.verifyIdToken(idToken);
-  return { uid: decodedToken.uid };
+  if (primaryAuth) {
+    try {
+      const decodedToken = await primaryAuth.verifyIdToken(idToken);
+      return { uid: decodedToken.uid };
+    } catch (primaryError) {
+      // Fall through to mobile
+    }
+  }
+
+  if (mobileAuthInstance) {
+    try {
+      const decodedToken = await mobileAuthInstance.verifyIdToken(idToken);
+      return { uid: decodedToken.uid };
+    } catch (mobileError) {
+      throw new Error('Token verification failed for both primary and mobile Firebase projects');
+    }
+  }
+
+  throw new Error('Firebase Admin SDK not initialized');
 }
