@@ -29,7 +29,7 @@ async function start(): Promise<void> {
     // Bind to 0.0.0.0 to make it accessible from outside the container (Nginx/CapRover)
     server = app.listen(PORT, '0.0.0.0', () => {
       logger.info(`✅ API Gateway listening on 0.0.0.0:${PORT}`);
-      logger.info(`Health check: http://0.0.0.0:${PORT}/api/v1/health`);
+      logger.info(`Health check: http://0.0.0.0:${PORT}/health`);
       logger.info('Services configured:');
       logger.info(`  - User Service: ${env.USER_SERVICE_URL}`);
       logger.info(`  - Task Service: ${env.TASK_SERVICE_URL}`);
