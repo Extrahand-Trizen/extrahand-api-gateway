@@ -97,13 +97,12 @@ if (env.NODE_ENV === "production") {
 
 // app.use('/api/', limiter);
 
-// Health check
-app.get('/api/v1/health', (_req: Request, res: Response) => {
+const healthCheckHandler = (_req: Request, res: Response) => {
   res.setHeader('X-Gateway', 'extrahand-api-gateway');
   res.setHeader('X-Gateway-Version', '1.0.0');
   res.json({
     status: 'ok',
-    service: 'api-gateway', // ✅ Clear indicator
+    service: 'api-gateway',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: env.NODE_ENV,
@@ -117,7 +116,11 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
     },
     message: 'This is the API Gateway - requests are routed to microservices',
   });
-});
+};
+
+// Health check — root path for load balancers / uptime monitors
+app.get('/health', healthCheckHandler);
+app.get('/api/v1/health', healthCheckHandler);
 
 // API routes
 // Auth routes (public - no auth middleware)
