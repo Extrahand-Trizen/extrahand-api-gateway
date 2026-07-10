@@ -17,6 +17,9 @@ export interface TaskFilters {
   excludeRequesterId?: string;
   limit?: number;
   page?: number;
+  assigneeId?: string;
+  posterUid?: string;
+  requesterId?: string;
 }
 
 /** When LOCAL_TEST is on, task-service may skip SMS / use fixed OTP for start-work (opt-in upstream). */
@@ -66,7 +69,7 @@ export class TaskService extends BaseService {
   }
 
   async getMyTasks(
-    filters: { status?: string; limit?: number; page?: number },
+    filters: { status?: string; limit?: number; page?: number; type?: string; include?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ tasks: Task[]; pagination: any }>>> {
     const config = this.addServiceAuth(

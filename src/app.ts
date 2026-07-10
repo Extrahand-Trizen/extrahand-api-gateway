@@ -21,8 +21,7 @@ import paymentRouter from './routes/payment.js';
 import { paymentController } from './controllers/PaymentController.js';
 import escrowRouter from './routes/escrow.js';
 import refundRouter from './routes/refunds.js';
-// Payouts disabled - handled elsewhere
-// import payoutRouter from './routes/payouts.js';
+import payoutRouter from './routes/payouts.js';
 import earningsRouter from './routes/earnings.js';
 import transactionRouter from './routes/transactions.js';
 import adminRouter from './routes/admin.js';
@@ -148,8 +147,8 @@ app.get(
 app.use('/api/v1/payment', authMiddleware, paymentRouter);
 app.use('/api/v1/escrow', authMiddleware, escrowRouter);
 app.use('/api/v1/refunds', authMiddleware, refundRouter);
-// Payouts disabled - handled elsewhere
-// app.use('/api/v1/payouts', authMiddleware, payoutRouter);
+// Payouts route — re-enabled so mobile can query payout status
+app.use('/api/v1/payouts', authMiddleware, payoutRouter);
 app.use('/api/v1/earnings', authMiddleware, earningsRouter);
 app.use('/api/v1/transactions', authMiddleware, transactionRouter);
 app.use('/api/v1/admin', adminRouter);

@@ -69,6 +69,9 @@ export class TaskController {
         page: req.query.page
           ? parseInt(req.query.page as string, 10)
           : undefined,
+        assigneeId: req.query.assigneeId as string,
+        posterUid: req.query.posterUid as string,
+        requesterId: req.query.requesterId as string,
       };
 
       const response = await taskService.getTasks(filters, req.user);
@@ -118,6 +121,8 @@ export class TaskController {
 
       const filters = {
         status: req.query.status as string,
+        type: req.query.type as string,
+        include: req.query.include as string,
         limit: req.query.limit
           ? parseInt(req.query.limit as string, 10)
           : undefined,
