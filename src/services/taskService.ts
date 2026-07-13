@@ -497,6 +497,52 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getStartOtp(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        otp: string | null;
+        expiresAt: string | null;
+        executionPhase: string | null;
+        hasPendingOtp: boolean;
+      }>
+    >
+  > {
+    const config = withLocalTestHeader(
+      this.addServiceAuth(this.forwardUserAuth(userToken)),
+    );
+
+    return this.handleRequest(() =>
+      this.client.get<
+        ApiResponse<{
+          otp: string | null;
+          expiresAt: string | null;
+          executionPhase: string | null;
+          hasPendingOtp: boolean;
+        }>
+      >(`/api/v1/tasks/${taskId}/start-otp`, config)
+    );
+  }
+
+  async markExecutionArrived(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = withLocalTestHeader(
+      this.addServiceAuth(this.forwardUserAuth(userToken)),
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${taskId}/execution-phase/arrived`,
+        {},
+        config
+      )
+    );
+  }
+
   async approveCompletion(
     taskId: string,
     userToken: UserToken
