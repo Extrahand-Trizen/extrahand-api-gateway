@@ -70,6 +70,7 @@ export interface Task {
     city?: string;
     state?: string;
     country?: string;
+    taskArea?: string;
   };
   flexibility: "strict" | "flexible" | "anytime";
   timeFlexibilityValue?: "exact" | "1h" | "3h";
