@@ -479,23 +479,6 @@ export class TaskService extends BaseService {
     );
   }
 
-  async markExecutionArrived(
-    taskId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = withLocalTestHeader(
-      this.addServiceAuth(this.forwardUserAuth(userToken)),
-    );
-
-    return this.handleRequest(() =>
-      this.client.post<ApiResponse<any>>(
-        `/api/v1/tasks/${taskId}/execution-phase/arrived`,
-        {},
-        config
-      )
-    );
-  }
-
   async verifyStartOtp(
     taskId: string,
     otp: string,

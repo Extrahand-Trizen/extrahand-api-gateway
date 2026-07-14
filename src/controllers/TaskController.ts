@@ -696,41 +696,6 @@ export class TaskController {
     }
   }
 
-  async markExecutionArrived(
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> {
-    try {
-      const { taskId } = req.params;
-
-      if (!taskId) {
-        res.status(400).json({ success: false, error: "Task ID is required" });
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
-
-      res.setHeader("X-Served-By", "api-gateway");
-      res.setHeader("X-Target-Service", "task-service");
-      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
-
-      const response = await taskService.markExecutionArrived(taskId, req.user);
-      const taskServiceResponse = response.data as any;
-      res.status(response.status).json({
-        success: true,
-        code: response.status,
-        message: taskServiceResponse?.message || "Arrival marked successfully",
-        data: taskServiceResponse?.data ?? taskServiceResponse,
-      });
-    } catch (error) {
-      handleServiceError(error, res, "TaskController.markExecutionArrived");
-    }
-  }
-
   async verifyStartOtp(
     req: Request,
     res: Response,
