@@ -426,6 +426,7 @@ export class UserService extends BaseService {
       otp?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
+      authChannel?: "customer_app" | "helper_app";
     }
   ): Promise<
     AxiosResponse<
@@ -451,6 +452,9 @@ export class UserService extends BaseService {
     }
     if (options?.referralChannel) {
       payload.referralChannel = parseReferralChannel(options.referralChannel);
+    }
+    if (options?.authChannel && (options?.clientType ?? "web") === "mobile") {
+      payload.authChannel = options.authChannel;
     }
 
     // Service auth is required by User Service's gatewayAuthMiddleware
@@ -482,6 +486,7 @@ export class UserService extends BaseService {
       deviceId?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
+      authChannel?: "customer_app" | "helper_app";
     }
   ): Promise<
     AxiosResponse<
@@ -508,6 +513,9 @@ export class UserService extends BaseService {
     }
     if (options?.referralChannel) {
       payload.referralChannel = parseReferralChannel(options.referralChannel);
+    }
+    if (options?.authChannel && (options?.clientType ?? "web") === "mobile") {
+      payload.authChannel = options.authChannel;
     }
     const config = this.addServiceAuth({});
     return this.handleRequest(() =>
