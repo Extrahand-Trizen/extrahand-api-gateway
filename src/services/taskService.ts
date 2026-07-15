@@ -66,7 +66,7 @@ export class TaskService extends BaseService {
   }
 
   async getMyTasks(
-    filters: { status?: string; limit?: number; page?: number },
+    filters: { status?: string; limit?: number; page?: number; include?: string },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ tasks: Task[]; pagination: any }>>> {
     const config = this.addServiceAuth(
@@ -80,6 +80,30 @@ export class TaskService extends BaseService {
         "/api/v1/tasks/my-tasks",
         config
       )
+    );
+  }
+
+  async getTrackingBundle(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringReadTimeoutMs }),
+    );
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/tasks/${encodeURIComponent(taskId)}/tracking-bundle`, config)
+    );
+  }
+
+  async getMyApplicationForTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/tasks/${encodeURIComponent(taskId)}/my-application`, config)
     );
   }
 
@@ -506,7 +530,6 @@ export class TaskService extends BaseService {
         otp: string | null;
         expiresAt: string | null;
         executionPhase: string | null;
-        hasPendingOtp: boolean;
       }>
     >
   > {
@@ -520,7 +543,6 @@ export class TaskService extends BaseService {
           otp: string | null;
           expiresAt: string | null;
           executionPhase: string | null;
-          hasPendingOtp: boolean;
         }>
       >(`/api/v1/tasks/${taskId}/start-otp`, config)
     );

@@ -124,6 +124,7 @@ export class TaskController {
         page: req.query.page
           ? parseInt(req.query.page as string, 10)
           : undefined,
+        include: typeof req.query.include === 'string' ? req.query.include : undefined,
       };
 
       const response = await taskService.getMyTasks(filters, req.user);
@@ -322,6 +323,58 @@ export class TaskController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, "TaskController.deleteTask");
+    }
+  }
+
+  async getTrackingBundle(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+
+      const response = await taskService.getTrackingBundle(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getTrackingBundle");
+    }
+  }
+
+  async getMyApplicationForTask(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+
+      const response = await taskService.getMyApplicationForTask(taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getMyApplicationForTask");
     }
   }
 

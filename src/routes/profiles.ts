@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { profileController } from '../controllers/ProfileController.js';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import logger from '../config/logger.js';
-// Note: authMiddleware is applied both at app level AND on individual routes for extra security
+// Auth is applied per-route below (not at app mount) to avoid duplicate profile lookups
 
 const router = Router();
 

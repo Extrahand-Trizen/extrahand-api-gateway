@@ -62,6 +62,11 @@ export interface Task {
   };
   isNegotiable: boolean;
   status: string;
+  /** Journey sub-status while assigned: assigned → on_the_way → arrived */
+  executionPhase?: "assigned" | "on_the_way" | "arrived" | null;
+  onTheWayAt?: string | null;
+  arrivedAt?: string | null;
+  startedAt?: string | null;
   requesterId: string;
   location: {
     type: "Point";
@@ -70,7 +75,6 @@ export interface Task {
     city?: string;
     state?: string;
     country?: string;
-    taskArea?: string;
   };
   flexibility: "strict" | "flexible" | "anytime";
   timeFlexibilityValue?: "exact" | "1h" | "3h";
@@ -92,7 +96,9 @@ export interface SessionTokens {
    sessionId: string;
    refreshToken?: string;
    refreshTokenExpiresAt?: string;
-}export interface SessionResponse {
+}
+
+export interface SessionResponse {
    success: boolean;
    tokens: SessionTokens;
    message?: string;
