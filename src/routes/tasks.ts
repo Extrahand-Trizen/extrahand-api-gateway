@@ -65,9 +65,24 @@ router.post(
   taskController.resendStartOtp.bind(taskController)
 );
 router.post(
+  "/:taskId/execution-phase/arrived",
+  authMiddleware,
+  taskController.markExecutionArrived.bind(taskController)
+);
+router.post(
   "/:taskId/start-otp/verify",
   authMiddleware,
   taskController.verifyStartOtp.bind(taskController)
+);
+router.get(
+  "/:taskId/start-otp",
+  authMiddleware,
+  taskController.getStartOtp.bind(taskController)
+);
+router.post(
+  "/:taskId/execution-phase/arrived",
+  authMiddleware,
+  taskController.markExecutionArrived.bind(taskController)
 );
 router.post('/:taskId/submit-proof', authMiddleware, taskController.submitCompletionProof.bind(taskController));
 router.post(
