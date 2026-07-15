@@ -1192,6 +1192,75 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  // ─── Book Now Partner APIs ────────────────────────────────────────────────
+
+  /**
+   * GET /api/v1/book-now/available-leads
+   * Returns unassigned Book Now tasks matching the partner's work areas.
+   * Supports optional ?categories=cleaning,repair&lat=...&lng=...&radiusKm=50
+   */
+  async getAvailableBookNowLeads(
+    params: { categories?: string; lat?: number; lng?: number; radiusKm?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/book-now/available-leads', config)
+    );
+  }
+
+  /**
+   * POST /api/v1/book-now/tasks/:id/partner-accept
+   * Atomically assigns the task to the authenticated partner.
+   */
+  async acceptBookNowLead(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-now/tasks/${encodeURIComponent(taskId)}/partner-accept`,
+        {},
+        config
+      )
+    );
+  }
+
+  /**
+   * GET /api/v1/book-now/my-leads
+   * Returns the partner's accepted/active Book Now tasks.
+   */
+  async getMyBookNowLeads(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/book-now/my-leads', config)
+    );
+  }
+
+  /**
+   * PATCH /api/v1/book-now/tasks/:id/status
+   * Partner updates the status of their own active Book Now task.
+   */
+  async updateBookNowLeadStatus(
+    taskId: string,
+    body: { status: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.patch<ApiResponse<any>>(
+        `/api/v1/book-now/tasks/${encodeURIComponent(taskId)}/status`,
+        body,
+        config
+      )
+    );
+  }
 }
 
 export const taskService = new TaskService();
