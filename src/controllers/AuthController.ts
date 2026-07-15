@@ -6,6 +6,7 @@ import {
 } from "../utils/cookies.js";
 import logger from "../config/logger.js";
 import { parseReferralChannel } from "../utils/rewardsContext.js";
+import { parseAuthChannel } from "../utils/authChannel.js";
 
 export class AuthController {
    /**
@@ -50,7 +51,7 @@ export class AuthController {
     */
    static async completeOTP(req: Request, res: Response): Promise<void> {
       try {
-         const { idToken, mode, phone, name, clientType, deviceId, referralCode, referralChannel } = req.body;
+         const { idToken, mode, phone, name, clientType, deviceId, referralCode, referralChannel, authChannel } = req.body;
 
          if (!idToken || !mode || !phone) {
             res.status(400).json({
@@ -62,6 +63,11 @@ export class AuthController {
 
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
+         // Mobile apps only — do not apply authChannel for website clients
+         const normalizedAuthChannel =
+            normalizedClientType === "mobile"
+               ? parseAuthChannel(authChannel)
+               : undefined;
 
          const referralCodeNormalized =
             typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
@@ -75,6 +81,7 @@ export class AuthController {
             mode,
             phoneLast4,
             clientType: normalizedClientType,
+            authChannel: normalizedAuthChannel ?? null,
             hasReferralCode: Boolean(referralCodeNormalized),
          });
 
@@ -104,6 +111,7 @@ export class AuthController {
                deviceId,
                referralCode: referralCodeNormalized || undefined,
                referralChannel: normalizedReferralChannel,
+               authChannel: normalizedAuthChannel,
             }
          );
 
@@ -153,7 +161,7 @@ export class AuthController {
          return;
       }
       try {
-         const { phone, otp, mode, name, clientType, deviceId, referralCode, referralChannel } = req.body;
+         const { phone, otp, mode, name, clientType, deviceId, referralCode, referralChannel, authChannel } = req.body;
          if (!phone || !otp || !mode) {
             res.status(400).json({
                success: false,
@@ -163,6 +171,11 @@ export class AuthController {
          }
          const normalizedClientType: "web" | "mobile" =
             clientType === "mobile" ? "mobile" : "web";
+         // Mobile apps only — do not apply authChannel for website clients
+         const normalizedAuthChannel =
+            normalizedClientType === "mobile"
+               ? parseAuthChannel(authChannel)
+               : undefined;
          const referralCodeNormalized =
             typeof referralCode === "string" ? referralCode.trim().toUpperCase() : "";
          const normalizedReferralChannel =
@@ -188,6 +201,7 @@ export class AuthController {
                deviceId,
                referralCode: referralCodeNormalized || undefined,
                referralChannel: normalizedReferralChannel,
+               authChannel: normalizedAuthChannel,
             }
          );
          const upstreamCookies = response.headers["set-cookie"];
