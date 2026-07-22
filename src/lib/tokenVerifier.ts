@@ -12,6 +12,17 @@ const env = validateEnv();
 interface AccessTokenClaims extends JwtPayload {
    sub: string;
    sid: string;
+   tid?: string;
+   /** MongoDB Profile._id — set by user-service when issuing access tokens */
+   pid?: string;
+}
+
+function extractProfileId(payload: AccessTokenClaims): string | undefined {
+   const pid = payload.pid;
+   if (typeof pid === "string" && pid.trim().length > 0) {
+      return pid.trim();
+   }
+   return undefined;
 }
 
 /**
@@ -20,6 +31,7 @@ interface AccessTokenClaims extends JwtPayload {
 export function verifyAccessToken(token: string): {
    uid: string;
    sessionId: string;
+   profileId?: string;
 } {
    try {
       const payload = jwt.verify(token, env.ACCESS_TOKEN_SECRET, {
@@ -31,7 +43,11 @@ export function verifyAccessToken(token: string): {
          throw new Error("Missing claims");
       }
 
-      return { uid: payload.sub, sessionId: payload.sid };
+      return {
+         uid: payload.sub,
+         sessionId: payload.sid,
+         profileId: extractProfileId(payload),
+      };
    } catch (error) {
       // Local/dev resiliency: accept validly signed backend tokens even when
       // issuer/audience env values are mismatched between services.
@@ -42,7 +58,11 @@ export function verifyAccessToken(token: string): {
                logger.warn("Gateway access token verified with relaxed dev mode checks", {
                   reason: (error as Error).message,
                });
-               return { uid: payload.sub, sessionId: payload.sid };
+               return {
+                  uid: payload.sub,
+                  sessionId: payload.sid,
+                  profileId: extractProfileId(payload),
+               };
             }
          } catch {
             // Fall through to original error handling.
@@ -62,6 +82,7 @@ export function verifyAccessToken(token: string): {
 export async function verifyToken(token: string): Promise<{
    uid: string;
    sessionId?: string;
+   profileId?: string;
    tokenType: 'backend' | 'firebase';
 }> {
    // First, try to verify as backend token (HS256)
@@ -70,6 +91,7 @@ export async function verifyToken(token: string): Promise<{
       return {
          uid: result.uid,
          sessionId: result.sessionId,
+         profileId: result.profileId,
          tokenType: 'backend',
       };
    } catch (backendError) {

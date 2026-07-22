@@ -29,9 +29,6 @@ router.post('/:chatId/messages', chatController.sendMessage.bind(chatController)
 // Mark chat as read
 router.post('/:chatId/read', chatController.markChatAsRead.bind(chatController));
 
-// Delete a chat
-router.delete('/:chatId', chatController.deleteChat.bind(chatController));
-
 export default router;
 
 

@@ -317,6 +317,38 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async getTaskPayoutBundle(
+    taskId: string,
+    userToken: UserToken | null,
+    params?: { performerUid?: string; linkedUserIds?: string }
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined, {
+        params: {
+          ...(params?.performerUid ? { performerUid: params.performerUid } : {}),
+          ...(params?.linkedUserIds ? { linkedUserIds: params.linkedUserIds } : {}),
+        },
+      })
+    );
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/payouts/task/${encodeURIComponent(taskId)}/bundle`, config)
+    );
+  }
+
+  async getPayoutStatusBatch(
+    payoutIds: string[],
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payouts/status/batch', { payoutIds }, config)
+    );
+  }
+
   // =====================================================
   // EARNINGS METHODS
   // =====================================================
