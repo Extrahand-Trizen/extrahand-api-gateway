@@ -11,4 +11,4 @@ logs/
 *.md 
 test-services.js
 test-gateway-flow.js
-package-lock.json
+# package-lock.json is committed for CI (npm ci / Actions cache)
