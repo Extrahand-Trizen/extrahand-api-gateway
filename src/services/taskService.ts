@@ -69,11 +69,7 @@ export class TaskService extends BaseService {
   }
 
   async getMyTasks(
-<<<<<<< HEAD
     filters: { status?: string; limit?: number; page?: number; type?: string; include?: string },
-=======
-    filters: { status?: string; limit?: number; page?: number; include?: string },
->>>>>>> f1e7b18 (changes)
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<{ tasks: Task[]; pagination: any }>>> {
     const config = this.addServiceAuth(

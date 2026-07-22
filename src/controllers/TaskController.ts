@@ -122,7 +122,6 @@ export class TaskController {
       const filters = {
         status: req.query.status as string,
         type: req.query.type as string,
-        include: req.query.include as string,
         limit: req.query.limit
           ? parseInt(req.query.limit as string, 10)
           : undefined,
