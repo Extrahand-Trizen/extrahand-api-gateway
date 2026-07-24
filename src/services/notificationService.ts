@@ -38,9 +38,9 @@ export class NotificationService extends BaseService {
 
   async getInAppNotifications(
     userToken: UserToken,
-    options: { limit?: number; skip?: number; unreadOnly?: boolean } = {}
+    options: { limit?: number; skip?: number; unreadOnly?: boolean; role?: 'helper' | 'partner' } = {}
   ): Promise<AxiosResponse<ApiResponse>> {
-    const { limit = 50, skip = 0, unreadOnly = false } = options;
+    const { limit = 50, skip = 0, unreadOnly = false, role } = options;
 
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -48,6 +48,7 @@ export class NotificationService extends BaseService {
           limit,
           skip,
           unreadOnly,
+          ...(role ? { role } : {}),
         },
       })
     );
@@ -58,10 +59,15 @@ export class NotificationService extends BaseService {
   }
 
   async getUnreadInAppCount(
-    userToken: UserToken
+    userToken: UserToken,
+    role?: 'helper' | 'partner'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
+      this.forwardUserAuth(userToken, {
+        params: {
+          ...(role ? { role } : {}),
+        },
+      })
     );
 
     return this.handleRequest(() =>
@@ -70,10 +76,15 @@ export class NotificationService extends BaseService {
   }
 
   async markAllInAppRead(
-    userToken: UserToken
+    userToken: UserToken,
+    role?: 'helper' | 'partner'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
+      this.forwardUserAuth(userToken, {
+        params: {
+          ...(role ? { role } : {}),
+        },
+      })
     );
 
     // Send userId in body as fallback in case X-User-Id header is stripped by proxy
@@ -118,10 +129,15 @@ export class NotificationService extends BaseService {
   }
 
   async clearAllInAppNotifications(
-    userToken: UserToken
+    userToken: UserToken,
+    role?: 'helper' | 'partner'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken)
+      this.forwardUserAuth(userToken, {
+        params: {
+          ...(role ? { role } : {}),
+        },
+      })
     );
 
     return this.handleRequest(() =>
