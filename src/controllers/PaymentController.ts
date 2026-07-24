@@ -257,6 +257,51 @@ export class PaymentController {
     }
   }
 
+  async getTaskPayoutBundle(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const { taskId } = req.params;
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const performerUid =
+        typeof req.query.performerUid === 'string'
+          ? req.query.performerUid
+          : req.user?.uid;
+      const linkedRaw =
+        typeof req.query.linkedUserIds === 'string' ? req.query.linkedUserIds : undefined;
+
+      const response = await paymentService.getTaskPayoutBundle(
+        taskId,
+        req.user || null,
+        {
+          performerUid,
+          linkedUserIds: linkedRaw,
+        },
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getTaskPayoutBundle');
+    }
+  }
+
+  async getPayoutStatusBatch(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const payoutIds = Array.isArray(req.body?.payoutIds) ? req.body.payoutIds : [];
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getPayoutStatusBatch(
+        payoutIds.map((id: unknown) => String(id)),
+        req.user || null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.getPayoutStatusBatch');
+    }
+  }
+
   async getUserEarnings(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { userId } = req.params;

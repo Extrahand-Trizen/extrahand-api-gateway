@@ -161,26 +161,6 @@ export class ChatService extends BaseService {
       this.client.post<ApiResponse<any>>(`/api/v1/chats/${chatId}/read`, {}, config)
     );
   }
-
-  /**
-   * Delete chat
-   */
-  async deleteChat(
-    chatId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = {
-      headers: {
-        'X-Service-Auth': process.env.SERVICE_AUTH_TOKEN,
-        'X-Service-Name': 'api-gateway',
-        Authorization: `Bearer ${JSON.stringify(userToken)}`,
-      },
-    };
-
-    return this.handleRequest(() =>
-      this.client.delete<ApiResponse<any>>(`/api/v1/chats/${chatId}`, config)
-    );
-  }
 }
 
 export const chatService = new ChatService();

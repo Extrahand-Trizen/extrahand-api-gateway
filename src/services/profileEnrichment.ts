@@ -20,19 +20,21 @@ export interface EnrichedProfileData {
   assigneeTotalReviews?: number;
 }
 
+type ProfileSnippet = {
+  _id: string;
+  name: string;
+  photoURL?: string | null;
+  rating?: number;
+  totalReviews?: number;
+};
+
 /**
  * Get Profile data by ObjectId (via user-service)
  */
 async function getProfileById(
   profileId: string,
   userToken: UserToken
-): Promise<{
-  _id: string;
-  name: string;
-  photoURL?: string | null;
-  rating?: number;
-  totalReviews?: number;
-} | null> {
+): Promise<ProfileSnippet | null> {
   try {
     const response = await userService.getProfileById(profileId, userToken);
     
@@ -50,56 +52,49 @@ async function getProfileById(
   }
 }
 
+function toProfileIdString(id: unknown): string | undefined {
+  if (id == null) return undefined;
+  return typeof id === 'string' ? id : String(id);
+}
+
+function applyProfileToTask(
+  enriched: Record<string, unknown>,
+  profile: ProfileSnippet,
+  role: 'requester' | 'assignee',
+): void {
+  if (role === 'requester') {
+    enriched.requesterName = profile.name;
+    enriched.requesterPhotoURL = profile.photoURL || null;
+    enriched.requesterRating = profile.rating || 0;
+    enriched.requesterTotalReviews = profile.totalReviews || 0;
+    return;
+  }
+  enriched.assigneeName = profile.name;
+  enriched.assigneePhotoURL = profile.photoURL || null;
+  enriched.assigneeRating = profile.rating || 0;
+  enriched.assigneeTotalReviews = profile.totalReviews || 0;
+}
+
 /**
- * Enrich a single task with Profile data
+ * Enrich a single task with Profile data (parallel requester + assignee fetch)
  */
 export async function enrichTask(task: any, userToken: UserToken): Promise<any> {
   if (!task) return task;
 
+  const requesterId = toProfileIdString(task.requesterId);
+  const assigneeId = toProfileIdString(task.assigneeId);
+
+  const [requesterProfile, assigneeProfile] = await Promise.all([
+    requesterId ? getProfileById(requesterId, userToken) : Promise.resolve(null),
+    assigneeId ? getProfileById(assigneeId, userToken) : Promise.resolve(null),
+  ]);
+
   const enriched = { ...task };
-
-  // Enrich requester data
-  if (task.requesterId) {
-    try {
-      const requesterId = typeof task.requesterId === 'string'
-        ? task.requesterId
-        : task.requesterId.toString();
-
-      const requesterProfile = await getProfileById(requesterId, userToken);
-      if (requesterProfile) {
-        enriched.requesterName = requesterProfile.name;
-        enriched.requesterPhotoURL = requesterProfile.photoURL || null;
-        enriched.requesterRating = requesterProfile.rating || 0;
-        enriched.requesterTotalReviews = requesterProfile.totalReviews || 0;
-      }
-    } catch (error: any) {
-      logger.warn('Failed to enrich requester profile', {
-        requesterId: task.requesterId,
-        error: error.message,
-      });
-    }
+  if (requesterProfile) {
+    applyProfileToTask(enriched, requesterProfile, 'requester');
   }
-
-  // Enrich assignee data
-  if (task.assigneeId) {
-    try {
-      const assigneeId = typeof task.assigneeId === 'string'
-        ? task.assigneeId
-        : task.assigneeId.toString();
-
-      const assigneeProfile = await getProfileById(assigneeId, userToken);
-      if (assigneeProfile) {
-        enriched.assigneeName = assigneeProfile.name;
-        enriched.assigneePhotoURL = assigneeProfile.photoURL || null;
-        enriched.assigneeRating = assigneeProfile.rating || 0;
-        enriched.assigneeTotalReviews = assigneeProfile.totalReviews || 0;
-      }
-    } catch (error: any) {
-      logger.warn('Failed to enrich assignee profile', {
-        assigneeId: task.assigneeId,
-        error: error.message,
-      });
-    }
+  if (assigneeProfile) {
+    applyProfileToTask(enriched, assigneeProfile, 'assignee');
   }
 
   return enriched;
@@ -118,28 +113,13 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
   const profileIds = new Set<string>();
   
   tasks.forEach(task => {
-    if (task.requesterId) {
-      const id = typeof task.requesterId === 'string' 
-        ? task.requesterId 
-        : task.requesterId.toString();
-      profileIds.add(id);
-    }
-    if (task.assigneeId) {
-      const id = typeof task.assigneeId === 'string'
-        ? task.assigneeId
-        : task.assigneeId.toString();
-      profileIds.add(id);
-    }
+    const requesterId = toProfileIdString(task.requesterId);
+    const assigneeId = toProfileIdString(task.assigneeId);
+    if (requesterId) profileIds.add(requesterId);
+    if (assigneeId) profileIds.add(assigneeId);
   });
 
-  // Fetch all profiles in batch via user-service
-  const profileMap = new Map<string, {
-    _id: string;
-    name: string;
-    photoURL?: string | null;
-    rating?: number;
-    totalReviews?: number;
-  }>();
+  const profileMap = new Map<string, ProfileSnippet>();
   
   if (profileIds.size > 0) {
     try {
@@ -147,7 +127,7 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
       const response = await userService.getProfilesBatch(profileIdsArray, userToken);
       
       if (response.data.success && Array.isArray((response.data as any).profiles)) {
-        (response.data as any).profiles.forEach((profile: any) => {
+        (response.data as any).profiles.forEach((profile: ProfileSnippet) => {
           profileMap.set(profile._id.toString(), profile);
         });
       }
@@ -159,37 +139,22 @@ export async function enrichTasks(tasks: any[], userToken: UserToken): Promise<a
     }
   }
 
-  // Enrich each task
   return tasks.map(task => {
     const enriched = { ...task };
 
-    // Enrich requester
-    if (task.requesterId) {
-      const requesterIdStr = typeof task.requesterId === 'string'
-        ? task.requesterId
-        : task.requesterId.toString();
-      
+    const requesterIdStr = toProfileIdString(task.requesterId);
+    if (requesterIdStr) {
       const requesterProfile = profileMap.get(requesterIdStr);
       if (requesterProfile) {
-        enriched.requesterName = requesterProfile.name;
-        enriched.requesterPhotoURL = requesterProfile.photoURL || null;
-        enriched.requesterRating = requesterProfile.rating || 0;
-        enriched.requesterTotalReviews = requesterProfile.totalReviews || 0;
+        applyProfileToTask(enriched, requesterProfile, 'requester');
       }
     }
 
-    // Enrich assignee
-    if (task.assigneeId) {
-      const assigneeIdStr = typeof task.assigneeId === 'string'
-        ? task.assigneeId
-        : task.assigneeId.toString();
-      
+    const assigneeIdStr = toProfileIdString(task.assigneeId);
+    if (assigneeIdStr) {
       const assigneeProfile = profileMap.get(assigneeIdStr);
       if (assigneeProfile) {
-        enriched.assigneeName = assigneeProfile.name;
-        enriched.assigneePhotoURL = assigneeProfile.photoURL || null;
-        enriched.assigneeRating = assigneeProfile.rating || 0;
-        enriched.assigneeTotalReviews = assigneeProfile.totalReviews || 0;
+        applyProfileToTask(enriched, assigneeProfile, 'assignee');
       }
     }
 
@@ -226,4 +191,3 @@ export async function enrichTaskResponse(response: any, userToken: UserToken): P
   // Unknown format - return as is
   return response;
 }
-

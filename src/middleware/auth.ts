@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import logger from "../config/logger.js";
 import { verifyToken } from "../lib/tokenVerifier.js";
+import { getCachedProfileId, setCachedProfileId } from "../lib/profileIdCache.js";
 import { ACCESS_COOKIE_NAME } from "../utils/cookies.js";
 import { userService } from '../services/userService.js';
 
@@ -34,9 +35,53 @@ function getAccessToken(req: Request): string | undefined {
    return undefined;
 }
 
+function extractProfileIdFromResponse(data: unknown): string | undefined {
+   const root = data as Record<string, unknown> | null | undefined;
+   const profileDoc = (root?.data ?? root) as Record<string, unknown> | null | undefined;
+   const id = profileDoc?._id ?? profileDoc?.id;
+   if (id == null) return undefined;
+   return typeof id === 'string' ? id : String(id);
+}
+
 /**
- * Shared helper: verify token and get user info.
- * profileId is resolved only via user-service (no DB in gateway).
+ * Resolve profileId: JWT `pid` claim → in-memory cache → lightweight user-service lookup.
+ */
+async function resolveProfileId(
+  uid: string,
+  token: string,
+  jwtProfileId?: string,
+): Promise<string | undefined> {
+  if (jwtProfileId) {
+    setCachedProfileId(uid, jwtProfileId);
+    return jwtProfileId;
+  }
+
+  const cached = getCachedProfileId(uid);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await userService.getCurrentProfile({ uid, token });
+    const profileId = extractProfileIdFromResponse(response?.data);
+    if (profileId) {
+      setCachedProfileId(uid, profileId);
+      logger.debug('Profile ID resolved via user-service fallback', { uid, profileId });
+    }
+    return profileId;
+  } catch (err: unknown) {
+    const error = err as { response?: { status?: number }; status?: number; message?: string };
+    logger.debug('User-service profile lookup failed (user may need onboarding)', {
+      uid,
+      status: error?.response?.status ?? error?.status,
+      message: error?.message,
+    });
+    return undefined;
+  }
+}
+
+/**
+ * Shared helper: verify token and resolve user + profileId.
  */
 async function verifyTokenAndGetUser(token: string): Promise<{ uid: string; tokenType: string; profileId?: string }> {
   logger.debug('Token Verification: Verifying token', {
@@ -44,30 +89,8 @@ async function verifyTokenAndGetUser(token: string): Promise<{ uid: string; toke
     tokenLength: token.length,
   });
 
-  const { uid, tokenType } = await verifyToken(token);
-
-  // Resolve profileId from user-service only (single source of truth)
-  let profileId: string | undefined;
-  try {
-    const userToken = { uid, token };
-    const response = await userService.getCurrentProfile(userToken);
-    const data = response?.data as any;
-    const profileDoc = data?.data ?? data;
-    const id = profileDoc?._id ?? profileDoc?.id;
-    if (id != null) {
-      profileId = typeof id === 'string' ? id : String(id);
-      logger.debug('Token Verification: Profile resolved via user-service', {
-        uid,
-        profileId,
-      });
-    }
-  } catch (err: any) {
-    logger.debug('Token Verification: User-service profile lookup failed (user may need onboarding)', {
-      uid,
-      status: err?.response?.status ?? err?.status,
-      message: err?.message ?? err?.response?.data?.error,
-    });
-  }
+  const { uid, tokenType, profileId: jwtProfileId } = await verifyToken(token);
+  const profileId = await resolveProfileId(uid, token, jwtProfileId);
 
   return { uid, tokenType, profileId };
 }
@@ -77,6 +100,12 @@ export async function authMiddleware(
    res: Response,
    next: NextFunction
 ): Promise<void> {
+   // Idempotent: skip if a prior auth layer already populated the user (safety net).
+   if (req.user?.uid && req.user?.token) {
+      next();
+      return;
+   }
+
    const token = getAccessToken(req);
 
    if (!token) {
@@ -96,7 +125,6 @@ export async function authMiddleware(
    }
 
   try {
-    // ✨ Use shared helper function to verify token and get user info
     const { uid, tokenType, profileId } = await verifyTokenAndGetUser(token);
 
     req.user = {
@@ -114,7 +142,6 @@ export async function authMiddleware(
     });
     next();
   } catch (error: any) {
-    // Enhanced error logging
     logger.error('Authentication: Token verification failed', {
       path: req.path,
       method: req.method,
@@ -125,18 +152,6 @@ export async function authMiddleware(
       tokenLength: token?.length || 0,
     });
     
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🚨 [API GATEWAY] Authentication Failed: Token Verification Error');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📍 Path:', req.path);
-    console.log('📍 Method:', req.method);
-    console.log('📍 Error Code:', error.code);
-    console.log('📍 Error Message:', error.message);
-    console.log('📍 Has Token:', !!token);
-    console.log('📍 Token Length:', token?.length || 0);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    
-    // More detailed error response in development
     const errorMessage = process.env.NODE_ENV === 'development' 
       ? `Invalid token: ${error.message || error.code || 'Unknown error'}`
       : 'Invalid token';
@@ -160,13 +175,6 @@ export async function authMiddleware(
  * ✅ PUBLIC ACCESS: Users WITHOUT accounts can access these routes
  * ✅ TOKEN VERIFICATION: If token is present, verifies it (same as authMiddleware)
  * ✅ OPTIONAL PERSONALIZATION: If user is authenticated, extracts user info for personalization
- * 
- * Flow:
- * - No token → req.user = undefined → Public access (works for users without accounts)
- * - Token present → Verify token → req.user populated → Personalized access (for logged-in users)
- * - Token invalid → req.user = undefined → Public access (doesn't block, allows access)
- * 
- * Rate limiting should be applied separately based on IP address to prevent abuse
  */
 export async function optionalAuthMiddleware(
    req: Request,
@@ -175,16 +183,18 @@ export async function optionalAuthMiddleware(
 ): Promise<void> {
   const token = getAccessToken(req);
 
-  // ✅ If no token, allow public access (users without accounts)
   if (!token) {
     req.user = undefined;
     next();
     return;
   }
 
-  // ✅ If token is present, verify it using shared helper (same as authMiddleware)
+  if (req.user?.uid && req.user?.token) {
+    next();
+    return;
+  }
+
   try {
-    // ✨ Use shared helper function to verify token and get user info
     const { uid, tokenType, profileId } = await verifyTokenAndGetUser(token);
 
     req.user = {
@@ -202,7 +212,6 @@ export async function optionalAuthMiddleware(
     
     next();
   } catch (error: any) {
-    // ✅ Token verification failed - but this is a public route, so allow access without user info
     logger.warn('Optional Auth: Token verification failed, allowing public access', {
       path: req.path,
       method: req.method,
@@ -211,7 +220,6 @@ export async function optionalAuthMiddleware(
       hasToken: !!token,
     });
     
-    // Continue without user info (public access)
     req.user = undefined;
     next();
   }

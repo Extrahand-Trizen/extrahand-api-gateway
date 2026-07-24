@@ -48,6 +48,18 @@ router.get(
   taskController.getMyTasks.bind(taskController)
 );
 
+// Task tracking bundle + scoped application lookup (before /:taskId)
+router.get(
+  "/:taskId/tracking-bundle",
+  authMiddleware,
+  taskController.getTrackingBundle.bind(taskController)
+);
+router.get(
+  "/:taskId/my-application",
+  authMiddleware,
+  taskController.getMyApplicationForTask.bind(taskController)
+);
+
 // Task status and completion routes (must come before /:taskId route) - require authentication
 router.patch(
   "/:taskId/status",
@@ -65,20 +77,17 @@ router.post(
   taskController.resendStartOtp.bind(taskController)
 );
 router.post(
-  "/:taskId/execution-phase/arrived",
-  authMiddleware,
-  taskController.markExecutionArrived.bind(taskController)
-);
-router.post(
   "/:taskId/start-otp/verify",
   authMiddleware,
   taskController.verifyStartOtp.bind(taskController)
 );
+// Poster reads OTP for Work Progress (must be after /send|/resend|/verify)
 router.get(
   "/:taskId/start-otp",
   authMiddleware,
   taskController.getStartOtp.bind(taskController)
 );
+// Helper marks arrived (requires executionPhase=on_the_way from start-otp/send)
 router.post(
   "/:taskId/execution-phase/arrived",
   authMiddleware,

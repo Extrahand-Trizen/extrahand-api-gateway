@@ -30,8 +30,7 @@ export class EarningsController {
 
       const response = await paymentService.getUserEarnings(
         userId,
-        req.user || null,
-        typeof req.query.linkedUserIds === 'string' ? req.query.linkedUserIds : undefined
+        req.user || null
       );
       res.status(response.status).json(response.data);
     } catch (error) {

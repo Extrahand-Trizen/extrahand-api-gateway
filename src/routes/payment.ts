@@ -62,6 +62,10 @@ router.delete('/bank-accounts/:bankAccountId', authMiddleware, paymentController
 // Non-escrow task completion payout route
 router.post('/payout/task-completion', authMiddleware, paymentController.processTaskCompletionPayout.bind(paymentController));
 
+// Payout bundle + batch status (proxied to payment-service payouts router)
+router.get('/payouts/task/:taskId/bundle', authMiddleware, paymentController.getTaskPayoutBundle.bind(paymentController));
+router.post('/payouts/status/batch', authMiddleware, paymentController.getPayoutStatusBatch.bind(paymentController));
+
 export default router;
 
 
