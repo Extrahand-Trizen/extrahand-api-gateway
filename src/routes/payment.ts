@@ -40,6 +40,10 @@ router.get('/fees/structure', paymentController.getFeeStructure.bind(paymentCont
 router.post('/fees/book-now/calculate', paymentController.calculateBookNowTotals.bind(paymentController)); // Public endpoint
 router.get('/fees/performer-payout-estimate', paymentController.estimatePerformerPayout.bind(paymentController)); // Public endpoint
 
+// Coupon validate (via payment-service → coupon-service)
+router.post('/coupons/validate', authMiddleware, paymentController.validateCoupon.bind(paymentController));
+router.post('/coupons/eligible', authMiddleware, paymentController.listEligibleCoupons.bind(paymentController));
+
 // Earnings routes
 router.get('/earnings/:userId', authMiddleware, paymentController.getUserEarnings.bind(paymentController));
 router.get(

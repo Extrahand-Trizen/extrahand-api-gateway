@@ -180,6 +180,49 @@ export class PaymentController {
     }
   }
 
+  async validateCoupon(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.validateCoupon(
+        {
+          couponCode: String(req.body?.couponCode || ''),
+          flowType: String(req.body?.flowType || ''),
+          amount: Number(req.body?.amount),
+          serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
+          lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+          taskId: req.body?.taskId,
+          applicationId: req.body?.applicationId,
+        },
+        req.user || null
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.validateCoupon');
+    }
+  }
+
+  async listEligibleCoupons(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.listEligibleCoupons(
+        {
+          flowType: String(req.body?.flowType || ''),
+          amount: Number(req.body?.amount),
+          serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
+          lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+        },
+        req.user || null
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PaymentController.listEligibleCoupons');
+    }
+  }
+
   async createEscrow(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
