@@ -1,5 +1,5 @@
-# Use Node.js 18 LTS Alpine image for smaller size
-FROM node:18-alpine AS base
+# Node 20+: required by mongoose@9 / mongodb@7 / mquery@6
+FROM node:20-alpine AS base
 
 # Install security updates and necessary packages
 RUN apk update && apk upgrade && \
