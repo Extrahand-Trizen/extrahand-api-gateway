@@ -621,6 +621,43 @@ export class PaymentService extends BaseService {
       this.client.get(`/api/v1/fees/performer-payout-estimate?${params.toString()}`)
     );
   }
+
+  async validateCoupon(
+    body: {
+      couponCode: string;
+      flowType: string;
+      amount: number;
+      serviceIds?: string[];
+      lineItems?: Array<{ serviceId: string; amount: number }>;
+      taskId?: string;
+      applicationId?: string;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/coupons/validate', body, config)
+    );
+  }
+
+  async listEligibleCoupons(
+    body: {
+      flowType: string;
+      amount: number;
+      serviceIds?: string[];
+      lineItems?: Array<{ serviceId: string; amount: number }>;
+    },
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payment/coupons/eligible', body, config)
+    );
+  }
 }
 
 export const paymentService = new PaymentService();
