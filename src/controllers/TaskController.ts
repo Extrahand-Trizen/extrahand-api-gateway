@@ -671,6 +671,46 @@ export class TaskController {
     }
   }
 
+  async submitCompletion(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { proofUrls, notes } = req.body;
+
+      if (!taskId) {
+        res.status(400).json({
+          success: false,
+          error: "Task ID is required",
+        });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: "Authentication required",
+        });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.submitCompletion(
+        taskId,
+        { proofUrls, notes },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.submitCompletion");
+    }
+  }
+
   async sendStartOtp(
     req: Request,
     res: Response,

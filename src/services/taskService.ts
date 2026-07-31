@@ -472,6 +472,22 @@ export class TaskService extends BaseService {
     );
   }
 
+  /**
+   * Partner/helper completion submit — uses task-service `/complete`
+   * (Book Now auto-completes here; marketplace stays pending approval).
+   */
+  async submitCompletion(
+    taskId: string,
+    data: { proofUrls?: string[]; notes?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(`/api/v1/tasks/${taskId}/complete`, data, config)
+    );
+  }
+
   async sendStartOtp(
     taskId: string,
     userToken: UserToken

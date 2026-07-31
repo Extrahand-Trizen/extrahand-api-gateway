@@ -97,7 +97,7 @@ router.post('/:taskId/submit-proof', authMiddleware, taskController.submitComple
 router.post(
   "/:taskId/complete",
   authMiddleware,
-  taskController.submitCompletionProof.bind(taskController)
+  taskController.submitCompletion.bind(taskController)
 );
 router.post(
   "/:taskId/approve-completion",
