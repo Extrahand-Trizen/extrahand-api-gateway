@@ -1068,6 +1068,46 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getBookNowHubCatalog(
+    previewLimit: number | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: previewLimit ? { previewLimit } : undefined,
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/catalog/book-now/hub", config)
+    );
+  }
+
+  async getBookNowCategoryPackages(
+    slug: string,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/categories/${encodeURIComponent(slug)}/packages`,
+        config
+      )
+    );
+  }
+
+  async getCatalogCategoryContent(
+    slug: string,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/categories/${encodeURIComponent(slug)}/content`,
+        config
+      )
+    );
+  }
+
   async getCatalogSku(
     skuSlug: string,
     categorySlug: string | undefined,
@@ -1081,6 +1121,69 @@ export class TaskService extends BaseService {
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/catalog/skus/${encodeURIComponent(skuSlug)}`,
+        config
+      )
+    );
+  }
+
+  async getCatalogSkuContent(
+    skuSlug: string,
+    categorySlug: string | undefined,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: categorySlug ? { categorySlug } : undefined,
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/skus/${encodeURIComponent(skuSlug)}/content`,
+        config
+      )
+    );
+  }
+
+  async resolveCatalogSkuContent(
+    params: { categorySlug: string; taskTitle?: string; skuSlug?: string },
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          categorySlug: params.categorySlug,
+          ...(params.taskTitle ? { taskTitle: params.taskTitle } : {}),
+          ...(params.skuSlug ? { skuSlug: params.skuSlug } : {}),
+        },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/skus/content/resolve', config)
+    );
+  }
+
+  async listHelpSupportCategories(
+    variant: 'customer' | 'helper',
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/help-support/${encodeURIComponent(variant)}`,
+        config
+      )
+    );
+  }
+
+  async getHelpSupportCategory(
+    variant: 'customer' | 'helper',
+    categoryKey: string,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/catalog/help-support/${encodeURIComponent(variant)}/${encodeURIComponent(categoryKey)}`,
         config
       )
     );
