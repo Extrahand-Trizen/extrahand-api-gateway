@@ -87,6 +87,17 @@ router.get(
   authMiddleware,
   taskController.getStartOtp.bind(taskController)
 );
+// Customer reads latest partner location snapshot; helper posts REST fallback.
+router.get(
+  "/:taskId/partner-location",
+  authMiddleware,
+  taskController.getPartnerLocation.bind(taskController)
+);
+router.post(
+  "/:taskId/helper-location",
+  authMiddleware,
+  taskController.reportHelperLocation.bind(taskController)
+);
 // Helper marks arrived (requires executionPhase=on_the_way from start-otp/send)
 router.post(
   "/:taskId/execution-phase/arrived",

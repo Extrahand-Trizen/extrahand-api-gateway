@@ -567,6 +567,41 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getPartnerLocation(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/partner-location`,
+        config
+      )
+    );
+  }
+
+  async reportHelperLocation(
+    taskId: string,
+    data: {
+      lat: number;
+      lng: number;
+      timestamp?: number;
+      forcePersist?: boolean;
+    },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${taskId}/helper-location`,
+        data,
+        config
+      )
+    );
+  }
+
   async markExecutionArrived(
     taskId: string,
     userToken: UserToken

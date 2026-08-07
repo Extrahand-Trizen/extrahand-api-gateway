@@ -874,6 +874,93 @@ export class TaskController {
     }
   }
 
+  async getPartnerLocation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.getPartnerLocation(taskId, req.user);
+      const body = response.data as any;
+      const payload = body?.data ?? body;
+
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: body?.message || "Partner location retrieved",
+        data: payload,
+      });
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getPartnerLocation");
+    }
+  }
+
+  async reportHelperLocation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const lat = Number(req.body?.lat);
+      const lng = Number(req.body?.lng);
+      const timestamp = Number(req.body?.timestamp || Date.now());
+      const forcePersist = req.body?.forcePersist === true;
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        res.status(400).json({ success: false, error: "Valid lat/lng are required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.reportHelperLocation(
+        taskId,
+        { lat, lng, timestamp, forcePersist },
+        req.user
+      );
+      const body = response.data as any;
+      const payload = body?.data ?? body;
+
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: body?.message || "Helper location recorded",
+        data: payload,
+      });
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.reportHelperLocation");
+    }
+  }
+
   async markExecutionArrived(
     req: Request,
     res: Response,
