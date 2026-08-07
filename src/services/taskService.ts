@@ -117,16 +117,6 @@ export class TaskService extends BaseService {
   }
 
   /** Customer-side poll: last Redis-cached partner location for a task. */
-  async getPartnerLocation(
-    taskId: string,
-    userToken: UserToken
-  ): Promise<AxiosResponse> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
-
-    return this.handleRequest(() =>
-      this.client.get(`/api/v1/tasks/${encodeURIComponent(taskId)}/partner-location`, config)
-    );
-  }
 
   async getMyApplicationForTask(
     taskId: string,
