@@ -356,6 +356,95 @@ export class TaskController {
     }
   }
 
+  /**
+   * POST /api/v1/tasks/:taskId/helper-location
+   * Helper pushes a live location point (REST fallback when the socket is down /
+   * app backgrounded). Task service validates ownership and caches in Redis.
+   */
+  async reportHelperLocation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      const { lat, lng, timestamp } = (req.body ?? {}) as {
+        lat?: unknown;
+        lng?: unknown;
+        timestamp?: unknown;
+      };
+
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        res.status(400).json({ success: false, error: "lat and lng are required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+
+      const response = await taskService.postHelperLocation(
+        taskId,
+        { lat, lng, timestamp: typeof timestamp === "number" ? timestamp : Date.now() },
+        req.user,
+      );
+      const taskServiceResponse = response.data as any;
+      const payload = taskServiceResponse?.data ?? taskServiceResponse;
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Helper location recorded",
+        data: payload,
+      });
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.reportHelperLocation");
+    }
+  }
+
+  /**
+   * GET /api/v1/tasks/:taskId/partner-location
+   * Customer-side poll fallback: last Redis-cached partner location.
+   */
+  async getPartnerLocation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId } = req.params;
+      if (!taskId) {
+        res.status(400).json({ success: false, error: "Task ID is required" });
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+
+      const response = await taskService.getPartnerLocation(taskId, req.user);
+      const taskServiceResponse = response.data as any;
+      const payload = taskServiceResponse?.data ?? taskServiceResponse;
+      res.status(response.status).json({
+        success: true,
+        code: response.status,
+        message: taskServiceResponse?.message || "Partner location retrieved",
+        data: payload,
+      });
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getPartnerLocation");
+    }
+  }
+
   async getMyApplicationForTask(
     req: Request,
     res: Response,
@@ -737,9 +826,7 @@ export class TaskController {
       const taskServiceResponse = response.data as any;
       const payload =
         taskServiceResponse?.data ??
-        (taskServiceResponse?.expiresAt != null || taskServiceResponse?.sentTo != null
-          ? taskServiceResponse
-          : null) ??
+        (taskServiceResponse?.sentTo != null ? taskServiceResponse : null) ??
         taskServiceResponse;
       res.status(response.status).json({
         success: true,
@@ -778,9 +865,7 @@ export class TaskController {
       const taskServiceResponse = response.data as any;
       const payload =
         taskServiceResponse?.data ??
-        (taskServiceResponse?.expiresAt != null || taskServiceResponse?.sentTo != null
-          ? taskServiceResponse
-          : null) ??
+        (taskServiceResponse?.sentTo != null ? taskServiceResponse : null) ??
         taskServiceResponse;
       res.status(response.status).json({
         success: true,

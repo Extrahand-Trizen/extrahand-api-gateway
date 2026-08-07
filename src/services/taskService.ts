@@ -99,6 +99,35 @@ export class TaskService extends BaseService {
     );
   }
 
+  /** Helper pushes a live location point (REST fallback channel). */
+  async postHelperLocation(
+    taskId: string,
+    body: { lat: number; lng: number; timestamp: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.post(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/helper-location`,
+        body,
+        config
+      )
+    );
+  }
+
+  /** Customer-side poll: last Redis-cached partner location for a task. */
+  async getPartnerLocation(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+
+    return this.handleRequest(() =>
+      this.client.get(`/api/v1/tasks/${encodeURIComponent(taskId)}/partner-location`, config)
+    );
+  }
+
   async getMyApplicationForTask(
     taskId: string,
     userToken: UserToken
@@ -491,13 +520,13 @@ export class TaskService extends BaseService {
   async sendStartOtp(
     taskId: string,
     userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
+  ): Promise<AxiosResponse<ApiResponse<{ sentTo: string }>>> {
     const config = withLocalTestHeader(
       this.addServiceAuth(this.forwardUserAuth(userToken)),
     );
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
+      this.client.post<ApiResponse<{ sentTo: string }>>(
         `/api/v1/tasks/${taskId}/start-otp/send`,
         {},
         config
@@ -508,13 +537,13 @@ export class TaskService extends BaseService {
   async resendStartOtp(
     taskId: string,
     userToken: UserToken
-  ): Promise<AxiosResponse<ApiResponse<{ expiresAt: string; sentTo: string }>>> {
+  ): Promise<AxiosResponse<ApiResponse<{ sentTo: string }>>> {
     const config = withLocalTestHeader(
       this.addServiceAuth(this.forwardUserAuth(userToken)),
     );
 
     return this.handleRequest(() =>
-      this.client.post<ApiResponse<{ expiresAt: string; sentTo: string }>>(
+      this.client.post<ApiResponse<{ sentTo: string }>>(
         `/api/v1/tasks/${taskId}/start-otp/resend`,
         {},
         config
@@ -547,7 +576,6 @@ export class TaskService extends BaseService {
     AxiosResponse<
       ApiResponse<{
         otp: string | null;
-        expiresAt: string | null;
         executionPhase: string | null;
       }>
     >
@@ -560,7 +588,6 @@ export class TaskService extends BaseService {
       this.client.get<
         ApiResponse<{
           otp: string | null;
-          expiresAt: string | null;
           executionPhase: string | null;
         }>
       >(`/api/v1/tasks/${taskId}/start-otp`, config)

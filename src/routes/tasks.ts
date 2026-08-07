@@ -54,6 +54,18 @@ router.get(
   authMiddleware,
   taskController.getTrackingBundle.bind(taskController)
 );
+// Helper pushes live location (REST fallback channel) — must come before /:taskId
+router.post(
+  "/:taskId/helper-location",
+  authMiddleware,
+  taskController.reportHelperLocation.bind(taskController)
+);
+// Customer-side poll fallback: last Redis-cached partner location — before /:taskId
+router.get(
+  "/:taskId/partner-location",
+  authMiddleware,
+  taskController.getPartnerLocation.bind(taskController)
+);
 router.get(
   "/:taskId/my-application",
   authMiddleware,
