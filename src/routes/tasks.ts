@@ -72,6 +72,24 @@ router.get(
   taskController.getMyApplicationForTask.bind(taskController)
 );
 
+router.get(
+  "/:taskId/reschedule/eligibility",
+  authMiddleware,
+  taskController.getRescheduleEligibility.bind(taskController)
+);
+
+router.get(
+  "/:taskId/reschedule/slots",
+  authMiddleware,
+  taskController.getRescheduleSlots.bind(taskController)
+);
+
+router.post(
+  "/:taskId/reschedule",
+  authMiddleware,
+  taskController.rescheduleTask.bind(taskController)
+);
+
 // Task status and completion routes (must come before /:taskId route) - require authentication
 router.patch(
   "/:taskId/status",
