@@ -120,4 +120,51 @@ router.patch(
   },
 );
 
+/**
+ * POST /api/v1/book-now/tasks/:id/confirm-assignment
+ * Proxy: task-service /api/v1/book-now/tasks/:id/confirm-assignment
+ *
+ * Partner confirms acknowledgement of their auto-assigned Book Now lead.
+ */
+router.post(
+  '/tasks/:id/confirm-assignment',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userToken = req.user as UserToken;
+
+      logger.info('✅ [BookNow] Partner confirming assignment', {
+        taskId: id,
+        profileId: userToken?.profileId,
+      });
+
+      const response = await taskService.confirmBookNowLead(id, userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.confirmAssignment');
+    }
+  },
+);
+
+/**
+ * GET /api/v1/book-now/cancellation-pass-status
+ * Proxy: task-service /api/v1/book-now/cancellation-pass-status
+ *
+ * Returns the partner's current month cancellation pass status.
+ */
+router.get(
+  '/cancellation-pass-status',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const userToken = req.user as UserToken;
+      const response = await taskService.getCancellationPassStatus(userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.getCancellationPassStatus');
+    }
+  },
+);
+
 export default router;

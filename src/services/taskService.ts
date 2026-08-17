@@ -1457,6 +1457,37 @@ export class TaskService extends BaseService {
       )
     );
   }
+
+  /**
+   * POST /api/v1/book-now/tasks/:id/confirm-assignment
+   * Partner confirms acknowledgement of their auto-assigned Book Now lead.
+   */
+  async confirmBookNowLead(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-now/tasks/${encodeURIComponent(taskId)}/confirm-assignment`,
+        {},
+        config
+      )
+    );
+  }
+
+  /**
+   * GET /api/v1/book-now/cancellation-pass-status
+   * Returns the partner's current month cancellation pass status.
+   */
+  async getCancellationPassStatus(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/book-now/cancellation-pass-status', config)
+    );
+  }
 }
 
 export const taskService = new TaskService();
