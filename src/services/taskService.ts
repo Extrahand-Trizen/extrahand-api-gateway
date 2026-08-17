@@ -171,6 +171,48 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getTaskRescheduleEligibility(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/reschedule/eligibility`,
+        config
+      )
+    );
+  }
+
+  async getTaskRescheduleSlots(
+    taskId: string,
+    params: { date?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params }));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/reschedule/slots`,
+        config
+      )
+    );
+  }
+
+  async rescheduleTaskVisit(
+    taskId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/reschedule`,
+        body,
+        config
+      )
+    );
+  }
+
   async deleteTask(
     taskId: string,
     userToken: UserToken
@@ -1314,6 +1356,48 @@ export class TaskService extends BaseService {
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/bookings/${encodeURIComponent(orderId)}`,
+        config
+      )
+    );
+  }
+
+  async getBookingRescheduleEligibility(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/reschedule/eligibility`,
+        config
+      )
+    );
+  }
+
+  async getBookingRescheduleSlots(
+    orderId: string,
+    params: { date?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params }));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/reschedule/slots`,
+        config
+      )
+    );
+  }
+
+  async rescheduleBookingOrder(
+    orderId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/bookings/${encodeURIComponent(orderId)}/reschedule`,
+        body,
         config
       )
     );

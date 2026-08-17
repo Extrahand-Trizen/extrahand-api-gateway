@@ -16,6 +16,21 @@ router.get(
   authMiddleware,
   bookingController.getBookingOrderIdForTask.bind(bookingController),
 );
+router.get(
+  '/:orderId/reschedule/eligibility',
+  authMiddleware,
+  bookingController.getRescheduleEligibility.bind(bookingController),
+);
+router.get(
+  '/:orderId/reschedule/slots',
+  authMiddleware,
+  bookingController.getRescheduleSlots.bind(bookingController),
+);
+router.post(
+  '/:orderId/reschedule',
+  authMiddleware,
+  bookingController.rescheduleBooking.bind(bookingController),
+);
 router.get('/:orderId', authMiddleware, bookingController.getBooking.bind(bookingController));
 router.post(
   '/:orderId/abandon',

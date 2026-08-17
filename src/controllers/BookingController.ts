@@ -134,6 +134,80 @@ export class BookingController {
     }
   }
 
+  async getRescheduleEligibility(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookingRescheduleEligibility(
+        req.params.orderId,
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.getRescheduleEligibility');
+    }
+  }
+
+  async getRescheduleSlots(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookingRescheduleSlots(
+        req.params.orderId,
+        { date: String(req.query.date || '') },
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.getRescheduleSlots');
+    }
+  }
+
+  async rescheduleBooking(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.rescheduleBookingOrder(
+        req.params.orderId,
+        req.body,
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.rescheduleBooking');
+    }
+  }
+
   async cancelBookingItem(
     req: Request,
     res: Response,
