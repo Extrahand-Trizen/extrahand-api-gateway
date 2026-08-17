@@ -372,6 +372,134 @@ export class TaskController {
     }
   }
 
+  async getConsultationFlow(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.getConsultationFlow(req.params.taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.getConsultationFlow");
+    }
+  }
+
+  async submitConsultationAssessment(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.submitConsultationAssessment(
+        req.params.taskId,
+        req.body || {},
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.submitConsultationAssessment");
+    }
+  }
+
+  async createConsultationQuotation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.createConsultationQuotation(
+        req.params.taskId,
+        req.body || {},
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.createConsultationQuotation");
+    }
+  }
+
+  async acceptConsultationQuotation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.acceptConsultationQuotation(
+        req.params.taskId,
+        req.params.quotationId,
+        req.body || {},
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.acceptConsultationQuotation");
+    }
+  }
+
+  async rejectConsultationQuotation(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: "Authentication required" });
+        return;
+      }
+
+      res.setHeader("X-Served-By", "api-gateway");
+      res.setHeader("X-Target-Service", "task-service");
+      res.setHeader("X-Gateway-Request-ID", req.requestId || "");
+
+      const response = await taskService.rejectConsultationQuotation(
+        req.params.taskId,
+        req.params.quotationId,
+        req.body || {},
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, "TaskController.rejectConsultationQuotation");
+    }
+  }
+
   async deleteTask(
     req: Request,
     res: Response,
