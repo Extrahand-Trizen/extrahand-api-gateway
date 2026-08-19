@@ -35,5 +35,11 @@ router.get(
   AdminController.getImportDetails
 );
 
+router.post(
+  '/customer-campaigns/whatsapp',
+  requireRole('super_admin'),
+  AdminController.sendPromotionalWhatsAppCampaign
+);
+
 export default router;
 

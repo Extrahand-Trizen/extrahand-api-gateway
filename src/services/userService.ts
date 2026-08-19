@@ -1041,6 +1041,30 @@ export class UserService extends BaseService {
       }>>("/api/v1/profiles/me/stats/recalculate", {}, config)
     );
   }
+
+  async sendPromotionalWhatsAppCampaign(
+    payload: {
+      templateKey: string;
+      createdFrom?: string;
+      createdTo?: string;
+      cursor?: string;
+      limit?: number;
+      dryRun?: boolean;
+      preferenceCategory?: "marketing" | "promotions";
+      uids?: string[];
+    },
+    adminToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/users/customers/promotional-campaigns/whatsapp",
+        payload,
+        config
+      )
+    );
+  }
 }
 
 export const userService = new UserService();

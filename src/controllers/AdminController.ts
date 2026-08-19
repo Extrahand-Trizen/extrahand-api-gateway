@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { adminService } from "../services/adminService.js";
+import { userService } from "../services/userService.js";
 // import multer from "multer";
 
 // const upload = multer({ storage: multer.memoryStorage() });
@@ -78,6 +79,23 @@ export class AdminController {
       const { importId } = req.params;
       const response = await adminService.getImportDetails(
         importId,
+        adminToken
+      );
+      res.json(response.data);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  static async sendPromotionalWhatsAppCampaign(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const adminToken = (req as any).adminToken;
+      const response = await userService.sendPromotionalWhatsAppCampaign(
+        req.body || {},
         adminToken
       );
       res.json(response.data);
