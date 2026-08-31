@@ -37,6 +37,7 @@ import inquiriesRouter from './routes/inquiries.js';
 import catalogRouter from './routes/catalog.js';
 import bookingsRouter from './routes/bookings.js';
 import bookNowRouter from './routes/bookNow.js';
+import quickCommerceRouter from './routes/quickCommerce.js';
 
 const env = validateEnv();
 const app: Express = express();
@@ -115,6 +116,7 @@ const healthCheckHandler = (_req: Request, res: Response) => {
       verificationService: env.VERIFICATION_SERVICE_URL,
       paymentService: env.PAYMENT_SERVICE_URL,
       notificationService: env.NOTIFICATION_SERVICE_URL,
+      quickCommerceService: env.QUICK_COMMERCE_SERVICE_URL,
     },
     message: 'This is the API Gateway - requests are routed to microservices',
   });
@@ -166,6 +168,7 @@ app.use('/api/v1/inquiries', inquiriesRouter);
 app.use('/api/v1/catalog', catalogRouter);
 app.use('/api/v1/bookings', bookingsRouter);
 app.use('/api/v1/book-now', bookNowRouter);
+app.use('/api/v1/qc', quickCommerceRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
