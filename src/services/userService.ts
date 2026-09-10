@@ -426,7 +426,7 @@ export class UserService extends BaseService {
       otp?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
-      authChannel?: "customer_app" | "helper_app";
+      authChannel?: "customer_app" | "helper_app" | "seller_app";
     }
   ): Promise<
     AxiosResponse<
@@ -486,7 +486,7 @@ export class UserService extends BaseService {
       deviceId?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
-      authChannel?: "customer_app" | "helper_app";
+      authChannel?: "customer_app" | "helper_app" | "seller_app";
     }
   ): Promise<
     AxiosResponse<
@@ -1039,6 +1039,30 @@ export class UserService extends BaseService {
         totalReviews: number;
         rating: number;
       }>>("/api/v1/profiles/me/stats/recalculate", {}, config)
+    );
+  }
+
+  async sendPromotionalWhatsAppCampaign(
+    payload: {
+      templateKey: string;
+      createdFrom?: string;
+      createdTo?: string;
+      cursor?: string;
+      limit?: number;
+      dryRun?: boolean;
+      preferenceCategory?: "marketing" | "promotions";
+      uids?: string[];
+    },
+    adminToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(adminToken));
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/users/customers/promotional-campaigns/whatsapp",
+        payload,
+        config
+      )
     );
   }
 }

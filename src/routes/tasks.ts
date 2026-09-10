@@ -90,6 +90,60 @@ router.post(
   taskController.rescheduleTask.bind(taskController)
 );
 
+router.get(
+  "/:taskId/consultation-flow",
+  authMiddleware,
+  taskController.getConsultationFlow.bind(taskController)
+);
+
+router.post(
+  "/:taskId/consultation/assessment",
+  authMiddleware,
+  taskController.submitConsultationAssessment.bind(taskController)
+);
+
+router.post(
+  "/:taskId/consultation/quotation",
+  authMiddleware,
+  taskController.createConsultationQuotation.bind(taskController)
+);
+
+router.post(
+  "/:taskId/consultation/quotation/:quotationId/accept",
+  authMiddleware,
+  taskController.acceptConsultationQuotation.bind(taskController)
+);
+
+router.post(
+  "/:taskId/consultation/quotation/:quotationId/reject",
+  authMiddleware,
+  taskController.rejectConsultationQuotation.bind(taskController)
+);
+
+router.get(
+  "/:taskId/project-execution",
+  authMiddleware,
+  taskController.getProjectExecution.bind(taskController)
+);
+
+router.post(
+  "/:taskId/project-execution/start-day",
+  authMiddleware,
+  taskController.startProjectDay.bind(taskController)
+);
+
+router.post(
+  "/:taskId/project-execution/complete-day",
+  authMiddleware,
+  taskController.completeProjectDay.bind(taskController)
+);
+
+router.post(
+  "/:taskId/project-execution/complete",
+  authMiddleware,
+  taskController.completeProjectExecution.bind(taskController)
+);
+
 // Task status and completion routes (must come before /:taskId route) - require authentication
 router.patch(
   "/:taskId/status",

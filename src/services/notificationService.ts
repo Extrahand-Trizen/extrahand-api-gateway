@@ -38,7 +38,7 @@ export class NotificationService extends BaseService {
 
   async getInAppNotifications(
     userToken: UserToken,
-    options: { limit?: number; skip?: number; unreadOnly?: boolean; role?: 'helper' | 'partner' } = {}
+    options: { limit?: number; skip?: number; unreadOnly?: boolean; role?: 'helper' | 'partner' | 'seller' } = {}
   ): Promise<AxiosResponse<ApiResponse>> {
     const { limit = 50, skip = 0, unreadOnly = false, role } = options;
 
@@ -60,7 +60,7 @@ export class NotificationService extends BaseService {
 
   async getUnreadInAppCount(
     userToken: UserToken,
-    role?: 'helper' | 'partner'
+    role?: 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -77,7 +77,7 @@ export class NotificationService extends BaseService {
 
   async markAllInAppRead(
     userToken: UserToken,
-    role?: 'helper' | 'partner'
+    role?: 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -130,7 +130,7 @@ export class NotificationService extends BaseService {
 
   async clearAllInAppNotifications(
     userToken: UserToken,
-    role?: 'helper' | 'partner'
+    role?: 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {

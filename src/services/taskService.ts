@@ -213,6 +213,139 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getConsultationFlow(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/consultation-flow`,
+        config
+      )
+    );
+  }
+
+  async submitConsultationAssessment(
+    taskId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/consultation/assessment`,
+        body,
+        config
+      )
+    );
+  }
+
+  async createConsultationQuotation(
+    taskId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/consultation/quotation`,
+        body,
+        config
+      )
+    );
+  }
+
+  async acceptConsultationQuotation(
+    taskId: string,
+    quotationId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/consultation/quotation/${encodeURIComponent(quotationId)}/accept`,
+        body,
+        config
+      )
+    );
+  }
+
+  async rejectConsultationQuotation(
+    taskId: string,
+    quotationId: string,
+    body: Record<string, unknown>,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/consultation/quotation/${encodeURIComponent(quotationId)}/reject`,
+        body,
+        config
+      )
+    );
+  }
+
+  async getProjectExecution(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/project-execution`,
+        config
+      )
+    );
+  }
+
+  async startProjectDay(
+    taskId: string,
+    dayNumber: number,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/project-execution/start-day`,
+        { dayNumber },
+        config
+      )
+    );
+  }
+
+  async completeProjectDay(
+    taskId: string,
+    body: { dayNumber: number; notes?: string; proofUrls?: string[] },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/project-execution/complete-day`,
+        body,
+        config
+      )
+    );
+  }
+
+  async completeProjectExecution(
+    taskId: string,
+    body: { proofUrls: string[]; notes?: string; endedEarly?: boolean },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/project-execution/complete`,
+        body,
+        config
+      )
+    );
+  }
+
   async deleteTask(
     taskId: string,
     userToken: UserToken
