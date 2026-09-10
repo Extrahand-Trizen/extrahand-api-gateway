@@ -44,6 +44,60 @@ router.get(
 );
 
 /**
+ * GET /api/v1/book-now/available-qc-orders
+ * Proxy: task-service /api/v1/book-now/available-qc-orders
+ * Returns unassigned Quick Commerce orders within 3 km of partner.
+ */
+router.get(
+  '/available-qc-orders',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const userToken = req.user as UserToken;
+      const params: Record<string, any> = {};
+      if (req.query.lat) params.lat = parseFloat(String(req.query.lat));
+      if (req.query.lng) params.lng = parseFloat(String(req.query.lng));
+
+      logger.info('📦 [BookNow] Fetching available Quick Commerce orders for partner', {
+        profileId: userToken?.profileId,
+        params,
+      });
+
+      const response = await taskService.getAvailableQcOrders(params, userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.getAvailableQcOrders');
+    }
+  },
+);
+
+/**
+ * POST /api/v1/book-now/qc-orders/:id/apply
+ * Proxy: task-service /api/v1/book-now/qc-orders/:id/apply
+ * Atomically claims an available Quick Commerce order for the partner.
+ */
+router.post(
+  '/qc-orders/:id/apply',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userToken = req.user as UserToken;
+
+      logger.info('🤝 [BookNow] Partner applying for Quick Commerce order', {
+        orderId: id,
+        profileId: userToken?.profileId,
+      });
+
+      const response = await taskService.applyQcOrder(id, userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.applyQcOrder');
+    }
+  },
+);
+
+/**
  * POST /api/v1/book-now/tasks/:id/partner-accept
  * Proxy: task-service /api/v1/book-now/tasks/:id/partner-accept
  *

@@ -1626,6 +1626,40 @@ export class TaskService extends BaseService {
   }
 
   /**
+   * GET /api/v1/book-now/available-qc-orders
+   * Returns unassigned Quick Commerce orders within 3 km of partner.
+   */
+  async getAvailableQcOrders(
+    params: { lat?: number; lng?: number },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/book-now/available-qc-orders', config)
+    );
+  }
+
+  /**
+   * POST /api/v1/book-now/qc-orders/:id/apply
+   * Atomically claims an available Quick Commerce order for the partner.
+   */
+  async applyQcOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-now/qc-orders/${encodeURIComponent(orderId)}/apply`,
+        {},
+        config
+      )
+    );
+  }
+
+  /**
    * POST /api/v1/book-now/tasks/:id/partner-accept
    * Atomically assigns the task to the authenticated partner.
    */
