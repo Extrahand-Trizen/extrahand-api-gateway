@@ -98,6 +98,32 @@ router.post(
 );
 
 /**
+ * POST /api/v1/book-now/qc-orders/:id/complete
+ * Proxy: task-service /api/v1/book-now/qc-orders/:id/complete
+ * Partner marks a Quick Commerce order as delivered and triggers payout.
+ */
+router.post(
+  '/qc-orders/:id/complete',
+  authMiddleware,
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userToken = req.user as UserToken;
+
+      logger.info('✅ [BookNow] Partner completing Quick Commerce order', {
+        orderId: id,
+        profileId: userToken?.profileId,
+      });
+
+      const response = await taskService.completeQcOrder(id, userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.completeQcOrder');
+    }
+  },
+);
+
+/**
  * POST /api/v1/book-now/tasks/:id/partner-accept
  * Proxy: task-service /api/v1/book-now/tasks/:id/partner-accept
  *

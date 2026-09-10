@@ -1660,6 +1660,24 @@ export class TaskService extends BaseService {
   }
 
   /**
+   * POST /api/v1/book-now/qc-orders/:id/complete
+   * Partner marks a Quick Commerce order as delivered and triggers payout.
+   */
+  async completeQcOrder(
+    orderId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-now/qc-orders/${encodeURIComponent(orderId)}/complete`,
+        {},
+        config
+      )
+    );
+  }
+
+  /**
    * POST /api/v1/book-now/tasks/:id/partner-accept
    * Atomically assigns the task to the authenticated partner.
    */
