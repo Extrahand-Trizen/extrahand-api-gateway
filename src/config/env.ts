@@ -16,6 +16,7 @@ const envSchema = z.object({
   PAYMENT_SERVICE_URL: z.string().url(),
   NOTIFICATION_SERVICE_URL: z.string().url(),
   COUPON_SERVICE_URL: z.string().url().optional().default('http://localhost:4015'),
+   QCOMMERCE_SERVICE_URL: z.string().url().default('http://localhost:4010'),
    OLD_BACKEND_URL: z.string().url().optional(), // Optional - only needed for task-image uploads
    SERVICE_AUTH_TOKEN: z.string().min(1),
    ACCESS_TOKEN_SECRET: z

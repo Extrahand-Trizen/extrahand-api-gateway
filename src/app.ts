@@ -37,6 +37,7 @@ import inquiriesRouter from './routes/inquiries.js';
 import catalogRouter from './routes/catalog.js';
 import bookingsRouter from './routes/bookings.js';
 import bookNowRouter from './routes/bookNow.js';
+import quickCommercePartnerRouter from './routes/quickCommercePartner.js';
 
 const env = validateEnv();
 const app: Express = express();
@@ -166,6 +167,7 @@ app.use('/api/v1/inquiries', inquiriesRouter);
 app.use('/api/v1/catalog', catalogRouter);
 app.use('/api/v1/bookings', bookingsRouter);
 app.use('/api/v1/book-now', bookNowRouter);
+app.use('/api/v1/qc/partner', quickCommercePartnerRouter);
 
 // Fees route (public - no auth required)
 app.get('/api/v1/fees/structure', paymentController.getFeeStructure.bind(paymentController));
