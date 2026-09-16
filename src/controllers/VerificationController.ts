@@ -281,12 +281,19 @@ export class VerificationController {
         return;
       }
 
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📥 [API GATEWAY] Received PAN Verification Request');
+      console.log(`📍 User UID: ${req.user.uid}`);
+      console.log(`📍 PAN Number: ${panNumber ? (panNumber.substring(0, 2) + 'XXX' + panNumber.slice(-4)) : 'N/A'}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
       // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.verifyPAN(panNumber, req.user);
+      console.log(`✅ [API GATEWAY] Downstream Verification Service returned status ${response.status}`);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.verifyPAN');
