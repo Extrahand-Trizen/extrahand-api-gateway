@@ -17,6 +17,7 @@ const upload = multer({
 /**
  * Proxy all /api/v1/qc/* requests to Quick Commerce service.
  * Strips /qc prefix: /api/v1/qc/categories → /api/v1/categories
+ * Also covers assistant routes: /api/v1/qc/assistant/* → /api/v1/assistant/*
  *
  * Auth tokens are forwarded as-is:
  * - QC admin JWT for admin portal routes

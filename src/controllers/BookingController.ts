@@ -73,11 +73,20 @@ export class BookingController {
         return;
       }
 
+      // durationMinutes is optional — forwarded as-is so task-service can
+      // include per-slot partner capacity in the response.
+      const durationMinutes = req.query.durationMinutes
+        ? String(req.query.durationMinutes)
+        : undefined;
+      const area = req.query.area ? String(req.query.area) : undefined;
+      const lat = req.query.lat ? String(req.query.lat) : undefined;
+      const lng = req.query.lng ? String(req.query.lng) : undefined;
+
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.getBookNowSlotAvailability(
-        { date, city },
+        { date, city, durationMinutes, area, lat, lng },
         req.user,
       );
       res.status(response.status).json(response.data);

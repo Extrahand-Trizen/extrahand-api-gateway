@@ -1452,15 +1452,37 @@ export class TaskService extends BaseService {
   }
 
   async getBookNowSlotAvailability(
-    params: { date: string; city: string },
+    params: {
+      date: string;
+      city: string;
+      durationMinutes?: string;
+      area?: string;
+      lat?: string;
+      lng?: string;
+    },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const queryParams: Record<string, string> = {
+      date: params.date,
+      city: params.city,
+    };
+    if (params.durationMinutes) {
+      queryParams.durationMinutes = params.durationMinutes;
+    }
+    if (params.area) {
+      queryParams.area = params.area;
+    }
+    if (params.lat) {
+      queryParams.lat = params.lat;
+    }
+    if (params.lng) {
+      queryParams.lng = params.lng;
+    }
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
-        params: {
-          date: params.date,
-          city: params.city,
-        },
+        params: queryParams,
+        // Partner capacity scans profiles + tasks; allow up to 30s.
+        timeout: 30_000,
       })
     );
     return this.handleRequest(() =>
