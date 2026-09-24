@@ -121,12 +121,12 @@ export class PaymentController {
     }
   }
 
-  async getRazorpayKeyId(_req: Request, res: Response, _next: NextFunction): Promise<void> {
+  async getRazorpayKeyId(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getRazorpayKeyId();
+      const response = await paymentService.getRazorpayKeyId(req.user || null);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getRazorpayKeyId');
@@ -192,6 +192,8 @@ export class PaymentController {
           amount: Number(req.body?.amount),
           serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
           lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+          city: req.body?.city ? String(req.body.city) : undefined,
+          pinCode: req.body?.pinCode ? String(req.body.pinCode) : undefined,
           taskId: req.body?.taskId,
           applicationId: req.body?.applicationId,
         },
@@ -214,6 +216,8 @@ export class PaymentController {
           amount: Number(req.body?.amount),
           serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
           lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+          city: req.body?.city ? String(req.body.city) : undefined,
+          pinCode: req.body?.pinCode ? String(req.body.pinCode) : undefined,
         },
         req.user || null
       );

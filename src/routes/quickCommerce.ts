@@ -7,7 +7,10 @@ import logger from '../config/logger.js';
 
 const router = Router();
 const env = validateEnv();
-const QC_BASE = env.QUICK_COMMERCE_SERVICE_URL;
+const QC_BASE =
+  env.QUICK_COMMERCE_SERVICE_URL ||
+  env.QCOMMERCE_SERVICE_URL ||
+  'http://localhost:4010';
 
 const upload = multer({
   storage: multer.memoryStorage(),

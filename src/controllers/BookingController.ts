@@ -78,6 +78,7 @@ export class BookingController {
       const durationMinutes = req.query.durationMinutes
         ? String(req.query.durationMinutes)
         : undefined;
+      const availabilityMode = req.query.availabilityMode === 'hourly' ? 'hourly' : 'standard';
       const area = req.query.area ? String(req.query.area) : undefined;
       const lat = req.query.lat ? String(req.query.lat) : undefined;
       const lng = req.query.lng ? String(req.query.lng) : undefined;
@@ -86,7 +87,7 @@ export class BookingController {
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.getBookNowSlotAvailability(
-        { date, city, durationMinutes, area, lat, lng },
+        { date, city, durationMinutes, availabilityMode, area, lat, lng },
         req.user,
       );
       res.status(response.status).json(response.data);

@@ -5,6 +5,10 @@ import { validateEnv } from '../config/env.js';
 
 const router = Router();
 const env = validateEnv();
+const QC_BASE =
+  env.QUICK_COMMERCE_SERVICE_URL ||
+  env.QCOMMERCE_SERVICE_URL ||
+  'http://localhost:4010';
 
 async function proxyQcPartner(
   req: Request,
@@ -14,7 +18,7 @@ async function proxyQcPartner(
 ): Promise<void> {
   try {
     const response = await fetch(
-      `${env.QCOMMERCE_SERVICE_URL.replace(/\/$/, '')}/api/v1/partner${path}`,
+      `${QC_BASE.replace(/\/$/, '')}/api/v1/partner${path}`,
       {
         method: 'POST',
         headers: {

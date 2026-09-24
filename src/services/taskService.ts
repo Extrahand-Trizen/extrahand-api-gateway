@@ -1284,9 +1284,10 @@ export class TaskService extends BaseService {
 
   async getCatalogCategory(
     slug: string,
-    userToken?: UserToken | null
+    userToken?: UserToken | null,
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params: location }));
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/catalog/categories/${encodeURIComponent(slug)}`,
@@ -1456,6 +1457,7 @@ export class TaskService extends BaseService {
       date: string;
       city: string;
       durationMinutes?: string;
+      availabilityMode?: 'hourly' | 'standard';
       area?: string;
       lat?: string;
       lng?: string;
@@ -1469,6 +1471,7 @@ export class TaskService extends BaseService {
     if (params.durationMinutes) {
       queryParams.durationMinutes = params.durationMinutes;
     }
+    queryParams.availabilityMode = params.availabilityMode || 'standard';
     if (params.area) {
       queryParams.area = params.area;
     }

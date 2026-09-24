@@ -31,6 +31,13 @@ export class CatalogController {
       const response = await taskService.getCatalogCategory(
         req.params.slug,
         req.user ?? null,
+        {
+          area: typeof req.query.area === 'string' ? req.query.area : undefined,
+          city: typeof req.query.city === 'string' ? req.query.city : undefined,
+          state: typeof req.query.state === 'string' ? req.query.state : undefined,
+          pinCode: typeof req.query.pinCode === 'string' ? req.query.pinCode : undefined,
+          coordinates: typeof req.query.coordinates === 'string' ? req.query.coordinates : undefined,
+        },
       );
       res.status(response.status).json(response.data);
     } catch (error) {

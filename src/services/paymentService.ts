@@ -584,9 +584,10 @@ export class PaymentService extends BaseService {
    * Razorpay publishable Key ID for client checkout (same payload as web /api/razorpay-key).
    * Public on payment service — no service or user auth.
    */
-  async getRazorpayKeyId(): Promise<AxiosResponse<{ keyId: string }>> {
+  async getRazorpayKeyId(userToken: UserToken | null): Promise<AxiosResponse<{ keyId: string }>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
     return this.handleRequest(() =>
-      this.client.get('/api/v1/payment/razorpay-key')
+      this.client.get('/api/v1/payment/razorpay-key', config)
     );
   }
 
@@ -628,7 +629,14 @@ export class PaymentService extends BaseService {
       flowType: string;
       amount: number;
       serviceIds?: string[];
-      lineItems?: Array<{ serviceId: string; amount: number }>;
+        lineItems?: Array<{
+          serviceId: string;
+          amount: number;
+          skuSlug?: string;
+          categorySlug?: string;
+        }>;
+        city?: string;
+        pinCode?: string;
       taskId?: string;
       applicationId?: string;
     },
@@ -647,7 +655,14 @@ export class PaymentService extends BaseService {
       flowType: string;
       amount: number;
       serviceIds?: string[];
-      lineItems?: Array<{ serviceId: string; amount: number }>;
+      lineItems?: Array<{
+        serviceId: string;
+        amount: number;
+        skuSlug?: string;
+        categorySlug?: string;
+      }>;
+      city?: string;
+      pinCode?: string;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
