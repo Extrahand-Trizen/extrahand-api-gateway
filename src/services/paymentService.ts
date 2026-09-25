@@ -35,6 +35,7 @@ export class PaymentService extends BaseService {
     orderId: string,
     paymentId: string,
     signature: string,
+    paymentEnvironment: 'live' | 'test' | undefined,
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
@@ -45,7 +46,8 @@ export class PaymentService extends BaseService {
       this.client.post('/api/v1/payment/verify-payment', {
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
-        razorpay_signature: signature
+        razorpay_signature: signature,
+        ...(paymentEnvironment ? { payment_environment: paymentEnvironment } : {}),
       }, config)
     );
   }

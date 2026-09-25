@@ -42,6 +42,7 @@ import quickCommerceRouter from './routes/quickCommerce.js';
 
 const env = validateEnv();
 const app: Express = express();
+app.disable('etag');
 
 // Trust proxy
 app.set("trust proxy", 1);
