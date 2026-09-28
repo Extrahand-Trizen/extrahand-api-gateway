@@ -19,12 +19,11 @@ FROM base AS dependencies
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install production dependencies only
-RUN if [ -f package-lock.json ]; then \
-      npm ci --omit=dev && npm cache clean --force; \
-    else \
-      npm install --omit=dev && npm cache clean --force; \
-    fi
+# Install production dependencies only.
+# Use npm install instead of npm ci here because package-lock may be stale in a
+# deployment branch or a partial repo state; this keeps the container build
+# resilient while still producing a valid node_modules tree.
+RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 
 # Build stage
 FROM base AS build
@@ -35,12 +34,8 @@ ARG CACHE_BUST=1
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install all dependencies (including dev dependencies for TypeScript)
-RUN if [ -f package-lock.json ]; then \
-      npm ci; \
-    else \
-      npm install; \
-    fi
+# Install all dependencies needed by the TypeScript build.
+RUN npm install --no-audit --no-fund
 
 # Copy TypeScript configuration
 COPY tsconfig.json ./
