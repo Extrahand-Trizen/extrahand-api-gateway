@@ -12,6 +12,11 @@ router.get(
   bookingController.getSlotAvailability.bind(bookingController),
 );
 router.get(
+  '/hourly-helper-availability',
+  authMiddleware,
+  bookingController.getHourlyHelperAvailability.bind(bookingController),
+);
+router.get(
   '/by-task/:taskId',
   authMiddleware,
   bookingController.getBookingOrderIdForTask.bind(bookingController),
