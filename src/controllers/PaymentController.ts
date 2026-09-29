@@ -10,6 +10,11 @@ export class PaymentController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
+      console.log('[PAYMENT DEBUG] Gateway forwarding create-order', {
+        uidPresent: Boolean(req.user?.uid),
+        amount,
+      });
+
       const response = await paymentService.createOrder(
         amount,
         currency || 'INR',
@@ -24,15 +29,29 @@ export class PaymentController {
 
   async verifyPayment(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        payment_environment,
+      } = req.body;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
+
+      console.log('[PAYMENT DEBUG] Gateway forwarding verify-payment', {
+        uidPresent: Boolean(req.user?.uid),
+        paymentEnvironment: payment_environment || 'not_provided',
+        orderIdPresent: Boolean(razorpay_order_id),
+        paymentIdPresent: Boolean(razorpay_payment_id),
+        signaturePresent: Boolean(razorpay_signature),
+      });
 
       const response = await paymentService.verifyPayment(
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
+        payment_environment,
         req.user || null
       );
       res.status(response.status).json(response.data);
@@ -121,12 +140,12 @@ export class PaymentController {
     }
   }
 
-  async getRazorpayKeyId(_req: Request, res: Response, _next: NextFunction): Promise<void> {
+  async getRazorpayKeyId(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
 
-      const response = await paymentService.getRazorpayKeyId();
+      const response = await paymentService.getRazorpayKeyId(req.user || null);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PaymentController.getRazorpayKeyId');
@@ -192,6 +211,8 @@ export class PaymentController {
           amount: Number(req.body?.amount),
           serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
           lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+          city: req.body?.city ? String(req.body.city) : undefined,
+          pinCode: req.body?.pinCode ? String(req.body.pinCode) : undefined,
           taskId: req.body?.taskId,
           applicationId: req.body?.applicationId,
         },
@@ -214,6 +235,8 @@ export class PaymentController {
           amount: Number(req.body?.amount),
           serviceIds: Array.isArray(req.body?.serviceIds) ? req.body.serviceIds : [],
           lineItems: Array.isArray(req.body?.lineItems) ? req.body.lineItems : [],
+          city: req.body?.city ? String(req.body.city) : undefined,
+          pinCode: req.body?.pinCode ? String(req.body.pinCode) : undefined,
         },
         req.user || null
       );

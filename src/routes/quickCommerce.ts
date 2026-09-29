@@ -7,7 +7,10 @@ import logger from '../config/logger.js';
 
 const router = Router();
 const env = validateEnv();
-const QC_BASE = env.QUICK_COMMERCE_SERVICE_URL;
+const QC_BASE =
+  env.QUICK_COMMERCE_SERVICE_URL ||
+  env.QCOMMERCE_SERVICE_URL ||
+  'http://localhost:4010';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -17,6 +20,7 @@ const upload = multer({
 /**
  * Proxy all /api/v1/qc/* requests to Quick Commerce service.
  * Strips /qc prefix: /api/v1/qc/categories → /api/v1/categories
+ * Also covers assistant routes: /api/v1/qc/assistant/* → /api/v1/assistant/*
  *
  * Auth tokens are forwarded as-is:
  * - QC admin JWT for admin portal routes

@@ -41,6 +41,8 @@ router.post('/pan/verify', verificationController.verifyPAN.bind(verificationCon
 
 // Verify driving license
 router.post('/driving-license/verify', verificationController.verifyDrivingLicense.bind(verificationController));
+// Verify GSTIN
+router.post('/gstin/verify', verificationController.verifyGSTIN.bind(verificationController));
 
 // Verify Bank Account
 router.post('/bank/verify', verificationController.verifyBankAccount.bind(verificationController));

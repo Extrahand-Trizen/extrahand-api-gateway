@@ -35,6 +35,7 @@ export class PaymentService extends BaseService {
     orderId: string,
     paymentId: string,
     signature: string,
+    paymentEnvironment: 'live' | 'test' | undefined,
     userToken: UserToken | null
   ): Promise<AxiosResponse> {
     const config = this.addServiceAuth(
@@ -45,7 +46,8 @@ export class PaymentService extends BaseService {
       this.client.post('/api/v1/payment/verify-payment', {
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
-        razorpay_signature: signature
+        razorpay_signature: signature,
+        ...(paymentEnvironment ? { payment_environment: paymentEnvironment } : {}),
       }, config)
     );
   }
@@ -584,9 +586,10 @@ export class PaymentService extends BaseService {
    * Razorpay publishable Key ID for client checkout (same payload as web /api/razorpay-key).
    * Public on payment service — no service or user auth.
    */
-  async getRazorpayKeyId(): Promise<AxiosResponse<{ keyId: string }>> {
+  async getRazorpayKeyId(userToken: UserToken | null): Promise<AxiosResponse<{ keyId: string }>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
     return this.handleRequest(() =>
-      this.client.get('/api/v1/payment/razorpay-key')
+      this.client.get('/api/v1/payment/razorpay-key', config)
     );
   }
 
@@ -628,7 +631,14 @@ export class PaymentService extends BaseService {
       flowType: string;
       amount: number;
       serviceIds?: string[];
-      lineItems?: Array<{ serviceId: string; amount: number }>;
+        lineItems?: Array<{
+          serviceId: string;
+          amount: number;
+          skuSlug?: string;
+          categorySlug?: string;
+        }>;
+        city?: string;
+        pinCode?: string;
       taskId?: string;
       applicationId?: string;
     },
@@ -647,7 +657,14 @@ export class PaymentService extends BaseService {
       flowType: string;
       amount: number;
       serviceIds?: string[];
-      lineItems?: Array<{ serviceId: string; amount: number }>;
+      lineItems?: Array<{
+        serviceId: string;
+        amount: number;
+        skuSlug?: string;
+        categorySlug?: string;
+      }>;
+      city?: string;
+      pinCode?: string;
     },
     userToken: UserToken | null
   ): Promise<AxiosResponse> {

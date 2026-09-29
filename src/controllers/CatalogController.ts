@@ -31,10 +31,43 @@ export class CatalogController {
       const response = await taskService.getCatalogCategory(
         req.params.slug,
         req.user ?? null,
+        {
+          area: typeof req.query.area === 'string' ? req.query.area : undefined,
+          city: typeof req.query.city === 'string' ? req.query.city : undefined,
+          state: typeof req.query.state === 'string' ? req.query.state : undefined,
+          pinCode: typeof req.query.pinCode === 'string' ? req.query.pinCode : undefined,
+          coordinates: typeof req.query.coordinates === 'string' ? req.query.coordinates : undefined,
+        },
       );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.getCategory');
+    }
+  }
+
+  async getHourlyHelperSkusByCategoryId(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getHourlyHelperSkusByCategoryId(
+        typeof req.query.categoryId === 'string' ? req.query.categoryId : undefined,
+        req.user ?? null,
+        {
+          area: typeof req.query.area === 'string' ? req.query.area : undefined,
+          city: typeof req.query.city === 'string' ? req.query.city : undefined,
+          state: typeof req.query.state === 'string' ? req.query.state : undefined,
+          pinCode: typeof req.query.pinCode === 'string' ? req.query.pinCode : undefined,
+          coordinates: typeof req.query.coordinates === 'string' ? req.query.coordinates : undefined,
+        },
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getHourlyHelperSkusByCategoryId');
     }
   }
 

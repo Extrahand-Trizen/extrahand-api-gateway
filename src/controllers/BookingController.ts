@@ -73,16 +73,56 @@ export class BookingController {
         return;
       }
 
+      // durationMinutes is optional — forwarded as-is so task-service can
+      // include per-slot partner capacity in the response.
+      const durationMinutes = req.query.durationMinutes
+        ? String(req.query.durationMinutes)
+        : undefined;
+      const availabilityMode = req.query.availabilityMode === 'hourly' ? 'hourly' : 'standard';
+      const area = req.query.area ? String(req.query.area) : undefined;
+      const lat = req.query.lat ? String(req.query.lat) : undefined;
+      const lng = req.query.lng ? String(req.query.lng) : undefined;
+      const preferredHelperGender = req.query.preferredHelperGender
+        ? String(req.query.preferredHelperGender)
+        : undefined;
+
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.getBookNowSlotAvailability(
-        { date, city },
+        { date, city, durationMinutes, availabilityMode, area, lat, lng, preferredHelperGender },
         req.user,
       );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'BookingController.getSlotAvailability');
+    }
+  }
+
+  async getHourlyHelperAvailability(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const area = String(req.query.area || '').trim();
+      if (!area) {
+        res.status(400).json({ success: false, error: 'area is required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getHourlyHelperAvailability(area, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookingController.getHourlyHelperAvailability');
     }
   }
 

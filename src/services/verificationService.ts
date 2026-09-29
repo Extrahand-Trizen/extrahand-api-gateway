@@ -233,6 +233,26 @@ export class VerificationService extends BaseService {
       this.client.post<ApiResponse<any>>(
         '/api/v1/verification/driving-license/verify',
         { drivingLicenseNumber, dateOfBirth },
+  async verifyGSTIN(
+    gstin: string,
+    userToken: UserToken,
+    businessName?: string
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const consent = {
+      given: true,
+      givenAt: new Date().toISOString(),
+      consentVersion: 'v1.0',
+      consentText: 'I consent to verify my GSTIN for business verification on ExtraHand platform.',
+    };
+
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken)
+    );
+
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/gstin/verify',
+        { gstin, businessName, consent },
         config
       )
     );

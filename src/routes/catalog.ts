@@ -15,6 +15,11 @@ router.get(
   catalogController.getBookNowHubCatalog.bind(catalogController),
 );
 router.get(
+  '/categories/hourly-helper/diagnostic',
+  optionalAuthMiddleware,
+  catalogController.getHourlyHelperSkusByCategoryId.bind(catalogController),
+);
+router.get(
   '/categories/:slug/packages',
   optionalAuthMiddleware,
   catalogController.getBookNowCategoryPackages.bind(catalogController),

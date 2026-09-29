@@ -281,12 +281,19 @@ export class VerificationController {
         return;
       }
 
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📥 [API GATEWAY] Received PAN Verification Request');
+      console.log(`📍 User UID: ${req.user.uid}`);
+      console.log(`📍 PAN Number: ${panNumber ? (panNumber.substring(0, 2) + 'XXX' + panNumber.slice(-4)) : 'N/A'}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
       // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
 
       const response = await verificationService.verifyPAN(panNumber, req.user);
+      console.log(`✅ [API GATEWAY] Downstream Verification Service returned status ${response.status}`);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.verifyPAN');
@@ -294,6 +301,7 @@ export class VerificationController {
   }
 
   async verifyDrivingLicense(req: Request, res: Response, _next: NextFunction): Promise<void> {
+  async verifyGSTIN(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -305,29 +313,27 @@ export class VerificationController {
 
       const { drivingLicenseNumber, dateOfBirth } = req.body;
       if (!drivingLicenseNumber || !dateOfBirth) {
-        res.status(400).json({
           success: false,
           error: 'Driving license number and date of birth are required',
+      const { gstin, businessName } = req.body;
+      if (!gstin) {
+          success: false,
+          error: 'GSTIN is required',
         });
         return;
-      }
 
+      // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
-      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
-
-      const response = await verificationService.verifyDrivingLicense(
         drivingLicenseNumber,
         dateOfBirth,
-        req.user
-      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'VerificationController.verifyDrivingLicense');
+      const response = await verificationService.verifyGSTIN(gstin, req.user, businessName);
+      res.status(response.status).json(response.data);
     }
   }
-
-  async verifyBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({

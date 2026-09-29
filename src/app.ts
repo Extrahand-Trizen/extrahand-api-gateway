@@ -42,6 +42,7 @@ import quickCommerceRouter from './routes/quickCommerce.js';
 
 const env = validateEnv();
 const app: Express = express();
+app.disable('etag');
 
 // Trust proxy
 app.set("trust proxy", 1);
@@ -150,6 +151,7 @@ app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
 // Public Razorpay Key ID for checkout (must be registered before /api/v1/payment auth router)
 app.get(
   '/api/v1/payment/razorpay-key',
+  asyncAuthMiddleware,
   paymentController.getRazorpayKeyId.bind(paymentController),
 );
 app.use('/api/v1/payment', authMiddleware, paymentRouter);

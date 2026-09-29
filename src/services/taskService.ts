@@ -1284,13 +1284,29 @@ export class TaskService extends BaseService {
 
   async getCatalogCategory(
     slug: string,
-    userToken?: UserToken | null
+    userToken?: UserToken | null,
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params: location }));
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/catalog/categories/${encodeURIComponent(slug)}`,
         config
+      )
+    );
+  }
+
+  async getHourlyHelperSkusByCategoryId(
+    categoryId: string | undefined,
+    userToken?: UserToken | null,
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const params = { ...(location || {}), ...(categoryId ? { categoryId } : {}) };
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params }));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        '/api/v1/catalog/categories/hourly-helper/diagnostic',
+        config,
       )
     );
   }
@@ -1445,26 +1461,68 @@ export class TaskService extends BaseService {
     body: Record<string, unknown>,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: 60_000 })
+    );
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>("/api/v1/bookings", body, config)
     );
   }
 
   async getBookNowSlotAvailability(
-    params: { date: string; city: string },
+    params: {
+      date: string;
+      city: string;
+      durationMinutes?: string;
+      availabilityMode?: 'hourly' | 'standard';
+      area?: string;
+      lat?: string;
+      lng?: string;
+      preferredHelperGender?: string;
+    },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const queryParams: Record<string, string> = {
+      date: params.date,
+      city: params.city,
+    };
+    if (params.durationMinutes) {
+      queryParams.durationMinutes = params.durationMinutes;
+    }
+    queryParams.availabilityMode = params.availabilityMode || 'standard';
+    if (params.area) {
+      queryParams.area = params.area;
+    }
+    if (params.lat) {
+      queryParams.lat = params.lat;
+    }
+    if (params.lng) {
+      queryParams.lng = params.lng;
+    }
+    if (params.preferredHelperGender) {
+      queryParams.preferredHelperGender = params.preferredHelperGender;
+    }
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
-        params: {
-          date: params.date,
-          city: params.city,
-        },
+        params: queryParams,
+        // Partner capacity scans profiles + tasks; allow up to 30s.
+        timeout: 30_000,
       })
     );
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>("/api/v1/bookings/slot-availability", config)
+    );
+  }
+
+  async getHourlyHelperAvailability(
+    area: string,
+    userToken: UserToken,
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params: { area } }),
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>("/api/v1/bookings/hourly-helper-availability", config),
     );
   }
 
