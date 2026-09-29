@@ -233,6 +233,11 @@ export class VerificationService extends BaseService {
       this.client.post<ApiResponse<any>>(
         '/api/v1/verification/driving-license/verify',
         { drivingLicenseNumber, dateOfBirth },
+        config
+      )
+    );
+  }
+
   async verifyGSTIN(
     gstin: string,
     userToken: UserToken,

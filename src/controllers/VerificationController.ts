@@ -301,7 +301,6 @@ export class VerificationController {
   }
 
   async verifyDrivingLicense(req: Request, res: Response, _next: NextFunction): Promise<void> {
-  async verifyGSTIN(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -313,27 +312,59 @@ export class VerificationController {
 
       const { drivingLicenseNumber, dateOfBirth } = req.body;
       if (!drivingLicenseNumber || !dateOfBirth) {
+        res.status(400).json({
           success: false,
           error: 'Driving license number and date of birth are required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.verifyDrivingLicense(
+        drivingLicenseNumber,
+        dateOfBirth,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyDrivingLicense');
+    }
+  }
+
+  async verifyGSTIN(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
       const { gstin, businessName } = req.body;
       if (!gstin) {
+        res.status(400).json({
           success: false,
           error: 'GSTIN is required',
         });
         return;
+      }
 
-      // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
-        drivingLicenseNumber,
-        dateOfBirth,
-      res.status(response.status).json(response.data);
-    } catch (error) {
-      handleServiceError(error, res, 'VerificationController.verifyDrivingLicense');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
       const response = await verificationService.verifyGSTIN(gstin, req.user, businessName);
       res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyGSTIN');
     }
   }
+
+  async verifyBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -352,7 +383,6 @@ export class VerificationController {
         return;
       }
 
-      // ✅ Add headers to show it's from gateway
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'verification-service');
       res.setHeader('X-Gateway-Request-ID', req.requestId || '');
@@ -362,7 +392,7 @@ export class VerificationController {
         ifsc,
         accountHolderName,
         req.user,
-        consent // ✨ Forward consent to verification service
+        consent
       );
       res.status(response.status).json(response.data);
     } catch (error) {
