@@ -223,6 +223,21 @@ export class VerificationService extends BaseService {
     );
   }
 
+  async verifyDrivingLicense(
+    drivingLicenseNumber: string,
+    dateOfBirth: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/driving-license/verify',
+        { drivingLicenseNumber, dateOfBirth },
+        config
+      )
+    );
+  }
+
   async verifyBankAccount(
     accountNumber: string,
     ifsc: string,

@@ -293,6 +293,40 @@ export class VerificationController {
     }
   }
 
+  async verifyDrivingLicense(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const { drivingLicenseNumber, dateOfBirth } = req.body;
+      if (!drivingLicenseNumber || !dateOfBirth) {
+        res.status(400).json({
+          success: false,
+          error: 'Driving license number and date of birth are required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.verifyDrivingLicense(
+        drivingLicenseNumber,
+        dateOfBirth,
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyDrivingLicense');
+    }
+  }
+
   async verifyBankAccount(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
