@@ -7,10 +7,14 @@ export class AdminService extends BaseService {
   constructor() {
     const config: ServiceConfig = {
       serviceName: "admin-service",
-      baseURL: process.env.ADMIN_SERVICE_URL || "http://localhost:4008",
+      baseURL: process.env.ADMIN_SERVICE_URL || "http://localhost:4007",
       timeout: 300000, // 5 minutes for bulk uploads
     };
     super(config);
+  }
+
+  async getPartnerRegistrationLocations(): Promise<AxiosResponse> {
+    return this.handleRequest(() => this.client.get('/api/v1/locations/active'));
   }
 
   async bulkUploadUsers(

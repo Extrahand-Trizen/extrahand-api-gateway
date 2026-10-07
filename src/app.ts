@@ -39,6 +39,7 @@ import bookingsRouter from './routes/bookings.js';
 import bookNowRouter from './routes/bookNow.js';
 import quickCommercePartnerRouter from './routes/quickCommercePartner.js';
 import quickCommerceRouter from './routes/quickCommerce.js';
+import locationsRouter from './routes/locations.js';
 
 const env = validateEnv();
 const app: Express = express();
@@ -139,6 +140,7 @@ const asyncAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
 };
 
 app.use('/api/v1/profiles', profilesRouter);
+app.use('/api/v1/locations', locationsRouter);
 // Tasks router - some routes are public (optional auth), some require auth (handled in routes)
 app.use('/api/v1/tasks', tasksRouter);
 app.use('/api/v1/verification', asyncAuthMiddleware, verificationRouter);

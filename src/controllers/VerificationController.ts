@@ -7,6 +7,90 @@ import { isReviewBypassUser } from '../utils/reviewBypass.js';
 import logger from '../config/logger.js';
 
 export class VerificationController {
+  async verifyAadhaar(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required',
+        });
+        return;
+      }
+
+      const { aadhaarNumber, aadhaarFrontImage, aadhaarBackImage, frontImage, backImage } = req.body;
+
+      if (!aadhaarNumber) {
+        res.status(400).json({
+          success: false,
+          error: 'Aadhaar number is required',
+        });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.verifyAadhaar(
+        {
+          aadhaarNumber,
+          aadhaarFrontImage: aadhaarFrontImage || frontImage,
+          aadhaarBackImage: aadhaarBackImage || backImage,
+        },
+        req.user
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyAadhaar');
+    }
+  }
+
+  async generateAadhaarOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { aadhaarNumber } = req.body;
+      if (!aadhaarNumber) {
+        res.status(400).json({ success: false, error: 'Aadhaar number is required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.generateAadhaarOTP(aadhaarNumber, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.generateAadhaarOTP');
+    }
+  }
+
+  async verifyAadhaarOTP(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const { refId, otp, aadhaarNumber } = req.body;
+      if (!refId || !otp) {
+        res.status(400).json({ success: false, error: 'refId and otp are required' });
+        return;
+      }
+
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'verification-service');
+      res.setHeader('X-Gateway-Request-ID', req.requestId || '');
+
+      const response = await verificationService.verifyAadhaarOTP({ refId, otp, aadhaarNumber }, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'VerificationController.verifyAadhaarOTP');
+    }
+  }
+
   async initiateDigilockerVerification(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
