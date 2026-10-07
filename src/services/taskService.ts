@@ -42,6 +42,8 @@ export class TaskService extends BaseService {
   /** Recurring visit reads may merge schedule + payment state. */
   private readonly recurringReadTimeoutMs = 45_000;
   private readonly createTaskTimeoutMs = 60_000;
+  /** Recurring mutations may refund / open the next visit; must outlast the slowest backend path. */
+  private readonly recurringMutationTimeoutMs = 45_000;
 
   constructor() {
     const serviceURL = process.env.TASK_SERVICE_URL || "http://localhost:4002";
@@ -144,10 +146,16 @@ export class TaskService extends BaseService {
 
   async createTask(
     taskData: Partial<Task>,
-    userToken: UserToken
+    userToken: UserToken,
+    idempotencyKey?: string
   ): Promise<AxiosResponse<ApiResponse<Task>>> {
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, { timeout: this.createTaskTimeoutMs }),
+      this.forwardUserAuth(userToken, {
+        timeout: this.createTaskTimeoutMs,
+        ...(idempotencyKey
+          ? { headers: { "Idempotency-Key": idempotencyKey.slice(0, 128) } }
+          : {}),
+      }),
     );
 
     return this.handleRequest(() =>
@@ -1036,7 +1044,9 @@ export class TaskService extends BaseService {
     escrowId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1053,7 +1063,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1070,7 +1082,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1086,7 +1100,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1101,7 +1117,9 @@ export class TaskService extends BaseService {
     taskId: string,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1140,7 +1158,9 @@ export class TaskService extends BaseService {
     },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1162,7 +1182,9 @@ export class TaskService extends BaseService {
     },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1179,7 +1201,9 @@ export class TaskService extends BaseService {
     approved: boolean,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1196,7 +1220,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1213,7 +1239,9 @@ export class TaskService extends BaseService {
     approved: boolean,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1229,7 +1257,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1245,7 +1275,9 @@ export class TaskService extends BaseService {
     reason: string | undefined,
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { timeout: this.recurringMutationTimeoutMs }),
+    );
 
     return this.handleRequest(() =>
       this.client.post<ApiResponse<any>>(
@@ -1313,11 +1345,12 @@ export class TaskService extends BaseService {
 
   async getBookNowHubCatalog(
     previewLimit: number | undefined,
-    userToken?: UserToken | null
+    userToken?: UserToken | null,
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
-        params: previewLimit ? { previewLimit } : undefined,
+        params: { ...(location || {}), ...(previewLimit ? { previewLimit } : {}) },
       })
     );
     return this.handleRequest(() =>
@@ -1327,14 +1360,25 @@ export class TaskService extends BaseService {
 
   async getBookNowCategoryPackages(
     slug: string,
-    userToken?: UserToken | null
+    userToken?: UserToken | null,
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
   ): Promise<AxiosResponse<ApiResponse<any>>> {
-    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken, { params: location }));
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>(
         `/api/v1/catalog/categories/${encodeURIComponent(slug)}/packages`,
         config
       )
+    );
+  }
+
+  async getBookNowLocationQuote(
+    body: unknown,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>("/api/v1/catalog/book-now/location-quote", body, config)
     );
   }
 
@@ -1476,6 +1520,8 @@ export class TaskService extends BaseService {
       durationMinutes?: string;
       availabilityMode?: 'hourly' | 'standard';
       area?: string;
+      serviceArea?: string;
+      serviceAddress?: string;
       lat?: string;
       lng?: string;
       preferredHelperGender?: string;
@@ -1492,6 +1538,12 @@ export class TaskService extends BaseService {
     queryParams.availabilityMode = params.availabilityMode || 'standard';
     if (params.area) {
       queryParams.area = params.area;
+    }
+    if (params.serviceArea) {
+      queryParams.serviceArea = params.serviceArea;
+    }
+    if (params.serviceAddress) {
+      queryParams.serviceAddress = params.serviceAddress;
     }
     if (params.lat) {
       queryParams.lat = params.lat;
@@ -1515,11 +1567,16 @@ export class TaskService extends BaseService {
   }
 
   async getHourlyHelperAvailability(
-    area: string,
+    params: { area?: string; address?: string; city?: string; state?: string },
     userToken: UserToken,
   ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const queryParams: Record<string, string> = {};
+    if (params.area) queryParams.area = params.area;
+    if (params.address) queryParams.address = params.address;
+    if (params.city) queryParams.city = params.city;
+    if (params.state) queryParams.state = params.state;
     const config = this.addServiceAuth(
-      this.forwardUserAuth(userToken, { params: { area } }),
+      this.forwardUserAuth(userToken, { params: queryParams }),
     );
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>("/api/v1/bookings/hourly-helper-availability", config),
