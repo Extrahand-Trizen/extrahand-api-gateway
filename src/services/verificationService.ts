@@ -56,6 +56,48 @@ export class VerificationService extends BaseService {
     this.ocrUploadTimeoutMs = ocrUploadTimeoutMs;
   }
 
+  async verifyAadhaar(
+    params: { aadhaarNumber: string; aadhaarFrontImage?: string; aadhaarBackImage?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/verify',
+        params,
+        config
+      )
+    );
+  }
+
+  async generateAadhaarOTP(
+    aadhaarNumber: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/otp/generate',
+        { aadhaarNumber },
+        config
+      )
+    );
+  }
+
+  async verifyAadhaarOTP(
+    params: { refId: string; otp: string; aadhaarNumber?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        '/api/v1/verification/aadhaar/otp/verify',
+        params,
+        config
+      )
+    );
+  }
+
   async initiateDigilockerVerification(
     params: { mobileNumber?: string; aadhaarNumber?: string; consentGiven?: boolean; redirectUrl?: string },
     userToken: UserToken

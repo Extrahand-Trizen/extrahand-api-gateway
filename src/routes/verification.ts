@@ -20,7 +20,10 @@ const ocrUpload = multer({
   },
 });
 
-// Aadhaar verification (DigiLocker - OTP flow removed)
+// Aadhaar verification
+router.post('/aadhaar/verify', verificationController.verifyAadhaar.bind(verificationController));
+router.post('/aadhaar/otp/generate', verificationController.generateAadhaarOTP.bind(verificationController));
+router.post('/aadhaar/otp/verify', verificationController.verifyAadhaarOTP.bind(verificationController));
 router.post('/aadhaar/digilocker/initiate', verificationController.initiateDigilockerVerification.bind(verificationController));
 router.get('/aadhaar/digilocker/status', verificationController.getDigilockerStatus.bind(verificationController));
 router.post('/aadhaar/digilocker/complete', verificationController.completeDigilockerVerification.bind(verificationController));
