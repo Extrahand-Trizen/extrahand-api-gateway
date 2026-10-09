@@ -91,6 +91,36 @@ export class ProfileController {
     }
   }
 
+  async createPartnerCategoryRequest(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.createPartnerCategoryRequest(
+        req.body?.categoryId,
+        req.body?.requestedSkills,
+        req.user,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.createPartnerCategoryRequest');
+    }
+  }
+
+  async getPartnerCategoryRequests(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await userService.getPartnerCategoryRequests(req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'ProfileController.getPartnerCategoryRequests');
+    }
+  }
+
   async getProfileStats(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const userId = req.params.userId;
@@ -846,4 +876,3 @@ export class ProfileController {
 }
 
 export const profileController = new ProfileController();
-
