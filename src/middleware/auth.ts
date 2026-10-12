@@ -108,13 +108,9 @@ export async function authMiddleware(
 
    // Allow service-to-service calls authenticated via X-Service-Auth
    const serviceAuthHeader = req.headers['x-service-auth'] as string | undefined;
-   const validServiceTokens = [
-      process.env.SERVICE_AUTH_TOKEN,
-      'X7fK9qP2Lm8VtR4zWc1YhN6DsB3aU5Jx',
-      'ExtraHand_Secure_Token_2024_MinLength32Chars_ChangeInProduction',
-   ].filter(Boolean);
+   const configuredServiceToken = process.env.SERVICE_AUTH_TOKEN?.trim();
 
-   if (serviceAuthHeader && validServiceTokens.includes(serviceAuthHeader)) {
+   if (serviceAuthHeader && configuredServiceToken && serviceAuthHeader === configuredServiceToken) {
       const serviceUserId = (req.headers['x-user-id'] as string) || 'service_user';
       req.user = {
          uid: serviceUserId,

@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-// import rateLimit from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import morgan from 'morgan';
@@ -86,22 +86,22 @@ if (env.NODE_ENV === "production") {
    app.use(morgan("dev"));
 }
 
-// Rate limiting (commented out for now)
-// const limiter = rateLimit({
-//    windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
-//    max: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10) * 10, // Higher limit for mobile apps
-//    message: {
-//       success: false,
-//       error: "Too many requests from this IP, please try again later.",
-//    },
-//    standardHeaders: true,
-//    legacyHeaders: false,
-//    skip: (req: Request) => {
-//       return req.path === "/api/v1/health" || req.path === "/health";
-//    },
-// });
+// Rate limiting
+const limiter = rateLimit({
+   windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes default
+   max: parseInt(env.RATE_LIMIT_MAX_REQUESTS || '1000', 10),     // 1000 requests per 15 min per IP
+   message: {
+      success: false,
+      error: "Too many requests from this IP, please try again later.",
+   },
+   standardHeaders: true,
+   legacyHeaders: false,
+   skip: (req: Request) => {
+      return req.path === "/api/v1/health" || req.path === "/health";
+   },
+});
 
-// app.use('/api/', limiter);
+app.use('/api/', limiter);
 
 const healthCheckHandler = (_req: Request, res: Response) => {
   res.setHeader('X-Gateway', 'extrahand-api-gateway');
