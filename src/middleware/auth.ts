@@ -106,27 +106,24 @@ export async function authMiddleware(
       return;
    }
 
-   // Allow service-to-service calls authenticated via X-Service-Auth
-   const serviceAuthHeader = req.headers['x-service-auth'] as string | undefined;
-   const validServiceTokens = [
-      process.env.SERVICE_AUTH_TOKEN,
-      'X7fK9qP2Lm8VtR4zWc1YhN6DsB3aU5Jx',
-      'ExtraHand_Secure_Token_2024_MinLength32Chars_ChangeInProduction',
-   ].filter(Boolean);
-
-   if (serviceAuthHeader && validServiceTokens.includes(serviceAuthHeader)) {
-      const serviceUserId = (req.headers['x-user-id'] as string) || 'service_user';
-      req.user = {
-         uid: serviceUserId,
-         token: serviceAuthHeader,
-      } as Express.Request['user'];
-      next();
-      return;
-   }
-
+   // The user identity comes only from a verified access token. X-Service-Auth and X-User-Id
+   // never authenticate an end user: a service credential must not let a caller pick a uid.
    const token = getAccessToken(req);
 
    if (!token) {
+      if (req.headers['x-service-auth']) {
+         logger.warn("Authentication: service credential without a user access token rejected", {
+            path: req.path,
+            method: req.method,
+            hasUserIdHeader: Boolean(req.headers['x-user-id']),
+         });
+         res.status(401).json({
+            success: false,
+            error: "User authentication required",
+            details: "This endpoint acts for a signed-in user; send the user's access token",
+         });
+         return;
+      }
       logger.warn("Authentication: Missing access token", {
          path: req.path,
          method: req.method,

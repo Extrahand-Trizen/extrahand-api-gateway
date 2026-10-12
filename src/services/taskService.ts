@@ -1872,6 +1872,7 @@ export class TaskService extends BaseService {
       this.client.get<ApiResponse<any>>('/api/v1/book-now/cancellation-pass-status', config)
     );
   }
+
 }
 
 export const taskService = new TaskService();
