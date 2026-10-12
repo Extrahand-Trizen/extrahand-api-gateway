@@ -51,6 +51,17 @@ router.get(
 );
 
 // Get current user profile (must come before /:userId)
+router.post(
+  '/me/partner-category-requests',
+  authMiddleware,
+  profileController.createPartnerCategoryRequest.bind(profileController),
+);
+router.get(
+  '/me/partner-category-requests',
+  authMiddleware,
+  profileController.getPartnerCategoryRequests.bind(profileController),
+);
+
 router.get('/me', authMiddleware, profileController.getCurrentProfile.bind(profileController));
 
 // Delete profile (must come before /:userId)
@@ -130,4 +141,3 @@ router.delete('/alternate-phone', authMiddleware, profileController.removeAltern
 router.post('/', authMiddleware, profileController.upsertProfile.bind(profileController));
 
 export default router;
-

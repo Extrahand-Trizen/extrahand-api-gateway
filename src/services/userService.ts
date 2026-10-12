@@ -58,6 +58,33 @@ export class UserService extends BaseService {
     );
   }
 
+  async createPartnerCategoryRequest(
+    categoryId: string,
+    requestedSkills: string[],
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<unknown>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<unknown>>(
+        "/api/v1/profiles/me/partner-category-requests",
+        { categoryId, requestedSkills },
+        config
+      )
+    );
+  }
+
+  async getPartnerCategoryRequests(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<unknown>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<unknown>>(
+        "/api/v1/profiles/me/partner-category-requests",
+        config
+      )
+    );
+  }
+
   async updateProfile(
     userId: string,
     profileData: Partial<Profile>,
