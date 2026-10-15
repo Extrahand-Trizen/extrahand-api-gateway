@@ -17,12 +17,25 @@ export class VerificationController {
         return;
       }
 
-      const { aadhaarNumber, aadhaarFrontImage, aadhaarBackImage, frontImage, backImage } = req.body;
+      const {
+        aadhaarNumber,
+        aadhaarFrontImage,
+        aadhaarBackImage,
+        frontImage,
+        backImage,
+        aadhaarFrontCrop,
+        aadhaarBackCrop,
+        frontCrop,
+        backCrop,
+      } = req.body;
 
-      if (!aadhaarNumber) {
+      const targetFront = (aadhaarFrontImage || frontImage || '').trim();
+      const targetBack = (aadhaarBackImage || backImage || '').trim();
+
+      if (!aadhaarNumber && (!targetFront || !targetBack)) {
         res.status(400).json({
           success: false,
-          error: 'Aadhaar number is required',
+          error: 'Either Aadhaar number or both front and back card images are required',
         });
         return;
       }
@@ -33,9 +46,11 @@ export class VerificationController {
 
       const response = await verificationService.verifyAadhaar(
         {
-          aadhaarNumber,
-          aadhaarFrontImage: aadhaarFrontImage || frontImage,
-          aadhaarBackImage: aadhaarBackImage || backImage,
+          aadhaarNumber: aadhaarNumber ? String(aadhaarNumber).trim() : undefined,
+          aadhaarFrontImage: targetFront,
+          aadhaarBackImage: targetBack,
+          aadhaarFrontCrop: aadhaarFrontCrop || frontCrop,
+          aadhaarBackCrop: aadhaarBackCrop || backCrop,
         },
         req.user
       );

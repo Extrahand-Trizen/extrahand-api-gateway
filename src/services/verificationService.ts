@@ -57,7 +57,17 @@ export class VerificationService extends BaseService {
   }
 
   async verifyAadhaar(
-    params: { aadhaarNumber: string; aadhaarFrontImage?: string; aadhaarBackImage?: string },
+    params: {
+      aadhaarNumber?: string;
+      aadhaarFrontImage?: string;
+      aadhaarBackImage?: string;
+      frontImage?: string;
+      backImage?: string;
+      aadhaarFrontCrop?: Record<string, unknown>;
+      aadhaarBackCrop?: Record<string, unknown>;
+      frontCrop?: Record<string, unknown>;
+      backCrop?: Record<string, unknown>;
+    },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(this.forwardUserAuth(userToken));
