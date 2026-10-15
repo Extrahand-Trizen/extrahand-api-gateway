@@ -14,6 +14,11 @@ router.get(
   optionalAuthMiddleware,
   catalogController.getBookNowHubCatalog.bind(catalogController),
 );
+router.post(
+  '/book-now/location-quote',
+  optionalAuthMiddleware,
+  catalogController.getBookNowLocationQuote.bind(catalogController),
+);
 router.get(
   '/categories/hourly-helper/diagnostic',
   optionalAuthMiddleware,

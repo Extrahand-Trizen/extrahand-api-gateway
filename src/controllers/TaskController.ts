@@ -226,7 +226,12 @@ export class TaskController {
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
       const taskData: Partial<Task> = req.body;
-      const response = await taskService.createTask(taskData, req.user);
+      const idempotencyKey = String(req.headers["idempotency-key"] || "").trim();
+      const response = await taskService.createTask(
+        taskData,
+        req.user,
+        idempotencyKey || undefined,
+      );
       
       // ✅ Extract task from task-service response format: { success, code, message, data }
       const taskServiceResponse = response.data;

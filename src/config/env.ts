@@ -97,6 +97,7 @@ export function getCorsConfig(env: ReturnType<typeof validateEnv>) {
          "X-Service-Auth",
          "X-Service-Name",
          "X-Refresh-Token",
+         "Idempotency-Key",
       ],
       exposedHeaders: ["X-Request-Id", "X-Gateway", "X-Gateway-Version"],
    };

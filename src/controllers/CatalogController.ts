@@ -2,6 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/taskService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 
+function catalogLocationQuery(query: Request['query']) {
+  return {
+    area: typeof query.area === 'string' ? query.area : undefined,
+    city: typeof query.city === 'string' ? query.city : undefined,
+    state: typeof query.state === 'string' ? query.state : undefined,
+    pinCode: typeof query.pinCode === 'string' ? query.pinCode : undefined,
+    coordinates: typeof query.coordinates === 'string' ? query.coordinates : undefined,
+  };
+}
+
 export class CatalogController {
   async listCategories(
     req: Request,
@@ -88,6 +98,7 @@ export class CatalogController {
       const response = await taskService.getBookNowHubCatalog(
         Number.isFinite(previewLimit) ? previewLimit : undefined,
         req.user ?? null,
+        catalogLocationQuery(req.query),
       );
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -107,10 +118,27 @@ export class CatalogController {
       const response = await taskService.getBookNowCategoryPackages(
         req.params.slug,
         req.user ?? null,
+        catalogLocationQuery(req.query),
       );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.getBookNowCategoryPackages');
+    }
+  }
+
+  async getBookNowLocationQuote(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookNowLocationQuote(req.body ?? {}, req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getBookNowLocationQuote');
     }
   }
 

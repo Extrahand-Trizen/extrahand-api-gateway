@@ -80,6 +80,8 @@ export class BookingController {
         : undefined;
       const availabilityMode = req.query.availabilityMode === 'hourly' ? 'hourly' : 'standard';
       const area = req.query.area ? String(req.query.area) : undefined;
+      const serviceArea = req.query.serviceArea ? String(req.query.serviceArea) : undefined;
+      const serviceAddress = req.query.serviceAddress ? String(req.query.serviceAddress) : undefined;
       const lat = req.query.lat ? String(req.query.lat) : undefined;
       const lng = req.query.lng ? String(req.query.lng) : undefined;
       const preferredHelperGender = req.query.preferredHelperGender
@@ -90,7 +92,18 @@ export class BookingController {
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.getBookNowSlotAvailability(
-        { date, city, durationMinutes, availabilityMode, area, lat, lng, preferredHelperGender },
+        {
+          date,
+          city,
+          durationMinutes,
+          availabilityMode,
+          area,
+          serviceArea,
+          serviceAddress,
+          lat,
+          lng,
+          preferredHelperGender,
+        },
         req.user,
       );
       res.status(response.status).json(response.data);
@@ -111,15 +124,21 @@ export class BookingController {
       }
 
       const area = String(req.query.area || '').trim();
-      if (!area) {
-        res.status(400).json({ success: false, error: 'area is required' });
+      const address = String(req.query.address || '').trim();
+      const city = String(req.query.city || '').trim();
+      const state = String(req.query.state || '').trim();
+      if (!area && !address) {
+        res.status(400).json({ success: false, error: 'area or address is required' });
         return;
       }
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
 
-      const response = await taskService.getHourlyHelperAvailability(area, req.user);
+      const response = await taskService.getHourlyHelperAvailability(
+        { area, address, city, state },
+        req.user,
+      );
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'BookingController.getHourlyHelperAvailability');
