@@ -7,7 +7,7 @@ const notificationService = new NotificationService();
 export class NotificationController {
   async registerToken(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
-      const { token, platform, deviceId } = req.body;
+      const { token, platform, deviceId, role, app } = req.body;
       
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
@@ -20,7 +20,9 @@ export class NotificationController {
         token,
         platform,
         deviceId,
-        userToken
+        userToken,
+        role,
+        app
       );
 
       res.setHeader('X-Served-By', 'api-gateway');
@@ -111,7 +113,7 @@ export class NotificationController {
         limit: limit ? Number(limit) : undefined,
         skip: skip ? Number(skip) : undefined,
         unreadOnly: unreadOnly === 'true',
-        role: role as 'helper' | 'partner' | 'seller' | undefined,
+        role: role as 'customer' | 'helper' | 'partner' | 'seller' | undefined,
       });
 
       res.setHeader('X-Served-By', 'api-gateway');
@@ -132,7 +134,7 @@ export class NotificationController {
       const userToken = { uid: req.user.uid, token: req.user.token };
       const { role } = req.query;
 
-      const response = await notificationService.getUnreadInAppCount(userToken, role as 'helper' | 'partner' | 'seller' | undefined);
+      const response = await notificationService.getUnreadInAppCount(userToken, role as 'customer' | 'helper' | 'partner' | 'seller' | undefined);
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'notification-service');
@@ -158,7 +160,7 @@ export class NotificationController {
       const userToken = { uid, token: req.user.token };
       const { role } = req.query;
 
-      const response = await notificationService.markAllInAppRead(userToken, role as 'helper' | 'partner' | 'seller' | undefined);
+      const response = await notificationService.markAllInAppRead(userToken, role as 'customer' | 'helper' | 'partner' | 'seller' | undefined);
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'notification-service');
@@ -228,7 +230,7 @@ export class NotificationController {
       const userToken = { uid: req.user.uid, token: req.user.token };
       const { role } = req.query;
 
-      const response = await notificationService.clearAllInAppNotifications(userToken, role as 'helper' | 'partner' | 'seller' | undefined);
+      const response = await notificationService.clearAllInAppNotifications(userToken, role as 'customer' | 'helper' | 'partner' | 'seller' | undefined);
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'notification-service');

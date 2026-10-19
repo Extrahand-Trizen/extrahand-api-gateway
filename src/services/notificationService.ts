@@ -17,7 +17,9 @@ export class NotificationService extends BaseService {
     token: string,
     platform: 'ios' | 'android' | 'web',
     deviceId: string | undefined,
-    userToken: UserToken
+    userToken: UserToken,
+    role?: string,
+    app?: string
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken)
@@ -26,7 +28,7 @@ export class NotificationService extends BaseService {
     return this.handleRequest(() =>
       this.client.post<ApiResponse>(
         '/api/v1/notifications/token',
-        { token, platform, deviceId },
+        { token, platform, deviceId, role, app },
         config
       )
     );
@@ -38,7 +40,7 @@ export class NotificationService extends BaseService {
 
   async getInAppNotifications(
     userToken: UserToken,
-    options: { limit?: number; skip?: number; unreadOnly?: boolean; role?: 'helper' | 'partner' | 'seller' } = {}
+    options: { limit?: number; skip?: number; unreadOnly?: boolean; role?: 'customer' | 'helper' | 'partner' | 'seller' } = {}
   ): Promise<AxiosResponse<ApiResponse>> {
     const { limit = 50, skip = 0, unreadOnly = false, role } = options;
 
@@ -60,7 +62,7 @@ export class NotificationService extends BaseService {
 
   async getUnreadInAppCount(
     userToken: UserToken,
-    role?: 'helper' | 'partner' | 'seller'
+    role?: 'customer' | 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -77,7 +79,7 @@ export class NotificationService extends BaseService {
 
   async markAllInAppRead(
     userToken: UserToken,
-    role?: 'helper' | 'partner' | 'seller'
+    role?: 'customer' | 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -130,7 +132,7 @@ export class NotificationService extends BaseService {
 
   async clearAllInAppNotifications(
     userToken: UserToken,
-    role?: 'helper' | 'partner' | 'seller'
+    role?: 'customer' | 'helper' | 'partner' | 'seller'
   ): Promise<AxiosResponse<ApiResponse>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
