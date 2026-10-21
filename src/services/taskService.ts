@@ -1513,6 +1513,62 @@ export class TaskService extends BaseService {
     );
   }
 
+  async createBookServicesAssistantConversation(
+    body: { bookingOrderId: string; taskId?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        "/api/v1/book-services/assistant/conversations",
+        body,
+        config
+      )
+    );
+  }
+
+  async getBookServicesAssistantConversation(
+    conversationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        `/api/v1/book-services/assistant/conversations/${encodeURIComponent(conversationId)}`,
+        config
+      )
+    );
+  }
+
+  async sendBookServicesAssistantMessage(
+    conversationId: string,
+    body: { text: string; optionId?: string; clientMessageId?: string },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-services/assistant/conversations/${encodeURIComponent(conversationId)}/messages`,
+        body,
+        config
+      )
+    );
+  }
+
+  async endBookServicesAssistantConversation(
+    conversationId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-services/assistant/conversations/${encodeURIComponent(conversationId)}/end`,
+        {},
+        config
+      )
+    );
+  }
+
   async getBookNowSlotAvailability(
     params: {
       date: string;
