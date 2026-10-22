@@ -1754,6 +1754,38 @@ export class TaskService extends BaseService {
   }
 
   /**
+   * GET /api/v1/book-now/my-offers
+   * Returns active Book Now offers specifically addressed to this partner.
+   */
+  async getMyBookNowOffers(
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/book-now/my-offers', config)
+    );
+  }
+
+  /**
+   * POST /api/v1/book-now/tasks/:id/offer-response
+   * Accepts or permanently rejects an addressed Book Now offer.
+   */
+  async respondToBookNowOffer(
+    taskId: string,
+    body: { action: 'accept' | 'reject' },
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<any>>(
+        `/api/v1/book-now/tasks/${encodeURIComponent(taskId)}/offer-response`,
+        body,
+        config
+      )
+    );
+  }
+
+  /**
    * GET /api/v1/book-now/my-leads
    * Returns the partner's accepted/active Book Now tasks.
    */

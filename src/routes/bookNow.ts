@@ -152,6 +152,47 @@ router.post(
 );
 
 /**
+ * GET /api/v1/book-now/my-offers
+ * Proxy: task-service /api/v1/book-now/my-offers
+ */
+router.get(
+  '/my-offers',
+  authMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userToken = req.user as UserToken;
+      const response = await taskService.getMyBookNowOffers(userToken);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.getMyOffers');
+    }
+  },
+);
+
+/**
+ * POST /api/v1/book-now/tasks/:id/offer-response
+ * Body: { action: 'accept' | 'reject' }
+ */
+router.post(
+  '/tasks/:id/offer-response',
+  authMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userToken = req.user as UserToken;
+      const response = await taskService.respondToBookNowOffer(
+        id,
+        { action: req.body?.action },
+        userToken,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'BookNowController.respondToOffer');
+    }
+  },
+);
+
+/**
  * GET /api/v1/book-now/my-leads
  * Proxy: task-service /api/v1/book-now/my-leads
  *
