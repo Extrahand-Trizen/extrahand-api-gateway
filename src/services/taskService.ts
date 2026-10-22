@@ -1581,6 +1581,7 @@ export class TaskService extends BaseService {
       lat?: string;
       lng?: string;
       preferredHelperGender?: string;
+      categorySlug?: string;
     },
     userToken: UserToken
   ): Promise<AxiosResponse<ApiResponse<any>>> {
@@ -1609,6 +1610,9 @@ export class TaskService extends BaseService {
     }
     if (params.preferredHelperGender) {
       queryParams.preferredHelperGender = params.preferredHelperGender;
+    }
+    if (params.categorySlug) {
+      queryParams.categorySlug = params.categorySlug;
     }
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {

@@ -87,6 +87,10 @@ export class BookingController {
       const preferredHelperGender = req.query.preferredHelperGender
         ? String(req.query.preferredHelperGender)
         : undefined;
+      const categorySlug =
+        String(req.query.categorySlug || '').trim().toLowerCase() === 'daily-labour'
+          ? 'daily-labour'
+          : undefined;
 
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
@@ -103,6 +107,7 @@ export class BookingController {
           lat,
           lng,
           preferredHelperGender,
+          categorySlug,
         },
         req.user,
       );
