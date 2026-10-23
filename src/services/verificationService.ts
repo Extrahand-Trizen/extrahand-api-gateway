@@ -75,7 +75,10 @@ export class VerificationService extends BaseService {
       this.client.post<ApiResponse<any>>(
         '/api/v1/verification/aadhaar/verify',
         params,
-        config
+        {
+          ...config,
+          timeout: this.ocrUploadTimeoutMs,
+        }
       )
     );
   }
