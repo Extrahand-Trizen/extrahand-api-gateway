@@ -4,6 +4,12 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
+// GET /api/v1/reviews/service-summary - Get ratings and review counts for a category and its packages (PUBLIC)
+router.get('/service-summary', reviewController.getServiceReviewSummary.bind(reviewController));
+
+// GET /api/v1/reviews/service-reviews - Get paginated customer reviews for a service / package (PUBLIC)
+router.get('/service-reviews', reviewController.getServiceReviews.bind(reviewController));
+
 // GET /api/v1/reviews/user/:userId - Get reviews for a user (PUBLIC - no auth required)
 router.get('/user/:userId', reviewController.getUserReviews.bind(reviewController));
 
@@ -17,5 +23,3 @@ router.get('/task/:taskId', authMiddleware, reviewController.getTaskReview.bind(
 router.post('/:id/vote', authMiddleware, reviewController.voteHelpful.bind(reviewController));
 
 export default router;
-
-

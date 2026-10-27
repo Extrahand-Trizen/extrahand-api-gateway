@@ -1965,6 +1965,23 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getBanners(
+    placement?: string,
+    activeOnly?: boolean,
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, {
+        params: {
+          ...(placement ? { placement } : {}),
+          ...(activeOnly !== undefined ? { activeOnly: String(activeOnly) } : {}),
+        },
+      })
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/banners', config)
+    );
+  }
 }
 
 export const taskService = new TaskService();

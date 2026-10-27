@@ -290,6 +290,28 @@ export class CatalogController {
       handleServiceError(error, res, 'CatalogController.checkPinCode');
     }
   }
+  async listBanners(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const placement = typeof req.query.placement === 'string' ? req.query.placement : undefined;
+      const activeOnly = req.query.activeOnly !== 'false';
+
+      const response = await taskService.getBanners(
+        placement,
+        activeOnly,
+        req.user ?? null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listBanners');
+    }
+  }
 }
 
 export const catalogController = new CatalogController();

@@ -70,4 +70,10 @@ router.get(
   catalogController.checkPinCode.bind(catalogController),
 );
 
+router.get(
+  '/banners',
+  optionalAuthMiddleware,
+  catalogController.listBanners.bind(catalogController),
+);
+
 export default router;

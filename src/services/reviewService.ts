@@ -13,6 +13,36 @@ export class ReviewService extends BaseService {
     });
   }
 
+  async getServiceReviewSummary(params: {
+    categorySlug?: string;
+    catalogId?: string;
+  }): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({
+      params,
+    });
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/reviews/service-summary', config)
+    );
+  }
+
+  async getServiceReviews(params: {
+    categorySlug?: string;
+    catalogId?: string;
+    packageId?: string;
+    rating?: number;
+    limit?: number;
+    skip?: number;
+  }): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth({
+      params,
+    });
+
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/reviews/service-reviews', config)
+    );
+  }
+
   async getUserReviews(
     userId: string,
     filters: {
@@ -72,4 +102,3 @@ export class ReviewService extends BaseService {
 }
 
 export const reviewService = new ReviewService();
-
