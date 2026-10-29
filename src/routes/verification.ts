@@ -10,7 +10,7 @@ router.use(authMiddleware);
 
 const ocrUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     if (file.mimetype?.startsWith('image/')) {
       cb(null, true);
