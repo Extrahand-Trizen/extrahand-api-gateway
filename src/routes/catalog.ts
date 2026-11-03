@@ -10,6 +10,11 @@ router.get(
   catalogController.getCustomerHomeContent.bind(catalogController),
 );
 router.get(
+  '/home-categories',
+  optionalAuthMiddleware,
+  catalogController.getBookNowHomeCategories.bind(catalogController),
+);
+router.get(
   '/home-coupon-offers',
   optionalAuthMiddleware,
   catalogController.listHomeCouponOffers.bind(catalogController),

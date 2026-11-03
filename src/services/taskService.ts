@@ -1363,6 +1363,7 @@ export class TaskService extends BaseService {
     userToken?: UserToken | null,
     location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string },
     featuredOnly = false,
+    includeLocationPricing = true,
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
@@ -1370,11 +1371,21 @@ export class TaskService extends BaseService {
           ...(location || {}),
           ...(previewLimit ? { previewLimit } : {}),
           ...(featuredOnly ? { featuredOnly: true } : {}),
+          ...(!includeLocationPricing ? { includeLocationPricing: false } : {}),
         },
       })
     );
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>("/api/v1/catalog/book-now/hub", config)
+    );
+  }
+
+  async getBookNowHomeCategories(
+    userToken?: UserToken | null,
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/home-categories', config)
     );
   }
 

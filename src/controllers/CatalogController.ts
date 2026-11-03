@@ -52,6 +52,21 @@ export class CatalogController {
     }
   }
 
+  async getBookNowHomeCategories(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.getBookNowHomeCategories(req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getBookNowHomeCategories');
+    }
+  }
+
   async listCustomerHomePromotions(
     req: Request,
     res: Response,
@@ -183,12 +198,14 @@ export class CatalogController {
           ? Number(req.query.previewLimit)
           : undefined;
       const featuredOnly = req.query.featuredOnly === 'true';
+      const includeLocationPricing = req.query.includeLocationPricing !== 'false';
 
       const response = await taskService.getBookNowHubCatalog(
         Number.isFinite(previewLimit) ? previewLimit : undefined,
         req.user ?? null,
         catalogLocationQuery(req.query),
         featuredOnly,
+        includeLocationPricing,
       );
       res.status(response.status).json(response.data);
     } catch (error) {
