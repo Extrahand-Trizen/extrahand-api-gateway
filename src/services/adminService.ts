@@ -17,6 +17,10 @@ export class AdminService extends BaseService {
     return this.handleRequest(() => this.client.get('/api/v1/locations/active'));
   }
 
+  async getPublicAppBranding(): Promise<AxiosResponse> {
+    return this.handleRequest(() => this.client.get('/api/v1/app-branding'));
+  }
+
   async bulkUploadUsers(
     fileBuffer: Buffer,
     fileName: string,

@@ -5,6 +5,26 @@ import { optionalAuthMiddleware } from '../middleware/auth.js';
 const router = Router();
 
 router.get(
+  '/home-content',
+  optionalAuthMiddleware,
+  catalogController.getCustomerHomeContent.bind(catalogController),
+);
+router.get(
+  '/home-coupon-offers',
+  optionalAuthMiddleware,
+  catalogController.listHomeCouponOffers.bind(catalogController),
+);
+router.get(
+  '/home-promotions',
+  optionalAuthMiddleware,
+  catalogController.listCustomerHomePromotions.bind(catalogController),
+);
+router.get(
+  '/book-now/availability',
+  optionalAuthMiddleware,
+  catalogController.getBookNowAvailability.bind(catalogController),
+);
+router.get(
   '/categories',
   optionalAuthMiddleware,
   catalogController.listCategories.bind(catalogController),

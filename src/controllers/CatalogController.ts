@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/taskService.js';
+import { couponService } from '../services/couponService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 
 function catalogLocationQuery(query: Request['query']) {
@@ -13,6 +14,93 @@ function catalogLocationQuery(query: Request['query']) {
 }
 
 export class CatalogController {
+  async getCustomerHomeContent(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service,coupon-service');
+      const location = catalogLocationQuery(req.query);
+      const previewLimit = Number(req.query.previewLimit);
+      const [featuredResponse, promotionsResponse, couponsResponse] = await Promise.all([
+        taskService.getBookNowHubCatalog(
+          Number.isFinite(previewLimit) && previewLimit > 0 ? previewLimit : 8,
+          req.user ?? null,
+          location,
+          true,
+        ),
+        taskService.listCustomerHomePromotions(req.user ?? null),
+        couponService.listHomeOffers(req.user ?? null),
+      ]);
+      const featuredPayload = featuredResponse.data as { data?: unknown } | undefined;
+      const promotionsPayload = promotionsResponse.data as { data?: unknown } | undefined;
+      const couponsPayload = couponsResponse.data as { data?: unknown } | undefined;
+      const featuredServices = featuredPayload?.data;
+      const promotions = promotionsPayload?.data;
+      const couponOffers = couponsPayload?.data;
+      if (!Array.isArray(featuredServices) || !Array.isArray(promotions) || !Array.isArray(couponOffers)) {
+        throw new Error('A customer home content service returned an invalid response.');
+      }
+      res.status(200).json({
+        success: true,
+        data: { featuredServices, promotions, couponOffers },
+      });
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getCustomerHomeContent');
+    }
+  }
+
+  async listCustomerHomePromotions(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.listCustomerHomePromotions(req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listCustomerHomePromotions');
+    }
+  }
+
+  async listHomeCouponOffers(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'coupon-service');
+      const response = await couponService.listHomeOffers(req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listHomeCouponOffers');
+    }
+  }
+
+  async getBookNowAvailability(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookNowAvailability(
+        catalogLocationQuery(req.query),
+        req.user ?? null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getBookNowAvailability');
+    }
+  }
+
   async listCategories(
     req: Request,
     res: Response,
@@ -94,11 +182,13 @@ export class CatalogController {
         req.query.previewLimit !== undefined
           ? Number(req.query.previewLimit)
           : undefined;
+      const featuredOnly = req.query.featuredOnly === 'true';
 
       const response = await taskService.getBookNowHubCatalog(
         Number.isFinite(previewLimit) ? previewLimit : undefined,
         req.user ?? null,
         catalogLocationQuery(req.query),
+        featuredOnly,
       );
       res.status(response.status).json(response.data);
     } catch (error) {

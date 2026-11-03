@@ -1314,6 +1314,21 @@ export class TaskService extends BaseService {
     );
   }
 
+  async getBookNowAvailability(
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string },
+    userToken?: UserToken | null
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken, { params: location }),
+    );
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>(
+        '/api/v1/catalog/book-now/availability',
+        config,
+      )
+    );
+  }
+
   async getCatalogCategory(
     slug: string,
     userToken?: UserToken | null,
@@ -1346,15 +1361,29 @@ export class TaskService extends BaseService {
   async getBookNowHubCatalog(
     previewLimit: number | undefined,
     userToken?: UserToken | null,
-    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string }
+    location?: { area?: string; city?: string; state?: string; pinCode?: string; coordinates?: string },
+    featuredOnly = false,
   ): Promise<AxiosResponse<ApiResponse<any>>> {
     const config = this.addServiceAuth(
       this.forwardUserAuth(userToken, {
-        params: { ...(location || {}), ...(previewLimit ? { previewLimit } : {}) },
+        params: {
+          ...(location || {}),
+          ...(previewLimit ? { previewLimit } : {}),
+          ...(featuredOnly ? { featuredOnly: true } : {}),
+        },
       })
     );
     return this.handleRequest(() =>
       this.client.get<ApiResponse<any>>("/api/v1/catalog/book-now/hub", config)
+    );
+  }
+
+  async listCustomerHomePromotions(
+    userToken?: UserToken | null,
+  ): Promise<AxiosResponse<ApiResponse<any>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
+    return this.handleRequest(() =>
+      this.client.get<ApiResponse<any>>('/api/v1/catalog/home-promotions', config)
     );
   }
 
