@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/taskService.js';
 import { couponService } from '../services/couponService.js';
@@ -61,6 +62,21 @@ export class CatalogController {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'task-service');
       const response = await taskService.getBookNowHomeCategories(req.user ?? null);
+      if (response.status >= 200 && response.status < 300) {
+        const etag = `"${createHash('sha256')
+          .update(JSON.stringify(response.data))
+          .digest('hex')}"`;
+        res.setHeader('ETag', etag);
+        res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+        res.setHeader('Vary', 'Authorization');
+        const requestedTags = (req.get('If-None-Match') ?? '')
+          .split(',')
+          .map((value) => value.trim());
+        if (requestedTags.includes(etag) || requestedTags.includes('*')) {
+          res.status(304).end();
+          return;
+        }
+      }
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.getBookNowHomeCategories');
@@ -126,6 +142,21 @@ export class CatalogController {
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.listCatalogCategories(req.user ?? null);
+      if (response.status >= 200 && response.status < 300) {
+        const etag = `"${createHash('sha256')
+          .update(JSON.stringify(response.data))
+          .digest('hex')}"`;
+        res.setHeader('ETag', etag);
+        res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+        res.setHeader('Vary', 'Authorization');
+        const requestedTags = (req.get('If-None-Match') ?? '')
+          .split(',')
+          .map((value) => value.trim());
+        if (requestedTags.includes(etag) || requestedTags.includes('*')) {
+          res.status(304).end();
+          return;
+        }
+      }
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.listCategories');
