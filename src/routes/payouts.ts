@@ -7,6 +7,7 @@ const router = Router();
 // All payout routes require authentication
 router.get('/status/:payoutId', authMiddleware, payoutController.getPayoutStatus.bind(payoutController));
 router.get('/escrow/:escrowId', authMiddleware, payoutController.getPayoutsByEscrowId.bind(payoutController));
+router.post('/tasks/transactions', authMiddleware, payoutController.getPayoutsByTaskIds.bind(payoutController));
 
 export default router;
 

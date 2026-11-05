@@ -1,5 +1,7 @@
+import { createHash } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/taskService.js';
+import { couponService } from '../services/couponService.js';
 import { handleServiceError } from '../utils/errorHandler.js';
 
 function catalogLocationQuery(query: Request['query']) {
@@ -13,6 +15,123 @@ function catalogLocationQuery(query: Request['query']) {
 }
 
 export class CatalogController {
+  async getCustomerHomeContent(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service,coupon-service');
+      const location = catalogLocationQuery(req.query);
+      const previewLimit = Number(req.query.previewLimit);
+      const [featuredResponse, promotionsResponse, couponsResponse] = await Promise.all([
+        taskService.getBookNowHubCatalog(
+          Number.isFinite(previewLimit) && previewLimit > 0 ? previewLimit : 8,
+          req.user ?? null,
+          location,
+          true,
+        ),
+        taskService.listCustomerHomePromotions(req.user ?? null),
+        couponService.listHomeOffers(req.user ?? null),
+      ]);
+      const featuredPayload = featuredResponse.data as { data?: unknown } | undefined;
+      const promotionsPayload = promotionsResponse.data as { data?: unknown } | undefined;
+      const couponsPayload = couponsResponse.data as { data?: unknown } | undefined;
+      const featuredServices = featuredPayload?.data;
+      const promotions = promotionsPayload?.data;
+      const couponOffers = couponsPayload?.data;
+      if (!Array.isArray(featuredServices) || !Array.isArray(promotions) || !Array.isArray(couponOffers)) {
+        throw new Error('A customer home content service returned an invalid response.');
+      }
+      res.status(200).json({
+        success: true,
+        data: { featuredServices, promotions, couponOffers },
+      });
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getCustomerHomeContent');
+    }
+  }
+
+  async getBookNowHomeCategories(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.getBookNowHomeCategories(req.user ?? null);
+      if (response.status >= 200 && response.status < 300) {
+        const etag = `"${createHash('sha256')
+          .update(JSON.stringify(response.data))
+          .digest('hex')}"`;
+        res.setHeader('ETag', etag);
+        res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+        res.setHeader('Vary', 'Authorization');
+        const requestedTags = (req.get('If-None-Match') ?? '')
+          .split(',')
+          .map((value) => value.trim());
+        if (requestedTags.includes(etag) || requestedTags.includes('*')) {
+          res.status(304).end();
+          return;
+        }
+      }
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getBookNowHomeCategories');
+    }
+  }
+
+  async listCustomerHomePromotions(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+      const response = await taskService.listCustomerHomePromotions(req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listCustomerHomePromotions');
+    }
+  }
+
+  async listHomeCouponOffers(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'coupon-service');
+      const response = await couponService.listHomeOffers(req.user ?? null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listHomeCouponOffers');
+    }
+  }
+
+  async getBookNowAvailability(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const response = await taskService.getBookNowAvailability(
+        catalogLocationQuery(req.query),
+        req.user ?? null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.getBookNowAvailability');
+    }
+  }
+
   async listCategories(
     req: Request,
     res: Response,
@@ -23,6 +142,21 @@ export class CatalogController {
       res.setHeader('X-Target-Service', 'task-service');
 
       const response = await taskService.listCatalogCategories(req.user ?? null);
+      if (response.status >= 200 && response.status < 300) {
+        const etag = `"${createHash('sha256')
+          .update(JSON.stringify(response.data))
+          .digest('hex')}"`;
+        res.setHeader('ETag', etag);
+        res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+        res.setHeader('Vary', 'Authorization');
+        const requestedTags = (req.get('If-None-Match') ?? '')
+          .split(',')
+          .map((value) => value.trim());
+        if (requestedTags.includes(etag) || requestedTags.includes('*')) {
+          res.status(304).end();
+          return;
+        }
+      }
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.listCategories');
@@ -94,11 +228,15 @@ export class CatalogController {
         req.query.previewLimit !== undefined
           ? Number(req.query.previewLimit)
           : undefined;
+      const featuredOnly = req.query.featuredOnly === 'true';
+      const includeLocationPricing = req.query.includeLocationPricing !== 'false';
 
       const response = await taskService.getBookNowHubCatalog(
         Number.isFinite(previewLimit) ? previewLimit : undefined,
         req.user ?? null,
         catalogLocationQuery(req.query),
+        featuredOnly,
+        includeLocationPricing,
       );
       res.status(response.status).json(response.data);
     } catch (error) {
@@ -288,6 +426,28 @@ export class CatalogController {
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.checkPinCode');
+    }
+  }
+  async listBanners(
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'task-service');
+
+      const placement = typeof req.query.placement === 'string' ? req.query.placement : undefined;
+      const activeOnly = req.query.activeOnly !== 'false';
+
+      const response = await taskService.getBanners(
+        placement,
+        activeOnly,
+        req.user ?? null,
+      );
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'CatalogController.listBanners');
     }
   }
 }

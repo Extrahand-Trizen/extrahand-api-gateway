@@ -6,14 +6,9 @@ export class PayoutController {
   async getPayoutStatus(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { payoutId } = req.params;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
-
-      const response = await paymentService.getPayoutStatus(
-        payoutId,
-        req.user || null
-      );
+      const response = await paymentService.getPayoutStatus(payoutId, req.user || null);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PayoutController.getPayoutStatus');
@@ -23,22 +18,32 @@ export class PayoutController {
   async getPayoutsByEscrowId(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { escrowId } = req.params;
-
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'payment-service');
-
-      const response = await paymentService.getPayoutsByEscrowId(
-        escrowId,
-        req.user || null
-      );
+      const response = await paymentService.getPayoutsByEscrowId(escrowId, req.user || null);
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'PayoutController.getPayoutsByEscrowId');
     }
   }
+
+  async getPayoutsByTaskIds(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      const taskIds = Array.isArray(req.body?.taskIds)
+        ? req.body.taskIds.map((id: unknown) => String(id))
+        : [];
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+      const response = await paymentService.getPayoutsByTaskIds(taskIds, req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'PayoutController.getPayoutsByTaskIds');
+    }
+  }
 }
 
 export const payoutController = new PayoutController();
+
 
 
 

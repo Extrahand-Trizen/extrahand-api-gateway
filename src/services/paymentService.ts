@@ -338,6 +338,18 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async getPayoutsByTaskIds(
+    taskIds: string[],
+    userToken: UserToken | null
+  ): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+    return this.handleRequest(() =>
+      this.client.post('/api/v1/payouts/tasks/transactions', { taskIds }, config)
+    );
+  }
+
   async getPayoutStatusBatch(
     payoutIds: string[],
     userToken: UserToken | null
