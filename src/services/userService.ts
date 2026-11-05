@@ -453,7 +453,7 @@ export class UserService extends BaseService {
       otp?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
-      authChannel?: "customer_app" | "helper_app" | "seller_app";
+      authChannel?: "customer_app" | "helper_app" | "partner_app" | "seller_app";
     }
   ): Promise<
     AxiosResponse<
@@ -513,7 +513,7 @@ export class UserService extends BaseService {
       deviceId?: string;
       referralCode?: string;
       referralChannel?: "poster" | "tasker" | "customer";
-      authChannel?: "customer_app" | "helper_app" | "seller_app";
+      authChannel?: "customer_app" | "helper_app" | "partner_app" | "seller_app";
     }
   ): Promise<
     AxiosResponse<
