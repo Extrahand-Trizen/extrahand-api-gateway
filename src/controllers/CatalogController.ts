@@ -33,7 +33,10 @@ export class CatalogController {
           true,
         ),
         taskService.listCustomerHomePromotions(req.user ?? null),
-        couponService.listHomeOffers(req.user ?? null),
+        couponService.listHomeOffers(req.user ?? null, {
+          city: location.city,
+          pinCode: location.pinCode,
+        }),
       ]);
       const featuredPayload = featuredResponse.data as { data?: unknown } | undefined;
       const promotionsPayload = promotionsResponse.data as { data?: unknown } | undefined;
@@ -106,7 +109,11 @@ export class CatalogController {
     try {
       res.setHeader('X-Served-By', 'api-gateway');
       res.setHeader('X-Target-Service', 'coupon-service');
-      const response = await couponService.listHomeOffers(req.user ?? null);
+      const location = catalogLocationQuery(req.query);
+      const response = await couponService.listHomeOffers(req.user ?? null, {
+        city: location.city,
+        pinCode: location.pinCode,
+      });
       res.status(response.status).json(response.data);
     } catch (error) {
       handleServiceError(error, res, 'CatalogController.listHomeCouponOffers');
