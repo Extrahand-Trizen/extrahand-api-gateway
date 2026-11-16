@@ -19,9 +19,18 @@ export class CouponService extends BaseService {
     return this.addServiceAuth(this.forwardUserAuth(userToken || undefined));
   }
 
-  async listHomeOffers(userToken?: UserToken | null): Promise<AxiosResponse> {
+  async listHomeOffers(
+    userToken?: UserToken | null,
+    location?: { city?: string; pinCode?: string },
+  ): Promise<AxiosResponse> {
     return this.handleRequest(() =>
-      this.client.get('/api/v1/coupons/home-offers', this.authConfig(userToken))
+      this.client.get('/api/v1/coupons/home-offers', {
+        ...this.authConfig(userToken),
+        params: {
+          ...(location?.city ? { city: location.city } : {}),
+          ...(location?.pinCode ? { pinCode: location.pinCode } : {}),
+        },
+      })
     );
   }
 
