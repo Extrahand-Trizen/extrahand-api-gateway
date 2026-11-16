@@ -144,6 +144,34 @@ export class TaskService extends BaseService {
     );
   }
 
+  async acceptOpenTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<Task>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<Task>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/accept`,
+        {},
+        config,
+      )
+    );
+  }
+
+  async rejectOpenTask(
+    taskId: string,
+    userToken: UserToken
+  ): Promise<AxiosResponse<ApiResponse<{ taskId: string; rejected: boolean }>>> {
+    const config = this.addServiceAuth(this.forwardUserAuth(userToken));
+    return this.handleRequest(() =>
+      this.client.post<ApiResponse<{ taskId: string; rejected: boolean }>>(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/reject`,
+        {},
+        config,
+      )
+    );
+  }
+
   async createTask(
     taskData: Partial<Task>,
     userToken: UserToken,

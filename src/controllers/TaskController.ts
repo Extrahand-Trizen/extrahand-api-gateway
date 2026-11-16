@@ -193,6 +193,12 @@ export class TaskController {
         token: null,
       };
       const enrichedTask = await enrichTaskResponse(task, userToken);
+      const rejectedByCurrentHelper = (
+        task as unknown as { rejectedByCurrentHelper?: unknown } | null
+      )?.rejectedByCurrentHelper;
+      if (typeof rejectedByCurrentHelper === 'boolean') {
+        enrichedTask.rejectedByCurrentHelper = rejectedByCurrentHelper;
+      }
       
       // ✅ Return in same format as task-service
       res.status(response.status).json({
@@ -203,6 +209,40 @@ export class TaskController {
       });
     } catch (error) {
       handleServiceError(error, res, "TaskController.getTaskById");
+    }
+  }
+
+  async acceptOpenTask(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await taskService.acceptOpenTask(req.params.taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.acceptOpenTask');
+    }
+  }
+
+  async rejectOpenTask(
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return;
+      }
+      const response = await taskService.rejectOpenTask(req.params.taskId, req.user);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'TaskController.rejectOpenTask');
     }
   }
 

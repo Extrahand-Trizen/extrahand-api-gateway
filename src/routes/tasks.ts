@@ -293,6 +293,18 @@ router.get(
   taskController.getTaskById.bind(taskController)
 );
 
+router.post(
+  "/:taskId/accept",
+  authMiddleware,
+  taskController.acceptOpenTask.bind(taskController)
+);
+
+router.post(
+  "/:taskId/reject",
+  authMiddleware,
+  taskController.rejectOpenTask.bind(taskController)
+);
+
 // Update task - requires authentication
 router.put(
   "/:taskId",
