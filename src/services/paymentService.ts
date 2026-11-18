@@ -276,6 +276,16 @@ export class PaymentService extends BaseService {
     );
   }
 
+  async getMyRefunds(userToken: UserToken | null): Promise<AxiosResponse> {
+    const config = this.addServiceAuth(
+      this.forwardUserAuth(userToken || undefined)
+    );
+
+    return this.handleRequest(() =>
+      this.client.get('/api/v1/refunds/mine', config)
+    );
+  }
+
   async getRefundsByEscrowId(
     escrowId: string,
     userToken: UserToken | null

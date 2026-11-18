@@ -53,6 +53,18 @@ export class RefundController {
     }
   }
 
+  async getMyRefunds(req: Request, res: Response, _next: NextFunction): Promise<void> {
+    try {
+      res.setHeader('X-Served-By', 'api-gateway');
+      res.setHeader('X-Target-Service', 'payment-service');
+
+      const response = await paymentService.getMyRefunds(req.user || null);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      handleServiceError(error, res, 'RefundController.getMyRefunds');
+    }
+  }
+
   async getRefundsByEscrowId(req: Request, res: Response, _next: NextFunction): Promise<void> {
     try {
       const { escrowId } = req.params;
