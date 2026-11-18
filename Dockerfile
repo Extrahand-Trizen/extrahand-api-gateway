@@ -1,10 +1,12 @@
 # Use Node.js 20 LTS Alpine image for smaller size (required by mongoose@9)
 FROM node:20-alpine AS base
 
-# Install security updates and necessary packages
-RUN apk update && apk upgrade && \
-    apk add --no-cache dumb-init curl && \
-    rm -rf /var/cache/apk/*
+# Install required packages, retrying transient Alpine mirror failures.
+RUN for attempt in 1 2 3; do \
+      apk add --no-cache dumb-init curl && break; \
+      if [ "$attempt" -eq 3 ]; then exit 1; fi; \
+      sleep "$((attempt * 5))"; \
+    done
 
 # Create app directory with proper permissions
 WORKDIR /app
