@@ -720,7 +720,8 @@ export class TaskService extends BaseService {
 
   async sendStartOtp(
     taskId: string,
-    userToken: UserToken
+    userToken: UserToken,
+    journeyStarted?: { at: string; location: { lat: number; lng: number } }
   ): Promise<AxiosResponse<ApiResponse<{ sentTo: string }>>> {
     const config = withLocalTestHeader(
       this.addServiceAuth(this.forwardUserAuth(userToken)),
@@ -729,7 +730,7 @@ export class TaskService extends BaseService {
     return this.handleRequest(() =>
       this.client.post<ApiResponse<{ sentTo: string }>>(
         `/api/v1/tasks/${taskId}/start-otp/send`,
-        {},
+        { journeyStarted },
         config
       )
     );

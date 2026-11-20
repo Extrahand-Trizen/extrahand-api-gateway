@@ -64,6 +64,10 @@ export interface Task {
   status: string;
   /** Journey sub-status while assigned: assigned → on_the_way → arrived */
   executionPhase?: "assigned" | "on_the_way" | "arrived" | null;
+  journeyStarted?: {
+    at: string;
+    location?: { lat: number; lng: number } | null;
+  } | null;
   onTheWayAt?: string | null;
   arrivedAt?: string | null;
   startedAt?: string | null;

@@ -1084,7 +1084,11 @@ export class TaskController {
       res.setHeader("X-Target-Service", "task-service");
       res.setHeader("X-Gateway-Request-ID", req.requestId || "");
 
-      const response = await taskService.sendStartOtp(taskId, req.user);
+      const response = await taskService.sendStartOtp(
+        taskId,
+        req.user,
+        req.body?.journeyStarted,
+      );
       const taskServiceResponse = response.data as any;
       const payload =
         taskServiceResponse?.data ??
