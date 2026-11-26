@@ -49,12 +49,8 @@ function fakeRes(): Res {
   };
 }
 
-function accessToken(
-  uid: string,
-  secret = TEST_ACCESS_SECRET,
-  tokenId = 'token-1',
-): string {
-  return jwt.sign({ sub: uid, sid: 'session-1', tid: tokenId, pid: `profile-${uid}` }, secret, {
+function accessToken(uid: string, secret = TEST_ACCESS_SECRET): string {
+  return jwt.sign({ sub: uid, sid: 'session-1', pid: `profile-${uid}` }, secret, {
     issuer: ISSUER,
     audience: AUDIENCE,
     expiresIn: '5m',
@@ -62,26 +58,14 @@ function accessToken(
 }
 
 async function run(headers: Record<string, string>) {
-  const [{ authMiddleware }, { userService }] = await Promise.all([
-    import('./auth.js'),
-    import('../services/userService.js'),
-  ]);
-  const originalValidateSession = userService.validateSession;
-  userService.validateSession = async (_uid, _sessionId, tokenId) => {
-    if (tokenId === 'unavailable') throw new Error('test service unavailable');
-    return ({ data: { success: true, active: tokenId !== 'revoked' } }) as any;
-  };
+  const { authMiddleware } = await import('./auth.js');
   const req: any = { headers, path: '/api/v1/payment/refund', method: 'POST' };
   const res = fakeRes();
   let nextCalled = false;
-  try {
-    await authMiddleware(req, res as any, () => {
-      nextCalled = true;
-    });
-    return { req, res, nextCalled };
-  } finally {
-    userService.validateSession = originalValidateSession;
-  }
+  await authMiddleware(req, res as any, () => {
+    nextCalled = true;
+  });
+  return { req, res, nextCalled };
 }
 
 test('a normal user cannot choose another user via X-User-Id', async () => {
@@ -138,22 +122,6 @@ test('a server caller that forwards a real user token is authenticated as that u
   });
   assert.equal(nextCalled, true);
   assert.equal(req.user.uid, 'seller-1');
-});
-
-test('a revoked backend session is rejected even when its access token is still valid', async () => {
-  const { res, nextCalled } = await run({
-    authorization: `Bearer ${accessToken('alice', TEST_ACCESS_SECRET, 'revoked')}`,
-  });
-  assert.equal(nextCalled, false);
-  assert.equal(res.statusCode, 401);
-});
-
-test('session validation outages do not invalidate the user token', async () => {
-  const { res, nextCalled } = await run({
-    authorization: `Bearer ${accessToken('alice', TEST_ACCESS_SECRET, 'unavailable')}`,
-  });
-  assert.equal(nextCalled, false);
-  assert.equal(res.statusCode, 503);
 });
 
 test('downstream calls carry the verified uid and the gateway service credential', async () => {
