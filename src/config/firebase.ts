@@ -143,7 +143,7 @@ export async function verifyFirebaseToken(idToken: string): Promise<{ uid: strin
 
   if (primaryAuth) {
     try {
-      const decodedToken = await primaryAuth.verifyIdToken(idToken, true);
+      const decodedToken = await primaryAuth.verifyIdToken(idToken);
       return { uid: decodedToken.uid };
     } catch (primaryError) {
       // Fall through to mobile
@@ -152,7 +152,7 @@ export async function verifyFirebaseToken(idToken: string): Promise<{ uid: strin
 
   if (mobileAuthInstance) {
     try {
-      const decodedToken = await mobileAuthInstance.verifyIdToken(idToken, true);
+      const decodedToken = await mobileAuthInstance.verifyIdToken(idToken);
       return { uid: decodedToken.uid };
     } catch (mobileError) {
       throw new Error('Token verification failed for both primary and mobile Firebase projects');
