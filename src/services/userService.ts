@@ -58,6 +58,26 @@ export class UserService extends BaseService {
     );
   }
 
+  async validateSession(
+    uid: string,
+    sessionId: string,
+    tokenId?: string
+  ): Promise<AxiosResponse<{ success: boolean; active: boolean }>> {
+    const config = this.addServiceAuth({
+      headers: {
+        "X-User-Id": uid,
+      },
+    });
+
+    return this.handleRequest(() =>
+      this.client.post<{ success: boolean; active: boolean }>(
+        "/api/v1/sessions/validate",
+        { uid, sessionId, tokenId },
+        config
+      )
+    );
+  }
+
   async createPartnerCategoryRequest(
     categoryId: string,
     requestedSkills: string[],

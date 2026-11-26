@@ -5,6 +5,8 @@ import { getCachedProfileId, setCachedProfileId } from "../lib/profileIdCache.js
 import { ACCESS_COOKIE_NAME } from "../utils/cookies.js";
 import { userService } from '../services/userService.js';
 
+class SessionValidationUnavailableError extends Error {}
+
 function getAccessToken(req: Request): string | undefined {
    const header = req.headers.authorization || "";
    const match = /^Bearer (.+)$/.exec(header);
@@ -89,7 +91,37 @@ async function verifyTokenAndGetUser(token: string): Promise<{ uid: string; toke
     tokenLength: token.length,
   });
 
-  const { uid, tokenType, profileId: jwtProfileId } = await verifyToken(token);
+  const {
+    uid,
+    tokenType,
+    sessionId,
+    tokenId,
+    profileId: jwtProfileId,
+  } = await verifyToken(token);
+
+  if (tokenType === 'backend') {
+    if (!sessionId) {
+      throw new Error('Backend access token is missing its session ID');
+    }
+
+    let session: Awaited<ReturnType<typeof userService.validateSession>>;
+    try {
+      session = await userService.validateSession(uid, sessionId, tokenId);
+    } catch (error) {
+      logger.error('Backend session validation service is unavailable', {
+        uid,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw new SessionValidationUnavailableError(
+        'Backend session validation service is unavailable'
+      );
+    }
+
+    if (!session.data.active) {
+      throw new Error('Session is no longer active');
+    }
+  }
+
   const profileId = await resolveProfileId(uid, token, jwtProfileId);
 
   return { uid, tokenType, profileId };
@@ -171,9 +203,14 @@ export async function authMiddleware(
       ? `Invalid token: ${error.message || error.code || 'Unknown error'}`
       : 'Invalid token';
     
-    res.status(401).json({ 
+    const statusCode =
+      error instanceof SessionValidationUnavailableError ? 503 : 401;
+    res.status(statusCode).json({
       success: false,
-      error: errorMessage,
+      error:
+        statusCode === 503
+          ? 'Authentication service temporarily unavailable'
+          : errorMessage,
       ...(process.env.NODE_ENV === 'development' && {
         details: {
           code: error.code,

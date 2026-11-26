@@ -32,6 +32,7 @@ export function verifyAccessToken(token: string): {
    uid: string;
    sessionId: string;
    profileId?: string;
+   tokenId?: string;
 } {
    try {
       const payload = jwt.verify(token, env.ACCESS_TOKEN_SECRET, {
@@ -47,6 +48,7 @@ export function verifyAccessToken(token: string): {
          uid: payload.sub,
          sessionId: payload.sid,
          profileId: extractProfileId(payload),
+         tokenId: payload.tid,
       };
    } catch (error) {
       // Local/dev resiliency: accept validly signed backend tokens even when
@@ -62,6 +64,7 @@ export function verifyAccessToken(token: string): {
                   uid: payload.sub,
                   sessionId: payload.sid,
                   profileId: extractProfileId(payload),
+                  tokenId: payload.tid,
                };
             }
          } catch {
@@ -83,6 +86,7 @@ export async function verifyToken(token: string): Promise<{
    uid: string;
    sessionId?: string;
    profileId?: string;
+   tokenId?: string;
    tokenType: 'backend' | 'firebase';
 }> {
    // First, try to verify as backend token (HS256)
@@ -92,6 +96,7 @@ export async function verifyToken(token: string): Promise<{
          uid: result.uid,
          sessionId: result.sessionId,
          profileId: result.profileId,
+         tokenId: result.tokenId,
          tokenType: 'backend',
       };
    } catch (backendError) {
